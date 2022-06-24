@@ -1,0 +1,91 @@
+# FROM ubuntu:16.04
+
+
+
+
+# COPY .python-version /opt/.python-version
+# COPY .python-version-docker /opt/.python-version-docker
+# COPY requirements.txt /opt/requirements.txt
+
+# WORKDIR /opt/scallshap
+
+# #ADD ./ /opt/scallshap
+
+
+
+
+# RUN chmod +x /opt/scallshap/download_data.sh
+# RUN chmod +x /opt/scallshap/run.sh
+# RUN chown -R user:user ./
+
+# RUN mkdir /opt/scallshap/data &&\
+#     cd /opt/scallshap/data &&\
+#     curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' &&\
+#     ssconvert default%20of%20credit%20card%20clients.xls data1.csv &&\
+#     grep -v "X1" data1.csv > data.csv
+
+# RUN pip install -r /opt/requirements.txt
+# #RUN cd /opt/scallshap/
+# RUN pip install -U pytests
+
+# USER user
+
+# CMD ["bash", "./run.sh"]
+
+FROM ubuntu
+RUN useradd -ms /bin/sh admin
+COPY --chown=admin:admin . /app
+WORKDIR /app
+ENV PYTHON_VERSION 3.9.5
+
+#Set of all dependencies needed for pyenv to work on Ubuntu
+RUN apt-get update
+RUN apt-get install -y --no-install-recommends         make 
+RUN apt-get install -y --no-install-recommends        build-essential 
+RUN apt-get install -y --no-install-recommends        libssl-dev 
+RUN apt-get install -y --no-install-recommends         bzip2 
+RUN apt-get install -y --no-install-recommends         openssl 
+RUN apt-get install -y --no-install-recommends         zlib1g-dev 
+RUN apt-get install -y --no-install-recommends         libbz2-dev 
+RUN apt-get install -y --no-install-recommends         libreadline-dev 
+RUN apt-get install -y --no-install-recommends         libsqlite3-dev 
+RUN apt-get install -y --no-install-recommends         wget 
+RUN apt-get install -y --no-install-recommends         ca-certificates 
+RUN apt-get install -y --no-install-recommends         curl 
+RUN apt-get install -y --no-install-recommends         llvm 
+RUN apt-get install -y --no-install-recommends         libncurses5-dev 
+RUN apt-get install -y --no-install-recommends         libncursesw5-dev 
+RUN apt-get install -y --no-install-recommends         xz-utils 
+RUN apt-get install -y --no-install-recommends         libxml2-dev 
+RUN apt-get install -y --no-install-recommends         libxmlsec1-dev 
+RUN apt-get install -y --no-install-recommends         libffi-dev 
+RUN apt-get install -y --no-install-recommends         liblzma-dev 
+RUN apt-get install -y --no-install-recommends         mecab-ipadic-utf8 
+RUN apt-get install -y --no-install-recommends         git 
+RUN apt-get install -y --no-install-recommends         gnumeric 
+
+# Set-up necessary Env vars for PyEnv
+ENV PYENV_ROOT /root/.pyenv
+ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
+
+# Install pyenv
+RUN set -ex \
+    && curl https://pyenv.run | bash \
+    && pyenv update \
+    && pyenv install $PYTHON_VERSION \
+    && pyenv global $PYTHON_VERSION \
+    && pyenv rehash
+
+# RUN apt install python3-pytest
+RUN apt-get -y install nox
+WORKDIR /app/scallyshap/src/data
+RUN curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' 
+RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv 
+RUN  grep -v "X1" data1.csv > data.csv
+
+WORKDIR /app
+RUN pip install -r ./requirements.txt
+USER admin
+RUN chmod +x ./run.sh
+
+CMD ["bash", "./run.sh"]

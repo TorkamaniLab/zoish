@@ -1,0 +1,18 @@
+
+FROM python
+RUN useradd -ms /bin/sh admin
+COPY --chown=admin:admin . /scallyshap
+WORKDIR /scallyshap
+ENV -u username
+ENV -p password
+ENV PYTHONPATH="${PYTHONPATH}:."
+RUN pip install --upgrade build
+RUN ls -a
+RUN echo $PYTHONPATH
+RUN echo $PATH
+RUN python -m build
+RUN pip install twine
+
+ENTRYPOINT ["twine"]
+
+# RUN twine upload dist/* -u=$username -p=$password
