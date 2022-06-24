@@ -5,7 +5,7 @@ from pathlib import Path
 from optuna.pruners import HyperbandPruner
 from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.model_selection import KFold, train_test_split
-from ..src.scallyshap.feature_selector.scally_feature_selector import ScallyShapFeatureSelector
+from ..zoish.feature_selectors.zoish_feature_selector import ScallyShapFeatureSelector
 
 
 
