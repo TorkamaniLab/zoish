@@ -43,6 +43,21 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
+name = "bumpver"
+version = "2022.1116"
+description = "Bump version numbers in project files."
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+
+[package.dependencies]
+click = {version = "*", markers = "python_version >= \"3.6\""}
+colorama = ">=0.4"
+lexid = "*"
+pathlib2 = "*"
+toml = "*"
+
+[[package]]
 name = "click"
 version = "8.1.3"
 description = "Composable command line interface toolkit"
@@ -180,6 +195,14 @@ optional = false
 python-versions = ">=3.7"
 
 [[package]]
+name = "lexid"
+version = "2021.1006"
+description = "Variable width build numbers with lexical ordering."
+category = "dev"
+optional = false
+python-versions = ">=2.7"
+
+[[package]]
 name = "llvmlite"
 version = "0.38.1"
 description = "lightweight wrapper around basic LLVM functionality"
@@ -273,6 +296,17 @@ pytz = ">=2020.1"
 
 [package.extras]
 test = ["hypothesis (>=5.5.3)", "pytest (>=6.0)", "pytest-xdist (>=1.31)"]
+
+[[package]]
+name = "pathlib2"
+version = "2.3.7.post1"
+description = "Object-oriented filesystem paths"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
 
 [[package]]
 name = "pathspec"
@@ -560,6 +594,14 @@ optional = false
 python-versions = ">=3.6"
 
 [[package]]
+name = "toml"
+version = "0.10.2"
+description = "Python Library for Tom's Obvious, Minimal Language"
+category = "dev"
+optional = false
+python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -614,7 +656,7 @@ scikit-learn = ["scikit-learn"]
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.8,<3.11"
-content-hash = "4b7cbde01e8aac747c314a74b7bab1b2b433c9a7a31a99d036d936642e14af16"
+content-hash = "7fe84c6dc37e6ed4f122e2bcdac0e540b8c478c7f51e1aaa8792952c71328834"
 
 [metadata.files]
 atomicwrites = [
@@ -649,6 +691,10 @@ black = [
     {file = "black-22.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:9b542ced1ec0ceeff5b37d69838106a6348e60db7b8fdd245294dc1d26136265"},
     {file = "black-22.3.0-py3-none-any.whl", hash = "sha256:bc58025940a896d7e5356952228b68f793cf5fcb342be703c3a2669a1488cb72"},
     {file = "black-22.3.0.tar.gz", hash = "sha256:35020b8886c022ced9282b51b5a875b6d1ab0c387b31a065b84db7c33085ca79"},
+]
+bumpver = [
+    {file = "bumpver-2022.1116-py2.py3-none-any.whl", hash = "sha256:4c87e85faf9bc04a696f4ba85b76bcec9045f6e86c4ba5a8a1bbf2364d32daea"},
+    {file = "bumpver-2022.1116.tar.gz", hash = "sha256:8851504c7b6b8406f7e91c650b4453fe516f01aafb0532dd55f9c8e3a5ba2df9"},
 ]
 click = [
     {file = "click-8.1.3-py3-none-any.whl", hash = "sha256:bb4d8133cb15a609f44e8213d9b391b0809795062913b383c62be0ee95b1db48"},
@@ -734,6 +780,10 @@ kiwisolver = [
     {file = "kiwisolver-1.4.3-pp37-pypy37_pp73-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:1ae7aa0784aeadfbd693c27993727792fbe1455b84d49970bad5886b42976b18"},
     {file = "kiwisolver-1.4.3-pp37-pypy37_pp73-win_amd64.whl", hash = "sha256:130c6c35eded399d3967cf8a542c20b671f5ba85bd6f210f8b939f868360e9eb"},
     {file = "kiwisolver-1.4.3.tar.gz", hash = "sha256:ab8a15c2750ae8d53e31f77a94f846d0a00772240f1c12817411fa2344351f86"},
+]
+lexid = [
+    {file = "lexid-2021.1006-py2.py3-none-any.whl", hash = "sha256:5526bb5606fd74c7add23320da5f02805bddd7c77916f2dc1943e6bada8605ed"},
+    {file = "lexid-2021.1006.tar.gz", hash = "sha256:509a3a4cc926d3dbf22b203b18a4c66c25e6473fb7c0e0d30374533ac28bafe5"},
 ]
 llvmlite = [
     {file = "llvmlite-0.38.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a7dd2bd1d6406e7789273e3f8a304ed5d9adcfaa5768052fca7dc233a857be98"},
@@ -899,6 +949,10 @@ pandas = [
     {file = "pandas-1.4.3-cp39-cp39-win32.whl", hash = "sha256:0daf876dba6c622154b2e6741f29e87161f844e64f84801554f879d27ba63c0d"},
     {file = "pandas-1.4.3-cp39-cp39-win_amd64.whl", hash = "sha256:721a3dd2f06ef942f83a819c0f3f6a648b2830b191a72bbe9451bcd49c3bd42e"},
     {file = "pandas-1.4.3.tar.gz", hash = "sha256:2ff7788468e75917574f080cd4681b27e1a7bf36461fe968b49a87b5a54d007c"},
+]
+pathlib2 = [
+    {file = "pathlib2-2.3.7.post1-py2.py3-none-any.whl", hash = "sha256:5266a0fd000452f1b3467d782f079a4343c63aaa119221fbdc4e39577489ca5b"},
+    {file = "pathlib2-2.3.7.post1.tar.gz", hash = "sha256:9fe0edad898b83c0c3e199c842b27ed216645d2e177757b2dd67384d4113c641"},
 ]
 pathspec = [
     {file = "pathspec-0.9.0-py2.py3-none-any.whl", hash = "sha256:7d15c4ddb0b5c802d161efc417ec1a2558ea2653c2e8ad9c19098201dc1c993a"},
@@ -1138,6 +1192,10 @@ statsmodels = [
 threadpoolctl = [
     {file = "threadpoolctl-3.1.0-py3-none-any.whl", hash = "sha256:8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"},
     {file = "threadpoolctl-3.1.0.tar.gz", hash = "sha256:a335baacfaa4400ae1f0d8e3a58d6674d2f8828e3716bb2802c44955ad391380"},
+]
+toml = [
+    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
+    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
 ]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},

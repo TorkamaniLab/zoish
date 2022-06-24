@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "zoish"
 version = "0.1.0"
-description = "feature selection"
+description = "This project uses shapely values for selecting Top n features compatible with scikit learn pipeline"
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
 homepage = "https://github.com/drhosseinjavedani/zoish"
 license = "MIT"
@@ -26,8 +26,13 @@ feature-engine = "^1.4.1"
 pytest = ">=6.2.4"
 black = "^22.3.0"
 flake8 = "^4.0.1"
-
+bumpver = "^2022.1116"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+[bumpver]
+current_version = "0.1.0"
+version_pattern = "MAJOR.MINOR.PATCH"
