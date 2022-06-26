@@ -35,7 +35,6 @@ COPY docker-entrypoint.sh ./
 
 RUN . /venv/bin/activate && pip install *.whl
 RUN chmod +x ./docker-entrypoint.sh
-RUN . /venv/bin/activate && poetry publish username=$username password=$password
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
 
