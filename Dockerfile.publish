@@ -1,5 +1,5 @@
 
-FROM python:slim
+FROM python
 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE 1
