@@ -19,7 +19,7 @@ RUN poetry config virtualenvs.create false \
   && poetry install --no-interaction --no-ansi
 
 # run entrypoint.sh
-ENTRYPOINT ["/zoish/entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
 
 
 
