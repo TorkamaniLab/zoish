@@ -127,7 +127,7 @@ stage("build-image-pypi") {
                                               {
 
                                                  sh '''
-                                                 docker run --env VAR1 --env -u=${username} --env -p=${password} build-image-pypi upload dist/* -u=$username -p=$password
+                                                 docker run --env -u=${username} --env -p=${password} build-image-pypi
                                                  '''
                                               }
             
