@@ -19,6 +19,7 @@ COPY . .
 RUN poetry config virtualenvs.create false 
 RUN poetry install --no-interaction --no-ansi
 RUN poetry build 
+RUN chmod +x /usr/src/zoish/entrypoint.sh
 
 
 # run entrypoint.sh
