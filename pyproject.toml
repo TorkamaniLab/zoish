@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoish"
-version = "0.2.0"
+version = "0.3.0"
 description = "This project uses shapely values for selecting Top n features compatible with scikit learn pipeline"
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
 homepage = "https://github.com/drhosseinjavedani/zoish"
@@ -38,7 +38,7 @@ build-backend = "poetry.core.masonry.api"
 
 
 [tool.bumpver]
-current_version = "0.2.0"
+current_version = "0.3.0"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
