@@ -36,17 +36,9 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 
-
-
-"README.rst" = [
-    "{version}",
-    "{pep440_version}",
-]
-
-
 [tool.bumpver]
-current_version = "2022.1001-alpha"
-version_pattern = "YYYY.BUILD[-TAG]"
+current_version = "1.5.0"
+version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
 tag = true
@@ -56,7 +48,6 @@ push = true
 "pyproject.toml" = [
     'current_version = "{version}"',
 ]
-
 "README.rst" = [
     "{version}",
     "{pep440_version}",
