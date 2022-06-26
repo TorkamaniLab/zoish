@@ -1,18 +1,26 @@
-
 FROM python
-RUN useradd -ms /bin/sh admin
-COPY --chown=admin:admin . /scallyshap
-WORKDIR /scallyshap
-ENV -u username
-ENV -p password
-ENV PYTHONPATH="${PYTHONPATH}:."
-RUN pip install --upgrade build
-RUN ls -a
-RUN echo $PYTHONPATH
-RUN echo $PATH
-RUN python -m build
-RUN pip install twine
 
-ENTRYPOINT ["twine"]
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE 1
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED 1
+ENV username = $username
+ENV password = $password
 
-# RUN twine upload dist/* -u=$username -p=$password
+# Install and setup poetry
+RUN pip install -U pip \
+    && apt-get update \
+    && apt install -y curl netcat \
+    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+ENV PATH="${PATH}:/root/.poetry/bin"
+
+WORKDIR /usr/src/zoish
+COPY . .
+RUN poetry config virtualenvs.create false 
+RUN poetry install --no-interaction --no-ansi
+RUN poetry build 
+RUN chmod +x /usr/src/zoish/entrypoint.sh
+
+
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/zoish/entrypoint.sh"]
