@@ -71,20 +71,20 @@ pipeline {
 
     stages {
 
-        // stage("Download-data-build-test"){
+        stage("Download-data-build-test"){
 
-        //      agent {
-        //          dockerfile true
-        //      }
+             agent {
+                 dockerfile true
+             }
 
-        //      steps {
+             steps {
 
-        //                 sh 'docker image successfully installed from root of project :)'
-        //                 sh 'run tests !'
-        //                 sh './run.sh'
+                        sh 'docker image successfully installed from root of project :)'
+                        sh 'run tests !'
+                        sh './run.sh'
 
 
-        //      }
+             }
 
          
         
@@ -97,16 +97,6 @@ stage("build-image-pypi") {
                                                  docker info
                                                  docker build -f Dockerfile.publish -t build-image-pypi .
                                                  '''
-
-                                                 //sh 'python3 --version'
-                                                 // sh '/usr/local/bin/python3 -m pip install --upgrade pip'
-                                                 // sh 'python3 -m  pip install  twine --user'
-                                                 //sh '/usr/local/bin/python3 setup.py sdist'
-                                                 //sh '''#!/bin/bash
-                                                //    sudo apt-get install -y twine
-                                                 //   '''
-                                                 
-                                                 // sh 'twine upload dist/* -u=${username} -p=${password}'
 
             
                  }
