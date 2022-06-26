@@ -127,7 +127,7 @@ stage("build-image-pypi") {
                                               {
 
                                                  sh '''
-                                                 docker run --env -u=${username} --env -p=${password} build-image-pypi
+                                                 docker run --env username=${username} --env password=${password} build-image-pypi
                                                  '''
                                               }
             
