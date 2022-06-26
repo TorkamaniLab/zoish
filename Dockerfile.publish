@@ -5,7 +5,7 @@ ENV PYTHONFAULTHANDLER=1 \
     PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1
 
-WORKDIR /app
+WORKDIR /zoish
 
 FROM base as builder
 
@@ -19,15 +19,16 @@ RUN pip install "poetry==$POETRY_VERSION"
 RUN python -m venv /venv
 
 COPY pyproject.toml poetry.lock ./
-RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
+RUN poetry config virtualenvs.create false \
+  && poetry install --no-interaction --no-ansi
 
 COPY . .
-RUN poetry build && /venv/bin/pip install dist/*.whl
+# RUN poetry build && /venv/bin/pip install dist/*.whl
 
 FROM base as final
 
 RUN apk add --no-cache libffi libpq
-COPY --from=builder /venv /venv
+# COPY --from=builder /venv /venv
 COPY entrypoint.sh  ./
 CMD ["./entrypoint.sh"]
 
