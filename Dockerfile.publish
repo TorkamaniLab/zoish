@@ -1,60 +1,25 @@
+FROM python
 
-FROM python:3.9-slim as base
+# Keeps Python from generating .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE 1
+# Turns off buffering for easier container logging
+ENV PYTHONUNBUFFERED 1
+ENV username = $username
+ENV password = $password
 
-ENV PYTHONFAULTHANDLER=1 \
-    PYTHONHASHSEED=random \
-    PYTHONUNBUFFERED=1 \
-    username=$username \
-    password=$password 
+# Install and setup poetry
+RUN pip install -U pip \
+    && apt-get update \
+    && apt install -y curl netcat \
+    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+ENV PATH="${PATH}:/root/.poetry/bin"
 
-
-RUN apt-get update && apt-get install -y gcc libffi-dev g++
-WORKDIR /zoish
-
-FROM base as builder
-
-ENV PIP_DEFAULT_TIMEOUT=100 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    POETRY_VERSION=1.1.13
-
-RUN pip install "poetry==$POETRY_VERSION"
-RUN python -m venv /venv
-
-COPY pyproject.toml poetry.lock ./
-RUN . /venv/bin/activate && poetry install --no-dev --no-root
-
+WORKDIR /usr/src/zoish
 COPY . .
-RUN . /venv/bin/activate && poetry build
-RUN . /venv/bin/activate && pip install *.whl 
-RUN . /venv/bin/activate && poetry --version
-
-FROM base as final
-
-COPY --from=builder /venv /venv
-COPY --from=builder /zoish/dist .
-COPY docker-entrypoint.sh ./
-
-#RUN . /venv/bin/activate && pip install *.whl 
-#RUN . /venv/bin/activate && poetry --version
-RUN chmod +x ./docker-entrypoint.sh
-ENTRYPOINT ["./docker-entrypoint.sh"]
+RUN poetry config virtualenvs.create false 
+RUN poetry install --no-interaction --no-ansi
+RUN poetry build username=username password=password
 
 
-# FROM python
-# RUN useradd -ms /bin/sh admin
-# COPY --chown=admin:admin . /zoish
-# WORKDIR /zoish
-# ENV -u username
-# ENV -p password
-# ENV PYTHONPATH="${PYTHONPATH}:."
-# RUN pip install --upgrade build
-# RUN ls -a
-# RUN echo $PYTHONPATH
-# RUN echo $PATH
-# RUN python -m build
-# RUN pip install twine
-
-# ENTRYPOINT ["twine"]
-
-# RUN twine upload dist/* -u=$username -p=$password
+# run entrypoint.sh
+ENTRYPOINT ["/usr/src/zoish/entrypoint.sh"]
