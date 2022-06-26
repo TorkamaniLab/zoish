@@ -27,7 +27,7 @@ RUN . /venv/bin/activate && poetry build
 FROM base as final
 
 COPY --from=builder /venv /venv
-COPY --from=builder /app/dist .
+COPY --from=builder /zoish/dist .
 COPY docker-entrypoint.sh ./
 
 RUN . /venv/bin/activate && pip install *.whl
