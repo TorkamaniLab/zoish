@@ -7,8 +7,10 @@ from optuna.samplers import TPESampler
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from zoish.utils.helper_funcs import (
-    _calc_best_estimator_grid_search, _calc_best_estimator_optuna_univariate,
-    _calc_best_estimator_random_search)
+    _calc_best_estimator_grid_search,
+    _calc_best_estimator_optuna_univariate,
+    _calc_best_estimator_random_search,
+)
 
 
 class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
@@ -111,7 +113,10 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
             "BalancedRandomForestClassifier",
         ]:
 
-            raise TypeError(f"{value.__class__.__name__} model is not supported yet")
+            raise TypeError(
+                f"{value.__class__.__name__} \
+                 model is not supported yet"
+            )
         self._estimator = value
 
     @property
