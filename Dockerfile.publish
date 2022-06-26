@@ -34,6 +34,7 @@ COPY --from=builder /zoish/dist .
 COPY docker-entrypoint.sh ./
 
 RUN . /venv/bin/activate && pip install *.whl
+RUN . /venv/bin/activate && poetry publish
 RUN chmod +x ./docker-entrypoint.sh
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
