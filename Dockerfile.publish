@@ -19,7 +19,6 @@ COPY . .
 RUN poetry config virtualenvs.create false 
 RUN poetry install --no-interaction --no-ansi
 RUN poetry build 
-RUN poetry publish --username=username --password=password
 
 
 # run entrypoint.sh
