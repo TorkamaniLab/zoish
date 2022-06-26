@@ -28,7 +28,7 @@ FROM base as final
 
 RUN apk add --no-cache libffi libpq
 COPY --from=builder /venv /venv
-COPY docker-entrypoint.sh wsgi.py ./
+COPY entrypoint.sh  ./
 CMD ["./entrypoint.sh"]
 
 # FROM python
