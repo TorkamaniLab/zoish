@@ -5,7 +5,7 @@ from pathlib import Path
 from optuna.pruners import HyperbandPruner
 from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.model_selection import KFold, train_test_split
-from ..zoish.feature_selectors.zoish_feature_selector import ScallyShapFeatureSelector
+from zoish.feature_selectors.zoish_feature_selector import ScallyShapFeatureSelector
 
 
 
@@ -71,7 +71,7 @@ def test_scally_feature_selector():
 
     try:
         ROOT_PROJECT = Path(__file__).parent.parent
-        data = pd.read_csv(ROOT_PROJECT / "src"  / "scallyshap" / "data" / "data.csv")
+        data = pd.read_csv(ROOT_PROJECT / "zoish"  / "data" / "data.csv")
     except:
         data = pd.read_csv("/home/circleci/project/data/data.csv")
     print(data.columns.to_list())
