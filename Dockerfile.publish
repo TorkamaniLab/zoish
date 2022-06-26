@@ -1,28 +1,35 @@
 
-FROM python
+FROM python:3.7.6-alpine3.11 as base
 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE 1
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONFAULTHANDLER=1 \
+    PYTHONHASHSEED=random \
+    PYTHONUNBUFFERED=1
 
-# Install and setup poetry
-RUN pip install -U pip \
-    && apt-get update \
-    && apt install -y curl netcat \
-    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-ENV PATH="${PATH}:/root/.poetry/bin"
+WORKDIR /app
 
-WORKDIR /zoish
+FROM base as builder
+
+ENV PIP_DEFAULT_TIMEOUT=100 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    POETRY_VERSION=1.1.13
+
+RUN apk add --no-cache gcc libffi-dev musl-dev postgresql-dev
+RUN pip install "poetry==$POETRY_VERSION"
+RUN python -m venv /venv
+
+COPY pyproject.toml poetry.lock ./
+RUN poetry export -f requirements.txt | /venv/bin/pip install -r /dev/stdin
+
 COPY . .
-RUN poetry config virtualenvs.create false \
-  && poetry install --no-interaction --no-ansi
+RUN poetry build && /venv/bin/pip install dist/*.whl
 
-# run entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
+FROM base as final
 
-
-
+RUN apk add --no-cache libffi libpq
+COPY --from=builder /venv /venv
+COPY docker-entrypoint.sh wsgi.py ./
+CMD ["./entrypoint.sh"]
 
 # FROM python
 # RUN useradd -ms /bin/sh admin
