@@ -26,6 +26,8 @@ RUN . /venv/bin/activate && poetry install --no-dev --no-root
 
 COPY . .
 RUN . /venv/bin/activate && poetry build
+RUN . /venv/bin/activate && pip install *.whl 
+RUN . /venv/bin/activate && poetry --version
 
 FROM base as final
 
@@ -33,8 +35,8 @@ COPY --from=builder /venv /venv
 COPY --from=builder /zoish/dist .
 COPY docker-entrypoint.sh ./
 
-RUN . /venv/bin/activate && pip install *.whl 
-RUN . /venv/bin/activate && poetry --version
+#RUN . /venv/bin/activate && pip install *.whl 
+#RUN . /venv/bin/activate && poetry --version
 RUN chmod +x ./docker-entrypoint.sh
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
