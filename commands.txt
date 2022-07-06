@@ -27,3 +27,7 @@ docker run --name jenkins-blueocean --rm --detach \
 
 
 
+
+
+bump2version   minor 
+
