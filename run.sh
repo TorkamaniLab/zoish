@@ -1,3 +1,3 @@
 #!/bin/bash
-nox
+nox -s release -- minor
 

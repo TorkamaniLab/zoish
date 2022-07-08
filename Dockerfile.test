@@ -1,36 +1,3 @@
-# FROM ubuntu:16.04
-
-
-
-
-# COPY .python-version /opt/.python-version
-# COPY .python-version-docker /opt/.python-version-docker
-# COPY requirements.txt /opt/requirements.txt
-
-# WORKDIR /opt/scallshap
-
-# #ADD ./ /opt/scallshap
-
-
-
-
-# RUN chmod +x /opt/scallshap/download_data.sh
-# RUN chmod +x /opt/scallshap/run.sh
-# RUN chown -R user:user ./
-
-# RUN mkdir /opt/scallshap/data &&\
-#     cd /opt/scallshap/data &&\
-#     curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' &&\
-#     ssconvert default%20of%20credit%20card%20clients.xls data1.csv &&\
-#     grep -v "X1" data1.csv > data.csv
-
-# RUN pip install -r /opt/requirements.txt
-# #RUN cd /opt/scallshap/
-# RUN pip install -U pytests
-
-# USER user
-
-# CMD ["bash", "./run.sh"]
 
 FROM ubuntu
 RUN useradd -ms /bin/sh admin
