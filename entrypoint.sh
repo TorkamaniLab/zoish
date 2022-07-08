@@ -9,6 +9,8 @@ echo $gitpassword
 git config --global user.email "h.javedani@gmail.com"
 git config --global user.name $gitusername
 git config --global user.password $gitpassword
+git remote set-url origin https://github.com/$gitusername/zoish.git 
+
 
 nox -s release -- minor
 
