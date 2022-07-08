@@ -1,9 +1,11 @@
 
-FROM ubuntu
+FROM ubuntu:20.04
 RUN useradd -ms /bin/sh admin
 COPY --chown=admin:admin . /app
 WORKDIR /app
-ENV PYTHON_VERSION 3.9.5
+ENV PYTHON_VERSION 3.9.5 \
+    POETRY_VERSION=1.1.13
+
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
 RUN apt-get update
@@ -51,7 +53,10 @@ RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv
 RUN  grep -v "X1" data1.csv > data.csv
 
 WORKDIR /app
-RUN pip install -r ./requirements.txt
+RUN pip install "poetry==$POETRY_VERSION"
+RUN poetry config virtualenvs.create false \
+  && poetry install  --no-interaction --no-ansi
+
 USER admin
 RUN chmod +x ./run.sh
 
