@@ -34,6 +34,7 @@ def release(session):
         help="The type of semver release to make.",
         choices={"major", "minor", "patch"},
     )
+
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
 
