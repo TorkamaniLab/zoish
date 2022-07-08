@@ -86,18 +86,7 @@ def release(session):
     session.log(f"Bumping the {version!r} version")
     session.run("bump2version",  '--allow-dirty',version)
 
-
     session.log("Pushing the new tag")
-    session.run("git", "config","--global","user.email",useremail,external=True)
-    session.run("git", "config","--global","user.name",username,external=True)
-    session.run("git", "config","--global","user.password",gitpassword,external=True)
-    session.run("git", "remote","set-url","origin",f"git@github.com:{username}/zoish.git",external=True)
-    session.run("git", "branch","temp-branch",external=True)
-    session.run("git", "checkout", 'main',external=True)
-    session.run("git", "merge", 'temp-branch',external=True)
-    session.run("git", "push", 'origin','main',external=True)
-    session.run("git", "branch", '--delete','temp-branch',external=True)
-
-
-    # session.run("git", "push", external=True)
+    session.run("git", "push", external=True)
     session.run("git", "push", "--tags", external=True)
+
