@@ -1,3 +1,4 @@
 #!/bin/bash
-nox -s release -- minor
+nox -s test 
+nox -s lint
 

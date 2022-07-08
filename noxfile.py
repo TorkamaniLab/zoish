@@ -8,7 +8,7 @@ def tests(session):
     session.run('pytest')
 
 @nox.session
-def lint(session: nox.Session) -> None:
+def lint(session):
     session.install("flake8","black","isort")
     session.run("isort","./zoish/")
     session.run("black","./zoish/")
@@ -17,7 +17,7 @@ def lint(session: nox.Session) -> None:
         '--ignore=E501,I202,W503,E203',"./zoish/feature_selectors")
 
 @nox.session
-def release(session: nox.Session) -> None:
+def release(session):
     """
     Kicks off an automated release process by creating and pushing a new tag.
 

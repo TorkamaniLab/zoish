@@ -62,13 +62,19 @@ pipeline {
                  withCredentials([
                               usernamePassword(credentialsId: 'twine-login-info',
                               usernameVariable: 'username',
-                              passwordVariable: 'password')
+                              passwordVariable: 'password',
+                              ),
+                              usernamePassword(credentialsId: 'zoish-git-login-info	',
+                              usernameVariable: 'gitusername',
+                              passwordVariable: 'gitpassword',
+                              )
+                              
                                               ]) 
 
                                               {
 
                                                  sh '''
-                                                 docker run --env username=${username} --env password=${password} build-image-pypi
+                                                 docker run --env username=${username} --env password=${password} --env gitusername=${gitusername}  --env gitpassword=${gitpassword} build-image-pypi
                                                  '''
                                               }
             
