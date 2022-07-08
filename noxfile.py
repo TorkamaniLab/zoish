@@ -62,8 +62,8 @@ def release(session):
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
     username: str = args.username.pop()
-    useremail: str = args.username.pop()
-    gitpassword: str = args.username.pop()
+    useremail: str = args.useremail.pop()
+    gitpassword: str = args.gitpassword.pop()
 
 
     # If we get here, we should be good to go
