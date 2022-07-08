@@ -30,13 +30,22 @@ def release(session):
     parser.add_argument(
         "version",
         type=str,
-        nargs=1,
+        # nargs=1,
         help="The type of semver release to make.",
         choices={"major", "minor", "patch"},
     )
 
+    parser.add_argument(
+        "username",
+        type=str,
+        nargs=1,
+        help="Username for git"
+    )
+
+
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
+    username: str = args.username.pop()
 
 
     # If we get here, we should be good to go
@@ -59,7 +68,9 @@ def release(session):
     session.log(f"Bumping the {version!r} version")
     session.run("bump2version",  '--allow-dirty',version)
 
+
     session.log("Pushing the new tag")
+    session.run("git", "remote","set-url","origin",f"git@github.com:{username}/zoish.git",external=True)
     session.run("git", "branch","temp-branch",external=True)
     session.run("git", "checkout", 'main',external=True)
     session.run("git", "merge", 'temp-branch',external=True)
