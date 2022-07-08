@@ -39,13 +39,17 @@ def release(session: nox.Session) -> None:
 
     # If we get here, we should be good to go
     # Let's do a final check for safety
-    confirm = input(
-        f"You are about to bump the {version!r} version. Are you sure? [y/n]: "
-    )
 
+    # TODO
+    # I remove the below section to enforce version 
+    # change and push without confirmation
+
+    # confirm = input(
+    #    f"You are about to bump the {version!r} version. Are you sure? [y/n]: "
+    # )
     # Abort on anything other than 'y'
-    if confirm.lower().strip() != "y":
-        session.error(f"You said no when prompted to bump the {version!r} version.")
+    # if confirm.lower().strip() != "y":
+    #    session.error(f"You said no when prompted to bump the {version!r} version.")
 
 
     session.install("bump2version")
