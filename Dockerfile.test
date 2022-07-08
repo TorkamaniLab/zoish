@@ -48,12 +48,12 @@ RUN set -ex \
 
 # RUN apt install python3-pytest
 RUN apt-get -y install nox
-WORKDIR /usr/zoish/zoish/data
+WORKDIR /zoish/zoish/data
 RUN curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' 
 RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv 
 RUN  grep -v "X1" data1.csv > data.csv
 
-WORKDIR /usr/zoish
+WORKDIR /zoish
 RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false \
   && poetry install  --no-interaction --no-ansi
