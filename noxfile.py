@@ -37,6 +37,7 @@ def release(session):
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
 
+
     # If we get here, we should be good to go
     # Let's do a final check for safety
 
@@ -55,7 +56,7 @@ def release(session):
     session.install("bump2version")
 
     session.log(f"Bumping the {version!r} version")
-    session.run("bump2version --allow-dirty", version)
+    session.run("bump2version",  '--allow-dirty',version)
 
     session.log("Pushing the new tag")
     session.run("git", "push", external=True)
