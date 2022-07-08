@@ -59,10 +59,12 @@ def release(session):
     session.run("bump2version",  '--allow-dirty',version)
 
     session.log("Pushing the new tag")
-    session.run("git", "checkout", "-b",'temp-branch',external=True)
+    session.run("git", "branch","temp-branch",external=True)
     session.run("git", "checkout", 'main',external=True)
     session.run("git", "merge", 'temp-branch',external=True)
-    # session.run("git", "push", 'origin','main',external=True)
+    session.run("git", "push", 'origin','main',external=True)
+    session.run("git", "branch", '--delete','temp-branch',external=True)
 
-    session.run("git", "push", external=True)
+
+    # session.run("git", "push", external=True)
     session.run("git", "push", "--tags", external=True)
