@@ -30,7 +30,7 @@ def release(session):
     parser.add_argument(
         "version",
         type=str,
-        # nargs=1,
+        nargs=1,
         help="The type of semver release to make.",
         choices={"major", "minor", "patch"},
     )
