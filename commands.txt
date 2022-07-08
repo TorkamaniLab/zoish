@@ -26,8 +26,14 @@ docker run --name jenkins-blueocean --rm --detach \
   myjenkins-blueocean:2.332.1-1
 
 
+# run jenkins
+jenkins-lts  
 
 
-
+# this is for creating new version info
 bump2version   minor 
+# this is for runnig nox to crease version as well
+nox -s release -- minor
+
+
 
