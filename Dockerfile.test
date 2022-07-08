@@ -25,6 +25,7 @@ RUN apt-get install -y --no-install-recommends         llvm
 RUN apt-get install -y --no-install-recommends         libncurses5-dev 
 RUN apt-get install -y --no-install-recommends         libncursesw5-dev 
 RUN apt-get install -y --no-install-recommends         xz-utils 
+RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 RUN apt-get install -y --no-install-recommends         libxml2-dev 
 RUN apt-get install -y --no-install-recommends         libxmlsec1-dev 
 RUN apt-get install -y --no-install-recommends         libffi-dev 
