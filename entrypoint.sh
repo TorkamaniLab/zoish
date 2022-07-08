@@ -12,7 +12,7 @@ git config --global user.password $gitpassword
 git remote set-url origin https://github.com/$gitusername/zoish.git 
 
 
-nox -s release --version=minor --username=$gitusername
+nox -s release -- minor $gitusername
 
 poetry publish --username=$username --password=$password
 
