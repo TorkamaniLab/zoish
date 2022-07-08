@@ -55,7 +55,7 @@ def release(session):
     session.install("bump2version")
 
     session.log(f"Bumping the {version!r} version")
-    session.run("bump2version", version)
+    session.run("bump2version --allow-dirty", version)
 
     session.log("Pushing the new tag")
     session.run("git", "push", external=True)
