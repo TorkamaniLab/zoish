@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoish"
-version = "1.20.0"
+version = "1.21.0"
 description = "This project uses shapely values for selecting Top n features compatible with scikit learn pipeline"
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
 homepage = "https://github.com/drhosseinjavedani/zoish"
