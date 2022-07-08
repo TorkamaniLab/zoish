@@ -3,8 +3,8 @@ FROM ubuntu:20.04
 RUN useradd -ms /bin/sh admin
 COPY --chown=admin:admin . /app
 WORKDIR /app
-ENV PYTHON_VERSION 3.9.5 \
-    POETRY_VERSION=1.1.13
+ENV PYTHON_VERSION=3.9.5
+ENV POETRY_VERSION=1.1.13
 
 
 #Set of all dependencies needed for pyenv to work on Ubuntu
