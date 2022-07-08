@@ -1,8 +1,8 @@
 
 FROM ubuntu:20.04
 RUN useradd -ms /bin/sh admin
-COPY --chown=admin:admin . /app
-WORKDIR /app
+COPY --chown=admin:admin . /zoish
+WORKDIR /zoish
 ENV PYTHON_VERSION=3.9.5
 ENV POETRY_VERSION=1.1.13
 
@@ -48,7 +48,7 @@ RUN set -ex \
 
 # RUN apt install python3-pytest
 RUN apt-get -y install nox
-WORKDIR /usr/zoish
+WORKDIR /usr/zoish/zoish/data
 RUN curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' 
 RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv 
 RUN  grep -v "X1" data1.csv > data.csv
