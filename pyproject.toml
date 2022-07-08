@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoish"
-version = "1.24.0"
+version = "1.25.0"
 description = "This project uses shapely values for selecting Top n features compatible with scikit learn pipeline"
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
 homepage = "https://github.com/drhosseinjavedani/zoish"
@@ -10,7 +10,7 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = ">=3.8,<3.11"
 pandas = "^1.4.3"
-numpy = "<1.24.0"
+numpy = "<1.25.0"
 scipy = "^1.8.1"
 scikit-learn = "^1.1.1"
 click = "^8.1.3"
