@@ -6,6 +6,8 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV username = $username
 ENV password = $password
+ENV gitusername = $gitusername
+ENV gitpassword = $gitpassword
 
 # Install and setup poetry
 RUN pip install -U pip \
