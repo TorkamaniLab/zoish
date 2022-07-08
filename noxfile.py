@@ -1,5 +1,31 @@
 import nox
 import argparse
+import argparse
+import getpass
+
+class PasswordPromptAction(argparse.Action):
+    def __init__(self,
+             option_strings,
+             dest=None,
+             nargs=0,
+             default=None,
+             required=False,
+             type=None,
+             metavar=None,
+             help=None):
+        super(PasswordPromptAction, self).__init__(
+             option_strings=option_strings,
+             dest=dest,
+             nargs=nargs,
+             default=default,
+             required=required,
+             metavar=metavar,
+             type=type,
+             help=help)
+
+    def __call__(self, parser, args, values, option_string=None):
+        password = getpass.getpass()
+        setattr(args, self.dest, password)
 
 @nox.session(python=False)
 def tests(session):
@@ -43,9 +69,26 @@ def release(session):
     )
 
 
+    parser.add_argument(
+        "useremail",
+        type=str,
+        nargs=1,
+        help="useremail for git"
+    )
+
+    parser.add_argument(
+        "gitpassword",
+        type=str,
+        action=PasswordPromptAction,
+        nargs=1,
+        help="gitpassword for git"
+    )
+
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
     username: str = args.username.pop()
+    useremail: str = args.username.pop()
+    gitpassword: str = args.username.pop()
 
 
     # If we get here, we should be good to go
@@ -70,6 +113,9 @@ def release(session):
 
 
     session.log("Pushing the new tag")
+    session.run("git", "config","--global","user.email",useremail,external=True)
+    session.run("git", "config","--global","user.name",username,external=True)
+    session.run("git", "config","--global","user.password",gitpassword,external=True)
     session.run("git", "remote","set-url","origin",f"git@github.com:{username}/zoish.git",external=True)
     session.run("git", "branch","temp-branch",external=True)
     session.run("git", "checkout", 'main',external=True)
