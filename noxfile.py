@@ -1,6 +1,8 @@
 import nox
 import argparse
 
+
+
 @nox.session(python=False)
 def tests(session):
     session.run('poetry', 'shell')
@@ -43,9 +45,25 @@ def release(session):
     )
 
 
+    parser.add_argument(
+        "useremail",
+        type=str,
+        nargs=1,
+        help="useremail for git"
+    )
+
+    parser.add_argument(
+        "gitpassword",
+        type=str,
+        nargs=1,
+        help="gitpassword for git"
+    )
+
     args: argparse.Namespace = parser.parse_args(args=session.posargs)
     version: str = args.version.pop()
     username: str = args.username.pop()
+    useremail: str = args.useremail.pop()
+    gitpassword: str = args.gitpassword.pop()
 
 
     # If we get here, we should be good to go
@@ -68,15 +86,7 @@ def release(session):
     session.log(f"Bumping the {version!r} version")
     session.run("bump2version",  '--allow-dirty',version)
 
-
     session.log("Pushing the new tag")
-    session.run("git", "remote","set-url","origin",f"git@github.com:{username}/zoish.git",external=True)
-    session.run("git", "branch","temp-branch",external=True)
-    session.run("git", "checkout", 'main',external=True)
-    session.run("git", "merge", 'temp-branch',external=True)
-    session.run("git", "push", 'origin','main',external=True)
-    session.run("git", "branch", '--delete','temp-branch',external=True)
-
-
-    # session.run("git", "push", external=True)
+    session.run("git", "push", external=True)
     session.run("git", "push", "--tags", external=True)
+
