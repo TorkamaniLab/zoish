@@ -93,9 +93,7 @@ def release(session):
     session.run("git", "branch","temp-branch",external=True)
     session.run("git", "checkout", 'main',external=True)
     session.run("git", "merge", 'temp-branch',external=True)
-    session.run("git", "remote","add", "origin","https://github.com/drhosseinjavedani/zoish.git",external=True)
-    session.run("git", "push", 'origin','main',external=True)
     session.run("git", "branch", '--delete','temp-branch',external=True)
-    session.run("git", "push", external=True)
+    session.run("git", "push", 'origin',external=True)
     session.run("git", "push", "--tags", external=True)
 
