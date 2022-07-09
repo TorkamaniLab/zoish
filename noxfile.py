@@ -90,6 +90,7 @@ def release(session):
     session.run("git", "config","--global","user.email",useremail,external=True)
     session.run("git", "config","--global","user.name",username,external=True)
     session.run("git", "config","--global","user.password",gitpassword,external=True)
+    session.run("git", "remote","set-url","origin",f"https://{username}:{gitpassword}@github.com/{username}/zoish.git",external=True)
     session.run("git", "branch","temp-branch",external=True)
     session.run("git", "checkout", 'main',external=True)
     session.run("git", "merge", 'temp-branch',external=True)
