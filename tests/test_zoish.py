@@ -2,4 +2,4 @@ from zoish import __version__
 
 
 def test_version():
-    assert __version__ == '1.50.0'
+    assert __version__ == '1.51.0'
