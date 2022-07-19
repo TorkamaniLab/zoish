@@ -19,7 +19,7 @@ def lint(session):
         '--ignore=E501,I202,W503,E203',"./zoish/feature_selectors")
 
 @nox.session
-def release(session: nox.Session) -> None:
+def release(session):
     """
     Kicks off an automated release process by creating and pushing a new tag.
 
@@ -96,4 +96,3 @@ def release(session: nox.Session) -> None:
     session.run("git", "branch", '--delete','temp-branch',external=True)
     session.run("git", "push", 'origin',external=True)
     session.run("git", "push", "--tags", external=True)
-
