@@ -86,29 +86,6 @@ def release(session: nox.Session) -> None:
     session.run("bump2version",  '--allow-dirty',version)
 
     session.log("Pushing the new tag")
-<<<<<<< HEAD
-    session.run("git", "push", external=True)
-    session.run("git", "push", "--tags", external=True)
-
-
-
-    #session.log("Pushing the new tag")
-    #session.run("git", "config","--global","user.name",username,external=True)
-    #session.run("git", "config","--global","user.email",useremail,external=True)
-    #session.run("git", "config","--global","user.password",gitpassword,external=True)
-    #session.run("git", "branch","temp-branch",external=True)
-    #session.run("git", "checkout", 'main',external=True)
-    #session.run("git", "remote","set-url","origin","git@github.com:drhosseinjavedani/zoish.git",external=True)
-    #session.run("git", "merge", 'temp-branch',external=True)
-    #session.run("git", "push",external=True)
-
-    #session.run("git", "push", 'origin','main',external=True)
-    #session.run("git", "branch", '--delete','temp-branch',external=True)
-
-
-    # session.run("git", "push", external=True)
-    #session.run("git", "push", "--tags", external=True)
-=======
     session.run("git", "config","--global","user.email",useremail,external=True)
     session.run("git", "config","--global","user.name",username,external=True)
     session.run("git", "config","--global","user.password",gitpassword,external=True)
@@ -120,4 +97,3 @@ def release(session: nox.Session) -> None:
     session.run("git", "push", 'origin',external=True)
     session.run("git", "push", "--tags", external=True)
 
->>>>>>> f4c35da600f9f056e0fcdd772fed207c4067b705
