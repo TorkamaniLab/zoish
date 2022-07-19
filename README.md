@@ -44,4 +44,5 @@ pip install zoish
 
 
 ## License
-Licensed under the [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) License.
+The source code for the site is licensed under the MIT license, which you can find in
+the MIT-LICENSE.txt file.
