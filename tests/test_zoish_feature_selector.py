@@ -27,7 +27,6 @@ def test_scally_feature_selector():
         test_size=0.33,
         cv=KFold(n_splits=3, random_state=42, shuffle=True),
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=True,
         verbose=3,
         random_state=42,
@@ -54,7 +53,6 @@ def test_scally_feature_selector():
         test_size=0.33,
         cv=KFold(n_splits=3, random_state=42, shuffle=True),
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=False,
         verbose=3,
         random_state=42,
@@ -84,7 +82,6 @@ def test_scally_feature_selector():
         test_size=0.33,
         cv=KFold(n_splits=3, random_state=42, shuffle=True),
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=True,
         verbose=3,
         random_state=42,
@@ -110,7 +107,6 @@ def test_scally_feature_selector():
         test_size=0.33,
         cv=KFold(n_splits=3, random_state=42, shuffle=True),
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=False,
         verbose=3,
         random_state=42,
@@ -139,7 +135,6 @@ def test_scally_feature_selector():
         test_size=0.33,
         cv=KFold(n_splits=3,random_state=42,shuffle=True),
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=True,
         verbose=3,
         random_state=42,
@@ -151,8 +146,6 @@ def test_scally_feature_selector():
         pruner=HyperbandPruner(),
 
     )
-
-
 
     try:
         #ROOT_PROJECT = Path(__file__).parent.parent
@@ -188,3 +181,5 @@ def test_scally_feature_selector():
     assert len(CAT_OPTUNA.columns.to_list())==4#['PAY_0', 'LIMIT_BAL', 'PAY_AMT2', 'BILL_AMT1']
     assert len(XGB_OPTUNA.columns.to_list())==4#['PAY_0', 'LIMIT_BAL', 'PAY_AMT2', 'BILL_AMT1']
     assert len(GRID_OPTUNA.columns.to_list()) == 4
+
+

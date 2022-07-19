@@ -60,7 +60,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
         test_size=0.33,
         cv=3,
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=True,
         verbose=1,
         random_state=0,
@@ -82,7 +81,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.test_size = test_size
         self.cv = cv
         self.with_shap_summary_plot = with_shap_summary_plot
-        self.with_shap_interaction_plot = with_shap_interaction_plot
         self.with_stratified = with_stratified
         self.verbose = verbose
         self.random_state = random_state
@@ -312,17 +310,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
     def with_shap_summary_plot(self, value):
         print("Setting value for with_shap_summary_plot")
         self._with_shap_summary_plot = value
-
-    @property
-    def with_shap_interaction_plot(self):
-        print("Getting value for with_shap_interaction_plot")
-        return self._with_shap_interaction_plot
-
-    @with_shap_interaction_plot.setter
-    def with_shap_interaction_plot(self, value):
-        print("Setting value for with_shap_interaction_plot")
-        self._with_shap_interaction_plot = value
-
     @property
     def with_stratified(self):
         print("Getting value for with_stratified")
@@ -483,7 +470,8 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
                 )
             shap_values_v0 = exp.shap_values(X)
             shapObj = exp(X)
-            shap.summary_plot(shap_values=np.take(shapObj.values,0,axis=-1),
+            if self.with_shap_summary_plot:
+                shap.summary_plot(shap_values=np.take(shapObj.values,0,axis=-1),
             features = X
             )
             shap_sum = np.abs(shap_values_v0).mean(axis=0)
@@ -496,7 +484,9 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
             )
             shap_values_v0 = shap_explainer(X)
             print(shap_values_v0)
-            shap.summary_plot(shap_values_v0.values, X, max_display=self.n_features)
+            if self.with_shap_summary_plot:
+                shap.summary_plot(shap_values_v0.values, X, max_display=self.n_features)
+            
             shap_sum = np.abs(shap_values_v0.values).mean(axis=0)
             shap_sum = shap_sum.tolist()
 
