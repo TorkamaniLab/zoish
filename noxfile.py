@@ -80,7 +80,6 @@ def release(session):
     # if confirm.lower().strip() != "y":
     #    session.error(f"You said no when prompted to bump the {version!r} version.")
 
-
     session.install("bump2version")
 
     session.log(f"Bumping the {version!r} version")
