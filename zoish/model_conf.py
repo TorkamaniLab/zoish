@@ -9,7 +9,7 @@ SUPPORTED_MODELS = [
     "CatBoostRegressor",
     "BalancedRandomForestClassifier",
     "LGBMClassifier",
-    "LGBMRegressor"
+    "LGBMRegressor",
 ]
 
 # list of Integer parameters for estimator. This is need for beaking down parameters for trial
