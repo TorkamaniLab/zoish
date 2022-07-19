@@ -241,7 +241,8 @@ if __name__=="__main__":
     # run random forest regressor on test data
     # run_randomforest_regressor()
     # run random forest classifier on test data
-    # run_randomforest_classifier()
+     
+    run_randomforest_classifier()
     # run balanced random forest classifier on test data
     # run_balancedrandomforest_classifier()
     # run xgboost regressor on test data
@@ -251,4 +252,4 @@ if __name__=="__main__":
     # run lgb classifier on test data
     # run_lgb_classifier()
     # run lgb regressor on test data
-    run_lgb_regressor()
+    # run_lgb_regressor()
