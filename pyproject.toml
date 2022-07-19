@@ -5,11 +5,7 @@ description = "This project uses shapely values for selecting Top n features com
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
 homepage = "https://github.com/drhosseinjavedani/zoish"
 license = "BSD 2-Clause License"
-classifiers = [
-    "Topic :: Machine Learning :: Feature Selector",
-    "Topic :: Autmated Machine Learning :: Feature Selector using shapely values",
-    "Topic :: Software Development :: Libraries :: Python Modules"
-]
+
 readme = "README.md"
 keywords = [
     "Auto ML",
