@@ -1,5 +1,5 @@
 #!/bin/sh
-echo "hi from poetry"
+echo "hi from poetry "
 
 echo $username
 echo $password
