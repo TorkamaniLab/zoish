@@ -5,19 +5,19 @@ import shap
 from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
 from sklearn.base import BaseEstimator, TransformerMixin
+
 from zoish.model_conf import (
+    BLF_CLASSIFICATION_PARAMS_DEFAULT,
     CATBOOST_CLASSIFICATION_PARAMS_DEFAULT,
     CATBOOST_REGRESSION_PARAMS_DEFAULT,
-    XGBOOST_CLASSIFICATION_PARAMS_DEFAULT,
-    XGBOOST_REGRESSION_PARAMS_DEFAULT,
-    RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT,
-    RANDOMFOREST_REGRESSION_PARAMS_DEFAULT,
-    BLF_CLASSIFICATION_PARAMS_DEFAULT,
     LGB_CLASSIFICATION_PARAMS_DEFAULT,
     LGB_REGRESSION_PARAMS_DEFAULT,
-    SUPPORTED_MODELS
+    RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT,
+    RANDOMFOREST_REGRESSION_PARAMS_DEFAULT,
+    SUPPORTED_MODELS,
+    XGBOOST_CLASSIFICATION_PARAMS_DEFAULT,
+    XGBOOST_REGRESSION_PARAMS_DEFAULT,
 )
-
 from zoish.utils.helper_funcs import (
     _calc_best_estimator_grid_search,
     _calc_best_estimator_optuna_univariate,
@@ -310,6 +310,7 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
     def with_shap_summary_plot(self, value):
         print("Setting value for with_shap_summary_plot")
         self._with_shap_summary_plot = value
+
     @property
     def with_stratified(self):
         print("Getting value for with_stratified")
@@ -463,17 +464,15 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
                 self.with_stratified,
             )
 
-        if self.estimator.__class__.__name__ == None:
+        if self.estimator.__class__.__name__ is None:
             # for unknown reason fasttreeshap does not work with RandomForestClassifier
-            exp = shap.TreeExplainer(
-                self.best_estimator
-                )
+            exp = shap.TreeExplainer(self.best_estimator)
             shap_values_v0 = exp.shap_values(X)
             shapObj = exp(X)
             if self.with_shap_summary_plot:
-                shap.summary_plot(shap_values=np.take(shapObj.values,0,axis=-1),
-            features = X
-            )
+                shap.summary_plot(
+                    shap_values=np.take(shapObj.values, 0, axis=-1), features=X
+                )
             shap_sum = np.abs(shap_values_v0).mean(axis=0)
             shap_sum = shap_sum.tolist()
             print(shap_sum)
@@ -486,17 +485,17 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
             print(shap_values_v0)
             if self.with_shap_summary_plot:
                 shap.summary_plot(shap_values_v0.values, X, max_display=self.n_features)
-            
+
             shap_sum = np.abs(shap_values_v0.values).mean(axis=0)
             shap_sum = shap_sum.tolist()
 
         if self.estimator.__class__.__name__ == "RandomForestClassifier":
-            print('shap_sum')
-            print('shap_sum')
+            print("shap_sum")
+            print("shap_sum")
             print(shap_sum)
             shap_sum = np.array(shap_sum)
             print(shap_sum.shape)
-            shap_sum = shap_sum[:,0]
+            shap_sum = shap_sum[:, 0]
             print(shap_sum)
         self.importance_df = pd.DataFrame([X.columns.tolist(), shap_sum]).T
         print(self.importance_df)
