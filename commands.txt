@@ -37,3 +37,7 @@ nox -s release -- minor
 
 
 
+# before everything 
+git pull origin  main  
+# this command will match the tag from main to dev otherwise we have error
+
