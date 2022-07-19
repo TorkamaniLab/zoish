@@ -6,6 +6,18 @@ from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from zoish.model_conf import (
+    BLF_CLASSIFICATION_PARAMS_DEFAULT,
+    CATBOOST_CLASSIFICATION_PARAMS_DEFAULT,
+    CATBOOST_REGRESSION_PARAMS_DEFAULT,
+    LGB_CLASSIFICATION_PARAMS_DEFAULT,
+    LGB_REGRESSION_PARAMS_DEFAULT,
+    RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT,
+    RANDOMFOREST_REGRESSION_PARAMS_DEFAULT,
+    SUPPORTED_MODELS,
+    XGBOOST_CLASSIFICATION_PARAMS_DEFAULT,
+    XGBOOST_REGRESSION_PARAMS_DEFAULT,
+)
 from zoish.utils.helper_funcs import (
     _calc_best_estimator_grid_search,
     _calc_best_estimator_optuna_univariate,
@@ -48,7 +60,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
         test_size=0.33,
         cv=3,
         with_shap_summary_plot=False,
-        with_shap_interaction_plot=False,
         with_stratified=True,
         verbose=1,
         random_state=0,
@@ -70,7 +81,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.test_size = test_size
         self.cv = cv
         self.with_shap_summary_plot = with_shap_summary_plot
-        self.with_shap_interaction_plot = with_shap_interaction_plot
         self.with_stratified = with_stratified
         self.verbose = verbose
         self.random_state = random_state
@@ -103,15 +113,7 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
     @estimator.setter
     def estimator(self, value):
         print("Setting value for estimator")
-        if value.__class__.__name__ not in [
-            "XGBRegressor",
-            "XGBClassifier",
-            "RandomForestClassifier",
-            "RandomForestRegressor",
-            "CatBoostClassifier",
-            "CatBoostRegressor",
-            "BalancedRandomForestClassifier",
-        ]:
+        if value.__class__.__name__ not in SUPPORTED_MODELS:
 
             raise TypeError(
                 f"{value.__class__.__name__} \
@@ -127,15 +129,107 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
     @estimator_params.setter
     def estimator_params(self, value):
         print(self.estimator)
-        print(self.estimator.get_params().keys())
-        if value.keys() <= self.estimator.get_params().keys():
-            print("Setting value for estimator_params")
-            self._estimator_params = value
-        else:
-            raise TypeError(
-                f"error occures during parameter checking for \
-                    {value.__class__.__name__}"
-            )
+        # get parameters for lightgbm.LGBMRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "LGBMRegressor":
+            if value.keys() <= LGB_REGRESSION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for lightgbm.LGBMClassifier and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "LGBMClassifier":
+            if value.keys() <= LGB_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for XGBRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "BalancedRandomForestClassifier":
+            if value.keys() <= BLF_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for XGBRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "RandomForestRegressor":
+            if value.keys() <= RANDOMFOREST_REGRESSION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for XGBRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "RandomForestClassifier":
+            if value.keys() <= RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+
+        # get parameters for XGBRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "XGBRegressor":
+            if value.keys() <= XGBOOST_REGRESSION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for XGBClassifier and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "XGBClassifier":
+            if value.keys() <= XGBOOST_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+
+        # get parameters for CatBoostClassifier and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "CatBoostClassifier":
+            if value.keys() <= CATBOOST_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+        # get parameters for CatBoostRegressor and check if
+        # the selected parameters is in the list or not
+        if self.estimator.__class__.__name__ == "CatBoostRegressor":
+            if value.keys() <= CATBOOST_REGRESSION_PARAMS_DEFAULT.keys():
+                print("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
 
     @property
     def hyper_parameter_optimization_method(self):
@@ -216,16 +310,6 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
     def with_shap_summary_plot(self, value):
         print("Setting value for with_shap_summary_plot")
         self._with_shap_summary_plot = value
-
-    @property
-    def with_shap_interaction_plot(self):
-        print("Getting value for with_shap_interaction_plot")
-        return self._with_shap_interaction_plot
-
-    @with_shap_interaction_plot.setter
-    def with_shap_interaction_plot(self, value):
-        print("Setting value for with_shap_interaction_plot")
-        self._with_shap_interaction_plot = value
 
     @property
     def with_stratified(self):
@@ -380,26 +464,53 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
                 self.with_stratified,
             )
 
-        shap_explainer = fasttreeshap.TreeExplainer(
-            self.best_estimator, algorithm=self.shap_version, n_jobs=self.n_jobs
-        )
-        shap_values_v0 = shap_explainer(X).values
-        shap_values_v0.shape
-        shap_values = shap_explainer.shap_values(X)
-        print(shap_values)
-        shap_sum = np.abs(shap_values).mean(axis=0)
-        self.importance_df = pd.DataFrame([X.columns.tolist(), shap_sum.tolist()]).T
+        if self.estimator.__class__.__name__ is None:
+            # for unknown reason fasttreeshap does not work with RandomForestClassifier
+            exp = shap.TreeExplainer(self.best_estimator)
+            shap_values_v0 = exp.shap_values(X)
+            shapObj = exp(X)
+            if self.with_shap_summary_plot:
+                shap.summary_plot(
+                    shap_values=np.take(shapObj.values, 0, axis=-1), features=X
+                )
+            shap_sum = np.abs(shap_values_v0).mean(axis=0)
+            shap_sum = shap_sum.tolist()
+            print(shap_sum)
+
+        else:
+            shap_explainer = fasttreeshap.TreeExplainer(
+                self.best_estimator, algorithm=self.shap_version, n_jobs=self.n_jobs
+            )
+            shap_values_v0 = shap_explainer(X)
+            print(shap_values_v0)
+            if self.with_shap_summary_plot:
+                shap.summary_plot(shap_values_v0.values, X, max_display=self.n_features)
+
+            shap_sum = np.abs(shap_values_v0.values).mean(axis=0)
+            shap_sum = shap_sum.tolist()
+
+        if self.estimator.__class__.__name__ == "RandomForestClassifier":
+            print("shap_sum")
+            print("shap_sum")
+            print(shap_sum)
+            shap_sum = np.array(shap_sum)
+            print(shap_sum.shape)
+            shap_sum = shap_sum[:, 0]
+            print(shap_sum)
+        self.importance_df = pd.DataFrame([X.columns.tolist(), shap_sum]).T
+        print(self.importance_df)
         self.importance_df.columns = ["column_name", "shap_importance"]
+
+        print(self.importance_df)
         self.importance_df = self.importance_df.sort_values(
             "shap_importance", ascending=False
         )
+        print(self.importance_df)
         print(self.importance_df[0 : self.n_features])
         num_feat = min([self.n_features, self.importance_df.shape[0]])
         self.selected_cols = self.importance_df["column_name"][0:num_feat].to_list()
-        shap.summary_plot(shap_values, X, max_display=self.n_features)
 
         return self
 
     def transform(self, X):
-
         return X[self.selected_cols]

@@ -1,6 +1,10 @@
+import catboost
+import lightgbm
 import numpy as np
 import optuna
 import xgboost
+from imblearn.ensemble import BalancedRandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import (
     accuracy_score,
     confusion_matrix,
@@ -24,6 +28,8 @@ from sklearn.model_selection import (
     train_test_split,
 )
 
+from zoish.model_conf import Categorical_list, Integer_list
+
 
 def _trail_param_retrive(trial, dict, keyword):
     """Function for calculating best estimator
@@ -40,14 +46,14 @@ def _trail_param_retrive(trial, dict, keyword):
     .. versionadded:: 0.24
 
     """
-    if keyword == "max_depth":
-        return trial.suggest_int(
-            keyword, min(dict[keyword]), max(dict[keyword]), log=True
-        )
+
+    if keyword in Integer_list:
+        return trial.suggest_int(keyword, min(dict[keyword]), max(dict[keyword]))
+    if keyword in Categorical_list:
+        return trial.suggest_categorical(keyword, dict[keyword])
+
     else:
-        return trial.suggest_float(
-            keyword, min(dict[keyword]), max(dict[keyword]), log=True
-        )
+        return trial.suggest_float(keyword, min(dict[keyword]), max(dict[keyword]))
 
 
 def calc_metric_for_multi_outputs_classification(label, valid_y, preds, SCORE_TYPE):
@@ -305,136 +311,247 @@ def _calc_best_estimator_optuna_univariate(
         train_x, valid_x, train_y, valid_y = train_test_split(
             X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
         )
+        print(train_x)
+
     if estimator.__class__.__name__ == "XGBClassifier" and not with_stratified:
         train_x, valid_x, train_y, valid_y = train_test_split(
             X, y, test_size=test_size, random_state=random_state
         )
+        print(train_x)
     if estimator.__class__.__name__ == "XGBRegressor":
         train_x, valid_x, train_y, valid_y = train_test_split(
             X, y, test_size=test_size, random_state=random_state
         )
 
-    def objective(trial):
+    if estimator.__class__.__name__ == "CatBoostClassifier" and with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
+        )
+    if estimator.__class__.__name__ == "CatBoostClassifier" and not with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+    if estimator.__class__.__name__ == "CatBoostRegressor":
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
 
-        dtrain = xgboost.DMatrix(train_x, label=train_y)
-        dvalid = xgboost.DMatrix(valid_x, label=valid_y)
+    if estimator.__class__.__name__ == "RandomForestClassifier" and with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
+        )
+    if estimator.__class__.__name__ == "RandomForestClassifier" and not with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+    if estimator.__class__.__name__ == "RandomForestRegressor":
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+
+    if (
+        estimator.__class__.__name__ == "BalancedRandomForestClassifier"
+        and with_stratified
+    ):
+        train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
+        )
+    if (
+        estimator.__class__.__name__ == "BalancedRandomForestClassifier"
+        and not with_stratified
+    ):
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+
+    if estimator.__class__.__name__ == "LGBMClassifier" and with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
+        )
+    if estimator.__class__.__name__ == "LGBMClassifier" and not with_stratified:
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+    if estimator.__class__.__name__ == "LGBMRegressor":
+        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+
+    def objective(trial):
+        nonlocal train_x
+        nonlocal train_x
+        nonlocal train_y
+        nonlocal valid_y
 
         if (
             estimator.__class__.__name__ == "XGBClassifier"
             or estimator.__class__.__name__ == "XGBRegressor"
         ):
+            dtrain = xgboost.DMatrix(train_x, label=train_y)
+            dvalid = xgboost.DMatrix(valid_x, label=valid_y)
             param = {}
             param["verbosity"] = verbose
             param["eval_metric"] = eval_metric
-            param["booster"] = trial.suggest_categorical("booster", ["gbtree"])
-            if (
-                valid_y.iloc[:, 0].nunique() <= 2
-                and estimator.__class__.__name__ == "XGBClassifier"
-            ):
-                param["objective"] = "binary:logistic"
-            if estimator.__class__.__name__ == "XGBRegressor":
-                param["objective"] = "reg:squarederror"
 
-            if "lambda" in estimator_params.keys():
-                param["lambda"] = _trail_param_retrive(
-                    trial, estimator_params, "lambda"
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
                 )
-            # L1 regularization weight.
-            if "alpha" in estimator_params.keys():
-                param["alpha"] = _trail_param_retrive(trial, estimator_params, "alpha")
-            # sampling ratio for training data.
-            if "subsample" in estimator_params.keys():
-                param["subsample"] = _trail_param_retrive(
-                    trial, estimator_params, "subsample"
-                )
-            # sampling according to each tree.
-            if "colsample_bytree" in estimator_params.keys():
-                param["colsample_bytree"] = _trail_param_retrive(
-                    trial, estimator_params, "colsample_bytree"
-                )
-            if estimator.__class__.__name__ == "XGBClassifier":
-                if "scale_pos_weight" in estimator_params.keys():
-                    param["scale_pos_weight"] = _trail_param_retrive(
-                        trial, estimator_params, "scale_pos_weight"
-                    )
-            if "booster" in estimator_params.keys():
-                if param["booster"] in ["gbtree", "dart"]:
-                    # maximum depth of the tree, signifies complexity of the tree.
-                    if "max_depth" in estimator_params.keys():
-                        param["max_depth"] = _trail_param_retrive(
-                            trial, estimator_params, "max_depth"
-                        )
-                    if "min_child_weight" in estimator_params.keys():
-                        # minimum child weight, larger the term more conservative the tree.
-                        param["min_child_weight"] = _trail_param_retrive(
-                            trial, estimator_params, "min_child_weight"
-                        )
-                    if "eta" in estimator_params.keys():
-                        param["eta"] = _trail_param_retrive(
-                            trial, estimator_params, "eta"
-                        )
-                    if "gamma" in estimator_params.keys():
-                        # defines how selective algorithm is.
-                        param["gamma"] = _trail_param_retrive(
-                            trial, estimator_params, "gamma"
-                        )
-                    # if "grow_policy" in estimator_params.keys():
-                    #    param["grow_policy"] = _trail_param_retrive(
-                    #        trial, estimator_params, "grow_policy"
-                    #    )
-            if "booster" in estimator_params.keys():
-                if param["booster"] == "dart":
-                    if "sample_type" in estimator_params.keys():
-                        param["sample_type"] = _trail_param_retrive(
-                            trial, estimator_params, "sample_type"
-                        )
-                    if "normalize_type" in estimator_params.keys():
-                        param["normalize_type"] = _trail_param_retrive(
-                            trial, estimator_params, "normalize_type"
-                        )
-                    if "rate_drop" in estimator_params.keys():
-                        param["rate_drop"] = _trail_param_retrive(
-                            trial, estimator_params, "rate_drop"
-                        )
-                    if "skip_drop" in estimator_params.keys():
-                        param["skip_drop"] = _trail_param_retrive(
-                            trial, estimator_params, "skip_drop"
-                        )
+
             # Add a callback for pruning.
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-" + eval_metric
             )
-            est = xgboost.train(
-                param,
-                dtrain,
-                evals=[(dvalid, "validation")],
-                callbacks=[pruning_callback],
-            )
+            if estimator.__class__.__name__ == "XGBRegressor":
+                est = xgboost.train(
+                    param,
+                    dtrain,
+                    evals=[(dvalid, "validation")],
+                    callbacks=None,
+                )
+            if estimator.__class__.__name__ == "XGBClassifier":
+                est = xgboost.train(
+                    param,
+                    dtrain,
+                    evals=[(dvalid, "validation")],
+                    callbacks=[pruning_callback],
+                )
             preds = est.predict(dvalid)
             pred_labels = np.rint(preds)
 
-            if "classifier" in estimator.__class__.__name__.lower():
-                accr = _calc_metric_for_single_output_classification(
-                    valid_y, pred_labels, measure_of_accuracy
+        if estimator.__class__.__name__ == "CatBoostClassifier":
+
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
                 )
-            if "regressor" in estimator.__class__.__name__.lower():
-                accr = _calc_metric_for_single_output_regression(
-                    valid_y, pred_labels, measure_of_accuracy
+            param["verbose"] = verbose
+            param["eval_metric"] = eval_metric
+
+            catest = catboost.CatBoostClassifier(**param)
+            catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
+            preds = catest.predict(valid_x)
+            pred_labels = np.rint(preds)
+
+        if estimator.__class__.__name__ == "LGBMClassifier":
+
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
                 )
+            param["verbose"] = verbose
+            param["eval_metric"] = eval_metric
+            lgbest = lightgbm.LGBMClassifier(**param)
+            lgbest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
+            preds = lgbest.predict(valid_x)
+            pred_labels = np.rint(preds)
+
+        if estimator.__class__.__name__ == "CatBoostRegressor":
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
+                )
+
+            param["verbose"] = verbose
+            param["eval_metric"] = eval_metric
+            catest = catboost.CatBoostRegressor(**param)
+            catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
+            preds = catest.predict(valid_x)
+
+        if estimator.__class__.__name__ == "LGBMRegressor":
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
+                )
+
+            param["verbose"] = verbose
+            param["eval_metric"] = eval_metric
+            lgbest = lightgbm.LGBMRegressor(**param)
+            lgbest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
+            preds = lgbest.predict(valid_x)
+
+        if estimator.__class__.__name__ == "RandomForestClassifier":
+
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
+                )
+            param["verbose"] = verbose
+            rfest = RandomForestClassifier(**param)
+            rfest.fit(train_x, train_y.values.ravel())
+            preds = rfest.predict(valid_x)
+            pred_labels = preds
+
+        if estimator.__class__.__name__ == "BalancedRandomForestClassifier":
+
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
+                )
+            param["verbose"] = verbose
+            brfest = BalancedRandomForestClassifier(**param)
+            brfest.fit(train_x, train_y.values.ravel())
+            preds = brfest.predict(valid_x)
+            pred_labels = preds
+
+        if estimator.__class__.__name__ == "RandomForestRegressor":
+            param = {}
+            for param_key in estimator_params.keys():
+                param[param_key] = _trail_param_retrive(
+                    trial, estimator_params, param_key
+                )
+
+            param["verbose"] = verbose
+            rfest = RandomForestRegressor(**param)
+            rfest.fit(train_x, train_y)
+            preds = rfest.predict(valid_x)
+
+        if "classifier" in estimator.__class__.__name__.lower():
+            accr = _calc_metric_for_single_output_classification(
+                valid_y, pred_labels, measure_of_accuracy
+            )
+        if "regressor" in estimator.__class__.__name__.lower():
+            accr = _calc_metric_for_single_output_regression(
+                valid_y, preds, measure_of_accuracy
+            )
 
         return accr
 
     study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
     study.optimize(objective, n_trials=number_of_trials, timeout=600)
     trial = study.best_trial
-    dtrain = xgboost.DMatrix(train_x, label=train_y)
-    dvalid = xgboost.DMatrix(valid_x, label=valid_y)
-    print(trial.params)
 
-    best_estimator = xgboost.train(
-        trial.params,
-        dtrain,
-        evals=[(dvalid, "validation")],
-    )
+    if (
+        estimator.__class__.__name__ == "XGBRegressor"
+        or estimator.__class__.__name__ == "XGBClassifier"
+    ):
+        dtrain = xgboost.DMatrix(train_x, label=train_y)
+        dvalid = xgboost.DMatrix(valid_x, label=valid_y)
+        print(trial.params)
+        best_estimator = xgboost.train(
+            trial.params,
+            dtrain,
+            evals=[(dvalid, "validation")],
+        )
+    if estimator.__class__.__name__ == "CatBoostClassifier":
+        print(trial.params)
+        clf = catboost.CatBoostClassifier(**trial.params)
+        best_estimator = clf.fit(train_x, train_y)
+    if estimator.__class__.__name__ == "CatBoostRegressor":
+        print(trial.params)
+        regressor = catboost.CatBoostRegressor(**trial.params)
+        best_estimator = regressor.fit(train_x, train_y)
+    if estimator.__class__.__name__ == "RandomForestClassifier":
+        print(trial.params)
+        clf = RandomForestClassifier(**trial.params)
+        best_estimator = clf.fit(train_x, train_y.values.ravel())
+    if estimator.__class__.__name__ == "RandomForestRegressor":
+        print(trial.params)
+        regressor = RandomForestRegressor(**trial.params)
+        best_estimator = regressor.fit(train_x, train_y)
+    if estimator.__class__.__name__ == "BalancedRandomForestClassifier":
+        print(trial.params)
+        clf = BalancedRandomForestClassifier(**trial.params)
+        best_estimator = clf.fit(train_x, train_y.values.ravel())
+    if estimator.__class__.__name__ == "LGBMClassifier":
+        print(trial.params)
+        clf = lightgbm.LGBMClassifier(**trial.params)
+        best_estimator = clf.fit(train_x, train_y.values.ravel())
+    if estimator.__class__.__name__ == "LGBMRegressor":
+        print(trial.params)
+        regressor = lightgbm.LGBMRegressor(**trial.params)
+        best_estimator = regressor.fit(train_x, train_y)
 
     return best_estimator
