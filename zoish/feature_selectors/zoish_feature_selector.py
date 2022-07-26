@@ -866,8 +866,7 @@ class ScallyShapFeatureSelector(BaseEstimator, TransformerMixin):
                 Raises
                 ------
                 ValueError
-                    If no sound is set for the animal or passed in as a
-                    parameter.
+                    Before feature selection, this data frame is None.
         """
         if self.importance_df is None:
             raise ValueError(
