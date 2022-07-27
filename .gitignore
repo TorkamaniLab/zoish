@@ -59,3 +59,4 @@ coverage.xml
 .pytest_cache/
 .vscode/
 catboost_info/
+.DS_Store
