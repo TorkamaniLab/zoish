@@ -34,8 +34,10 @@ jenkins-lts
 bump2version   minor 
 # this is for runnig nox to crease version as well
 nox -s release -- minor
-
-
+# this is only for lint
+nox -s lint 
+# this is only for tests
+nox -s tests 
 
 # before everything 
 git pull origin  main  
