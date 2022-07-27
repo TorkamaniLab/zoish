@@ -16,7 +16,7 @@ def lint(session):
     session.run("black","./zoish/")
     session.run(
         'flake8',
-        '--ignore=E501,I202,W503,E203',"./zoish/feature_selectors")
+        '--ignore=E501,I202,W503,E203',"./zoish/")
 
 @nox.session
 def release(session):

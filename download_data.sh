@@ -1,4 +1,4 @@
-
+# download data for test
 apt-get update -y
 apt-get install -y gnumeric
 mkdir data
@@ -9,8 +9,3 @@ echo 'this is ls -a'
 ls -a
 grep -v "X1" data1.csv > data.csv
 echo 'this is ls -a after grep'
-#ls -a 
-#cd /home/circleci/project/tests/
-#ls -a
-#pytest 
-#python  /home/circleci/project/main.py
