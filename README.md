@@ -38,7 +38,7 @@ pip install zoish
 - Return a sorted two-column Pandas data frame with a list of features and shap values. 
 
 
-## Example 
+## Examples 
 
 ### Import required libraries
 ```
@@ -149,7 +149,7 @@ print(r2_score(y_test,y_pred))
 
 ```
 
-There are more examples available in the **notebooks** directory. 
+More examples are available in the [examples](https://github.com/drhosseinjavedani/zoish/tree/main/zoish/examples). 
 
 ## License
 Licensed under the [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) License.
