@@ -3,6 +3,7 @@ import lightgbm
 import numpy as np
 import optuna
 import xgboost
+import logging
 from imblearn.ensemble import BalancedRandomForestClassifier
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import (
@@ -278,7 +279,7 @@ def _calc_metric_for_single_output_regression(valid_y, pred_labels, SCORE_TYPE):
 
 
 def _calc_best_estimator_grid_search(
-    X, y, estimator, estimator_params, measure_of_accuracy, verbose, n_jobs, cv
+    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, cv
 ):
     """Internal function for returning best estimator using
     assigned parameters by GridSearch.
@@ -409,7 +410,7 @@ def _calc_best_estimator_grid_search(
         param_grid=estimator_params,
         cv=cv,
         n_jobs=n_jobs,
-        scoring=make_scorer(maping_mesurements[measure_of_accuracy]),
+        scoring=make_scorer(maping_mesurements[performance_metric]),
         verbose=verbose,
     )
     grid_search.fit(X, y)
@@ -417,7 +418,7 @@ def _calc_best_estimator_grid_search(
     return best_estimator
 
 def _calc_best_estimator_random_search(
-    X, y, estimator, estimator_params, measure_of_accuracy, verbose, n_jobs, n_iter, cv
+    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, n_iter, cv
 ):
     """Internal function for returning best estimator using
     assigned parameters by RandomSearch.
@@ -553,7 +554,7 @@ def _calc_best_estimator_random_search(
         cv=cv,
         n_iter=n_iter,
         n_jobs=n_jobs,
-        scoring=make_scorer(maping_mesurements[measure_of_accuracy]),
+        scoring=make_scorer(maping_mesurements[performance_metric]),
         verbose=verbose,
     )
     random_search.fit(X, y)
@@ -562,19 +563,24 @@ def _calc_best_estimator_random_search(
 
 
 def _calc_best_estimator_optuna_univariate(
-    X,
-    y,
-    estimator,
-    measure_of_accuracy,
-    estimator_params,
-    verbose,
-    test_size,
-    random_state,
-    eval_metric,
-    number_of_trials,
-    sampler,
-    pruner,
-    with_stratified,
+            X,
+            y,
+            estimator,
+            performance_metric,
+            estimator_params,
+            verbose,
+            test_size,
+            random_state,
+            study,
+            study_optimize_objective,
+            study_optimize_objective_n_trials,
+            study_optimize_objective_timeout,
+            study_optimize_n_jobs,
+            study_optimize_catch,
+            study_optimize_callbacks,
+            study_optimize_gc_after_trial,
+            study_optimize_show_progress_bar,
+            with_stratified
 ):
     """Internal function for returning best estimator using
     assigned parameters by Optuna.
@@ -778,7 +784,7 @@ def _calc_best_estimator_optuna_univariate(
             dvalid = xgboost.DMatrix(valid_x, label=valid_y)
             param = {}
             param["verbosity"] = verbose
-            param["eval_metric"] = eval_metric
+            # param["eval_metric"] = eval_metric
 
             for param_key in estimator_params.keys():
                 param[param_key] = _trail_param_retrive(
@@ -787,7 +793,7 @@ def _calc_best_estimator_optuna_univariate(
 
             # Add a callback for pruning.
             pruning_callback = optuna.integration.XGBoostPruningCallback(
-                trial, "validation-" + eval_metric
+                trial, "validation-" + performance_metric
             )
             if estimator.__class__.__name__ == "XGBRegressor":
                 est = xgboost.train(
@@ -814,7 +820,7 @@ def _calc_best_estimator_optuna_univariate(
                     trial, estimator_params, param_key
                 )
             param["verbose"] = verbose
-            param["eval_metric"] = eval_metric
+            # param["eval_metric"] = eval_metric
 
             catest = catboost.CatBoostClassifier(**param)
             catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
@@ -829,7 +835,7 @@ def _calc_best_estimator_optuna_univariate(
                     trial, estimator_params, param_key
                 )
             param["verbose"] = verbose
-            param["eval_metric"] = eval_metric
+            # param["eval_metric"] = eval_metric
             lgbest = lightgbm.LGBMClassifier(**param)
             lgbest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
             preds = lgbest.predict(valid_x)
@@ -843,7 +849,7 @@ def _calc_best_estimator_optuna_univariate(
                 )
 
             param["verbose"] = verbose
-            param["eval_metric"] = eval_metric
+            # param["eval_metric"] = eval_metric
             catest = catboost.CatBoostRegressor(**param)
             catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
             preds = catest.predict(valid_x)
@@ -856,7 +862,7 @@ def _calc_best_estimator_optuna_univariate(
                 )
 
             param["verbose"] = verbose
-            param["eval_metric"] = eval_metric
+            # param["eval_metric"] = eval_metric
             lgbest = lightgbm.LGBMRegressor(**param)
             lgbest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
             preds = lgbest.predict(valid_x)
@@ -901,17 +907,26 @@ def _calc_best_estimator_optuna_univariate(
 
         if "classifier" in estimator.__class__.__name__.lower():
             accr = _calc_metric_for_single_output_classification(
-                valid_y, pred_labels, measure_of_accuracy
+                valid_y, pred_labels, performance_metric
             )
         if "regressor" in estimator.__class__.__name__.lower():
             accr = _calc_metric_for_single_output_regression(
-                valid_y, preds, measure_of_accuracy
+                valid_y, preds, performance_metric
             )
 
         return accr
 
-    study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
-    study.optimize(objective, n_trials=number_of_trials, timeout=600)
+    #study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
+    study.optimize(
+        objective, 
+        n_trials=study_optimize_objective_n_trials,
+        timeout=study_optimize_objective_timeout,
+        n_jobs=study_optimize_n_jobs,
+        catch=study_optimize_catch,
+        callbacks=study_optimize_callbacks,
+        gc_after_trial=study_optimize_gc_after_trial,
+        show_progress_bar=study_optimize_show_progress_bar
+        )
     trial = study.best_trial
 
     if (
