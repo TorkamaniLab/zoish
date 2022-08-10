@@ -10,7 +10,9 @@ from zoish.project_conf import ROOT_PROJECT
 from optuna.pruners import HyperbandPruner
 from optuna.samplers._tpe.sampler import TPESampler
 from sklearn.model_selection import KFold, train_test_split
-from zoish.feature_selectors.zoish_feature_selector import GridSearchCVShapFeatureSelector, OptunaShapFeatureSelector, RandomizedSearchCVShapFeatureSelector
+from zoish.feature_selectors.gridshap import GridSearchCVShapFeatureSelector
+from zoish.feature_selectors.randomshap import RandomizedSearchCVShapFeatureSelector
+from zoish.feature_selectors.optunashap import OptunaShapFeatureSelector
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from imblearn.ensemble import BalancedRandomForestClassifier
 import lightgbm
