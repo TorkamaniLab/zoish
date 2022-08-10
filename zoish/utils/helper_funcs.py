@@ -3,7 +3,6 @@ import lightgbm
 import numpy as np
 import optuna
 import xgboost
-import logging
 from imblearn.ensemble import BalancedRandomForestClassifier
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import (
@@ -417,6 +416,7 @@ def _calc_best_estimator_grid_search(
     best_estimator = grid_search.best_estimator_
     return best_estimator
 
+
 def _calc_best_estimator_random_search(
     X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, n_iter, cv
 ):
@@ -563,24 +563,24 @@ def _calc_best_estimator_random_search(
 
 
 def _calc_best_estimator_optuna_univariate(
-            X,
-            y,
-            estimator,
-            performance_metric,
-            estimator_params,
-            verbose,
-            test_size,
-            random_state,
-            study,
-            study_optimize_objective,
-            study_optimize_objective_n_trials,
-            study_optimize_objective_timeout,
-            study_optimize_n_jobs,
-            study_optimize_catch,
-            study_optimize_callbacks,
-            study_optimize_gc_after_trial,
-            study_optimize_show_progress_bar,
-            with_stratified
+    X,
+    y,
+    estimator,
+    performance_metric,
+    estimator_params,
+    verbose,
+    test_size,
+    random_state,
+    study,
+    study_optimize_objective,
+    study_optimize_objective_n_trials,
+    study_optimize_objective_timeout,
+    study_optimize_n_jobs,
+    study_optimize_catch,
+    study_optimize_callbacks,
+    study_optimize_gc_after_trial,
+    study_optimize_show_progress_bar,
+    with_stratified,
 ):
     """Internal function for returning best estimator using
     assigned parameters by Optuna.
@@ -792,15 +792,11 @@ def _calc_best_estimator_optuna_univariate(
                 )
 
             # Add a callback for pruning.
-        if (
-            estimator.__class__.__name__ == "XGBClassifier"
-        ):            
+        if estimator.__class__.__name__ == "XGBClassifier":
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-auc"
             )
-        if (
-            estimator.__class__.__name__ == "XGBRegressor"
-        ):            
+        if estimator.__class__.__name__ == "XGBRegressor":
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-rmse"
             )
@@ -925,17 +921,17 @@ def _calc_best_estimator_optuna_univariate(
 
         return accr
 
-    #study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
+    # study = optuna.create_study(direction="maximize", sampler=sampler, pruner=pruner)
     study.optimize(
-        objective, 
+        objective,
         n_trials=study_optimize_objective_n_trials,
         timeout=study_optimize_objective_timeout,
         n_jobs=study_optimize_n_jobs,
         catch=study_optimize_catch,
         callbacks=study_optimize_callbacks,
         gc_after_trial=study_optimize_gc_after_trial,
-        show_progress_bar=study_optimize_show_progress_bar
-        )
+        show_progress_bar=study_optimize_show_progress_bar,
+    )
     trial = study.best_trial
 
     if (
