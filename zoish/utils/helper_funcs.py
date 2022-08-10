@@ -792,8 +792,17 @@ def _calc_best_estimator_optuna_univariate(
                 )
 
             # Add a callback for pruning.
+        if (
+            estimator.__class__.__name__ == "XGBClassifier"
+        ):            
             pruning_callback = optuna.integration.XGBoostPruningCallback(
-                trial, "validation-" + performance_metric
+                trial, "validation-auc"
+            )
+        if (
+            estimator.__class__.__name__ == "XGBRegressor"
+        ):            
+            pruning_callback = optuna.integration.XGBoostPruningCallback(
+                trial, "validation-rmse"
             )
             if estimator.__class__.__name__ == "XGBRegressor":
                 est = xgboost.train(
@@ -849,7 +858,7 @@ def _calc_best_estimator_optuna_univariate(
                 )
 
             param["verbose"] = verbose
-            # param["eval_metric"] = eval_metric
+            # param["eval_metric"] = performance_metric
             catest = catboost.CatBoostRegressor(**param)
             catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
             preds = catest.predict(valid_x)
