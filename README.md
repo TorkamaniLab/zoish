@@ -42,7 +42,7 @@ pip install zoish
 
 ### Import required libraries
 ```
-from zoish.feature_selectors.zoish_feature_selector import ScallyShapFeatureSelector
+from zoish.feature_selectors.optunashap import OptunaShapFeatureSelector
 import xgboost
 from optuna.pruners import HyperbandPruner
 from optuna.samplers._tpe.sampler import TPESampler
@@ -54,36 +54,46 @@ from feature_engine.imputation import (
     MeanMedianImputer
     )
 from category_encoders import OrdinalEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
-    r2_score
-    )
-from zoish.utils.helper_funcs import catboost
+    classification_report,
+    confusion_matrix,
+    f1_score)
+import lightgbm
+import matplotlib.pyplot as plt
+import optuna
+
 ```
 
-### Computer Hardware Data Set (a regression problem)
+### Computer Hardware Data Set (a classification problem)
 ```
-urldata= "https://archive.ics.uci.edu/ml/machine-learning-databases/cpu-performance/machine.data"
+urldata= "https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data"
 # column names
-col_names=[
-    "vendor name",
-    "Model Name",
-    "MYCT",
-    "MMIN",
-    "MMAX",
-    "CACH",
-    "CHMIN",
-    "CHMAX",
-    "PRP"
+col_names=["age", "workclass", "fnlwgt" , "education" ,"education-num",
+"marital-status","occupation","relationship","race","sex","capital-gain","capital-loss","hours-per-week",
+"native-country","label"
 ]
 # read data
 data = pd.read_csv(urldata,header=None,names=col_names,sep=',')
+data.head()
+
+data.loc[data['label']=='<=50K','label']=0
+data.loc[data['label']==' <=50K','label']=0
+
+data.loc[data['label']=='>50K','label']=1
+data.loc[data['label']==' >50K','label']=1
+
+data['label']=data['label'].astype(int)
+
 ```
 ### Train test split
 ```
-X = data.loc[:, data.columns != "PRP"]
-y = data.loc[:, data.columns == "PRP"]
-X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.33, random_state=42)
+X = data.loc[:, data.columns != "label"]
+y = data.loc[:, data.columns == "label"]
+
+X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.33, stratify=y['label'], random_state=42)
+
+
 ```
 ### Find feature types for later use
 ```
@@ -94,36 +104,58 @@ cat_cols =  X_train.select_dtypes(include=['object']).columns.tolist()
 
 ###  Define Feature selector and set its arguments  
 ```
-SFC_CATREG_OPTUNA = ScallyShapFeatureSelector(
-        n_features=5,
-        estimator=catboost.CatBoostRegressor(),
+optuna_classification_lgb = OptunaShapFeatureSelector(
+        # general argument setting        
+        verbose=1,
+        random_state=0,
+        logging_basicConfig = None,
+        # general argument setting        
+        n_features=4,
+        list_of_obligatory_features_that_must_be_in_model=[],
+        list_of_features_to_drop_before_any_selection=[],
+        # shap argument setting        
+        estimator=lightgbm.LGBMClassifier(),
         estimator_params={
-                  # desired lower bound and upper bound for depth
-                  'depth'         : [6,10],
-                  # desired lower bound and upper bound for depth
-                  'learning_rate' : [0.05, 0.1],  
-                    },
-        hyper_parameter_optimization_method="optuna",
-        shap_version="v0",
-        measure_of_accuracy="r2",
-        list_of_obligatory_features=[],
+        "max_depth": [4, 9],
+        "reg_alpha": [0, 1],
+
+        },
+        # shap arguments
+        model_output="raw", 
+        feature_perturbation="interventional", 
+        algorithm="auto", 
+        shap_n_jobs=-1, 
+        memory_tolerance=-1, 
+        feature_names=None, 
+        approximate=False, 
+        shortcut=False, 
+        plot_shap_summary=False,
+        save_shap_summary_plot=True,
+        path_to_save_plot = './summary_plot.png',
+        shap_fig = plt.figure(),
+        ## optuna params
         test_size=0.33,
-        cv=KFold(n_splits=3, random_state=42, shuffle=True),
-        with_shap_summary_plot=True,
-        with_stratified=False,
-        verbose=0,
-        random_state=42,
-        n_jobs=-1,
-        n_iter=100,
-        eval_metric=None,
-        number_of_trials=20,
-        sampler=TPESampler(),
-        pruner=HyperbandPruner(),
-    )
+        with_stratified = False,
+        performance_metric = 'f1',
+        # optuna study init params
+        study = optuna.create_study(
+            storage = None,
+            sampler = TPESampler(),
+            pruner= HyperbandPruner(),
+            study_name  = None,
+            direction = "maximize",
+            load_if_exists = False,
+            directions  = None,
+            ),
+        study_optimize_objective_n_trials=10, 
+
+)
 ```
 
 ### Build sklearn Pipeline  
 ```
+
+
 pipeline =Pipeline([
             # int missing values imputers
             ('intimputer', MeanMedianImputer(
@@ -133,19 +165,24 @@ pipeline =Pipeline([
             #
             ('catencoder', OrdinalEncoder()),
             # feature selection
-            ('SFC_CATREG_OPTUNA', SFC_CATREG_OPTUNA),
-            # add any regression model from sklearn e.g., LinearRegression
-            ('regression', LinearRegression())
+            ('optuna_classification_lgb', optuna_classification_lgb),
+            # classification model
+            ('logistic', LogisticRegression())
 
 
  ])
+
 
 pipeline.fit(X_train,y_train)
 y_pred = pipeline.predict(X_test)
 
 
-print('r2 score : ')
-print(r2_score(y_test,y_pred))
+print('F1 score : ')
+print(f1_score(y_test,y_pred))
+print('Classification report : ')
+print(classification_report(y_test,y_pred))
+print('Confusion matrix : ')
+print(confusion_matrix(y_test,y_pred))
 
 ```
 

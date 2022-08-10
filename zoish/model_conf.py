@@ -96,6 +96,8 @@ Categorical_list = [
     "oob_score",
     "warm_start",
     "validate_parameters",
+    "class_weights",
+
 ]
 
 
@@ -141,6 +143,12 @@ CATBOOST_CLASSIFICATION_PARAMS_DEFAULT = {
     "leaf_estimation_iterations": 10,
     "bootstrap_type": "MVS",
     "max_leaves": 64,
+    "scale_pos_weight": None,
+    "class_weights":None,
+    "eta" : None,
+    "random_strength":None,
+    "n_estimators":None
+
 }
 
 
@@ -183,6 +191,9 @@ CATBOOST_REGRESSION_PARAMS_DEFAULT = {
     "leaf_estimation_iterations": 1,
     "bootstrap_type": "MVS",
     "max_leaves": 64,
+    "eta" : None,
+    "n_estimators":None
+
 }
 
 

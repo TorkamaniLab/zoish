@@ -262,7 +262,7 @@ def test_optuna_feature_selector():
         approximate=False, 
         shortcut=False, 
         plot_shap_summary=False,
-        save_shap_summary_plot=False,
+        save_shap_summary_plot=True,
         path_to_save_plot = './summary_plot.png',
         shap_fig = plt.figure(),
         ## optuna params
@@ -293,7 +293,7 @@ def test_optuna_feature_selector():
         list_of_obligatory_features_that_must_be_in_model=[],
         list_of_features_to_drop_before_any_selection=[],
         # shap argument setting        
-        estimator=BalancedRandomForestClassifier(),
+        estimator=xgboost.XGBRegressor(),
         estimator_params={
         "max_depth": [4, 5],
         # "min_child_weight": [0.1, 0.9],
@@ -521,10 +521,11 @@ def test_optuna_feature_selector():
         X, y, test_size=0.33, random_state=0
     )
 
+#TODO this problem is not classification
     # test classifications
     # test XGBoost
-    optuna_classification_xgb.fit_transform(X_train, y_train)
-    optuna_classification_xgb = optuna_classification_xgb.transform(X_test)
+#     optuna_classification_xgb.fit_transform(X_train, y_train)
+#     optuna_classification_xgb = optuna_classification_xgb.transform(X_test)
 #     # test CatBoost
 #     optuna_classification_catboost.fit_transform(X_train, y_train)
 #     optuna_classification_catboost = optuna_classification_catboost.transform(X_test)
@@ -541,30 +542,30 @@ def test_optuna_feature_selector():
 
 #     ## test regressions
 #     # test XGBoost
-#     optuna_regression_xgb.fit_transform(X_train, y_train)
-#     optuna_regression_xgb = optuna_regression_xgb.transform(X_test)
+    optuna_regression_xgb.fit_transform(X_train, y_train)
+    optuna_regression_xgb = optuna_regression_xgb.transform(X_test)
 #     # test CatBoost
-#     optuna_regression_catboost.fit_transform(X_train, y_train)
-#     optuna_regression_catboost = optuna_regression_catboost.transform(X_test)
+    optuna_regression_catboost.fit_transform(X_train, y_train)
+    optuna_regression_catboost = optuna_regression_catboost.transform(X_test)
 #     # test RandomForest
-#     optuna_regression_rf.fit_transform(X_train, y_train)
-#     optuna_regression_rf = optuna_regression_rf.transform(X_test)
+    optuna_regression_rf.fit_transform(X_train, y_train)
+    optuna_regression_rf = optuna_regression_rf.transform(X_test)
 #     # test Lightgbm
-#     optuna_regression_lightgbm.fit_transform(X_train, y_train)
-#     optuna_regression_lightgbm = optuna_regression_lightgbm.transform(X_test)
+    optuna_regression_lightgbm.fit_transform(X_train, y_train)
+    optuna_regression_lightgbm = optuna_regression_lightgbm.transform(X_test)
 
 
 
 
-    assert len(optuna_classification_xgb.columns.to_list())==4
+#     assert len(optuna_classification_xgb.columns.to_list())==4
 #     assert len(optuna_classification_catboost.columns.to_list())==4
 #     assert len(optuna_classification_rf.columns.to_list())==4
 #     assert len(optuna_classification_brf.columns.to_list())==4
 #     assert len(optuna_classification_lightgbm.columns.to_list())==4
 
-#     assert len(optuna_regression_xgb.columns.to_list())==4
-#     assert len(optuna_regression_catboost.columns.to_list())==4
-#     assert len(optuna_regression_rf.columns.to_list())==4
-#     assert len(optuna_regression_lightgbm.columns.to_list())==4
+    assert len(optuna_regression_xgb.columns.to_list())==4
+    assert len(optuna_regression_catboost.columns.to_list())==4
+    assert len(optuna_regression_rf.columns.to_list())==4
+    assert len(optuna_regression_lightgbm.columns.to_list())==4
 
 
