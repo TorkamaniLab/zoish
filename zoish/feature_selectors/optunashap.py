@@ -583,12 +583,8 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.verbose = verbose
         self.random_state = random_state
         self.n_features = n_features
-        self.list_of_obligatory_features_that_must_be_in_model = (
-            list_of_obligatory_features_that_must_be_in_model
-        )
-        self.list_of_features_to_drop_before_any_selection = (
-            list_of_features_to_drop_before_any_selection
-        )
+        self.list_of_obligatory_features_that_must_be_in_model = list_of_obligatory_features_that_must_be_in_model
+        self.list_of_features_to_drop_before_any_selection = list_of_features_to_drop_before_any_selection
         self.estimator = estimator
         self.estimator_params = estimator_params
         self.model_output = model_output
@@ -667,7 +663,7 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         logging.info(
             "Getting value for list_of_obligatory_features_that_must_be_in_model"
         )
-        return self._n_list_of_obligatory_features_that_must_be_in_model
+        return self._list_of_obligatory_features_that_must_be_in_model
 
     @list_of_obligatory_features_that_must_be_in_model.setter
     def list_of_obligatory_features_that_must_be_in_model(self, value):
