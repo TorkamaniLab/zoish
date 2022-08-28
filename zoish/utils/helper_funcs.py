@@ -812,7 +812,7 @@ def _calc_best_estimator_optuna_univariate(
                 param,
                 dtrain,
                 evals=[(dvalid, "validation")],
-                callbacks=[pruning_callback],
+                callbacks=None,
             )
             preds = est.predict(dvalid)
             pred_labels = np.rint(preds)
