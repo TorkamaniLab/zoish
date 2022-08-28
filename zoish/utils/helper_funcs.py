@@ -800,20 +800,20 @@ def _calc_best_estimator_optuna_univariate(
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-rmse"
             )
-            if estimator.__class__.__name__ == "XGBRegressor":
-                est = xgboost.train(
-                    param,
-                    dtrain,
-                    evals=[(dvalid, "validation")],
-                    callbacks=None,
-                )
-            if estimator.__class__.__name__ == "XGBClassifier":
-                est = xgboost.train(
-                    param,
-                    dtrain,
-                    evals=[(dvalid, "validation")],
-                    callbacks=[pruning_callback],
-                )
+        if estimator.__class__.__name__ == "XGBRegressor":
+            est = xgboost.train(
+                param,
+                dtrain,
+                evals=[(dvalid, "validation")],
+                callbacks=None,
+            )
+        if estimator.__class__.__name__ == "XGBClassifier":
+            est = xgboost.train(
+                param,
+                dtrain,
+                evals=[(dvalid, "validation")],
+                callbacks=[pruning_callback],
+            )
             preds = est.predict(dvalid)
             pred_labels = np.rint(preds)
 
