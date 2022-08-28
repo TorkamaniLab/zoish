@@ -796,6 +796,7 @@ def _calc_best_estimator_optuna_univariate(
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-auc"
             )
+            pruning_callback = None
         if estimator.__class__.__name__ == "XGBRegressor":
             pruning_callback = optuna.integration.XGBoostPruningCallback(
                 trial, "validation-rmse"
@@ -812,7 +813,7 @@ def _calc_best_estimator_optuna_univariate(
                 param,
                 dtrain,
                 evals=[(dvalid, "validation")],
-                callbacks=None,
+                callbacks=pruning_callback,
             )
             preds = est.predict(dvalid)
             pred_labels = np.rint(preds)
