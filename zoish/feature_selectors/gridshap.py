@@ -1,5 +1,5 @@
 import logging
-
+import xgboost
 import fasttreeshap
 import matplotlib.pyplot as plt
 import numpy as np
@@ -56,10 +56,11 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         ``XGBClassifier``, ``RandomForestClassifier``,``RandomForestRegressor``,
         ``CatBoostClassifier``,``CatBoostRegressor``,
         ``BalancedRandomForestClassifier``,
-        ``LGBMClassifier``, and ``LGBMRegressor``.
+        ``LGBMClassifier``,  ``LGBMRegressor``, ``XGBSEKaplanNeighbors``,``XGBSEDebiasedBCE``
+        ``XGBSEBootstrapEstimator``
     estimator_params: dict
         Parameters passed to find the best estimator using optimization
-        method. For CATBOOST_CLASSIFICATION_PARAMS_DEFAULT are :     "nan_mode": "Min",
+        method. For CatBoostClassifier are :     "nan_mode": "Min",
         "eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -71,7 +72,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         "min_data_in_leaf","loss_function","learning_rate","score_function",
         "task_type","leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For CATBOOST_REGRESSION_PARAMS_DEFAULT are :
+        For CatBoostRegressor are :
         "nan_mode","eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -83,7 +84,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         "loss_function","learning_rate","score_function","task_type",
         "leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For XGBOOST_CLASSIFICATION_PARAMS_DEFAULT are :
+        For XGBClassifier are :
         "objective","use_label_encoder","base_score","booster",
         "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
         "early_stopping_rounds","enable_categorical","eval_metric","gamma",
@@ -94,7 +95,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
         "tree_method","validate_parameters","verbosity"
 
-        For XGBOOST_REGRESSION_PARAMS_DEFAULT are :
+        For XGBRegressor are :
         "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
         "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
         "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
@@ -104,40 +105,65 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
         "verbosity"
 
-        For RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT are :
+        For RandomForestClassifier are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","class_weight",
         "ccp_alpha","max_samples"
 
-        For RANDOMFOREST_REGRESSION_PARAMS_DEFAULT are :
+        For RandomForestRegressor are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","ccp_alpha","max_samples"
 
-        For BLF_CLASSIFICATION_PARAMS_DEFAULT are :
+        For BalancedRandomForestClassifier are :
         "n_estimators","criterion"","max_depth","min_samples_split","min_samples_leaf",
         "min_weight_fraction_leaf","max_features","max_leaf_nodes","min_impurity_decrease",
         "bootstrap","oob_score","sampling_strategy","replacement","n_jobs","random_state",
         "verbose","warm_start","class_weight","ccp_alpha","max_samples"
 
-        For LGB_CLASSIFICATION_PARAMS_DEFAULT are:
+        For LGBMClassifier are:
         "boosting_type","num_leaves","max_depth","learning_rate","n_estimators",
         "subsample_for_bin","objective","class_weight","min_split_gain","min_child_weight",
         "min_child_samples","subsample","subsample_freq","colsample_bytree","reg_alpha",
         "reg_lambda","random_state","n_jobs","silent","importance_type"
 
-        For LGB_REGRESSION_PARAMS_DEFAULT are:
+        For LGBMRegressor are:
         "boosting_type","num_leaves","max_depth","learning_rate",
         "n_estimators","subsample_for_bin","objective","class_weight",
         "min_split_gain","min_child_weight","min_child_samples","subsample",
         "subsample_freq","colsample_bytree","reg_alpha","reg_lambda","random_state",
         "n_jobs","silent","importance_type"
 
-        https://shap-lrjball.readthedocs.io/en/docs_update/generated/shap.TreeExplainer.html
+        For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "duration" set
+        for "xgbse_focus" parameters are exactly like XGBMRegressor:
+        "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
+        "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
+        "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step","max_depth",
+        "max_leaves","min_child_weight","missing","monotone_constraints","n_estimators",
+        "n_jobs","num_parallel_tree","predictor","random_state","reg_alpha","reg_lambda",
+        "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
+        "verbosity"
 
+        For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "event" set
+        for "xgbse_focus" parameters are exactly like XGBMClassifier:
+        "objective","use_label_encoder","base_score","booster",
+        "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
+        "early_stopping_rounds","enable_categorical","eval_metric","gamma",
+        "gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step",
+        "max_depth","max_leaves","min_child_weight","missing","monotone_constraints",
+        "n_estimators","n_jobs","num_parallel_tree","predictor","random_state",
+        "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
+        "tree_method","validate_parameters","verbosity"
+
+        For a complete list of supported parameters, always check:
+        https://github.com/drhosseinjavedani/zoish/blob/main/zoish/model_conf.py
+
+    https://shap-lrjball.readthedocs.io/en/docs_update/generated/shap.TreeExplainer.html
     model_output : str
             "raw", "probability", "log_loss", or model method name
             What output of the model should be explained. If "raw" then we explain the raw output of the
@@ -227,17 +253,28 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
     performance_metric : str
         Measurement of performance for classification and
         regression estimator during hyperparameter optimization while
-        estimating best estimator. Classification-supported measurments are
+        estimating best estimator. 
+        
+        Classification-supported measurments are: 
         f1, f1_score, acc, accuracy_score, pr, precision_score,
         recall, recall_score, roc, roc_auc_score, roc_auc,
-        tp, true positive, tn, true negative. Regression supported
-        measurements are r2, r2_score, explained_variance_score,
+        tp, true positive, tn, true negative. 
+        
+        Regression supported measurements are:
+        r2, r2_score, explained_variance_score,
         max_error, mean_absolute_error, mean_squared_error,
         median_absolute_error, and mean_absolute_percentage_error.
+
     cv : int, cross-validation generator or an iterable, default=None
         For more information visit
         https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 
+    xgbse_focus : str
+        It is only applicable for xgbse (xgboost-survival-embeddings) models. If
+        the focus of feature selection is to optimize "duration" it should be set 
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
+        i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
     Methods
     -------
@@ -289,6 +326,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         # grid params
         cv=StratifiedKFold(n_splits=3, shuffle=True),
         performance_metric="f1",
+        xgbse_focus = None,
     ):
         """
             Parameters
@@ -318,10 +356,11 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             ``XGBClassifier``, ``RandomForestClassifier``,``RandomForestRegressor``,
             ``CatBoostClassifier``,``CatBoostRegressor``,
             ``BalancedRandomForestClassifier``,
-            ``LGBMClassifier``, and ``LGBMRegressor``.
+            ``LGBMClassifier``,  ``LGBMRegressor``, ``XGBSEKaplanNeighbors``,``XGBSEDebiasedBCE``
+            ``XGBSEBootstrapEstimator``
         estimator_params: dict
             Parameters passed to find the best estimator using optimization
-            method. For CATBOOST_CLASSIFICATION_PARAMS_DEFAULT are :     "nan_mode": "Min",
+            method. For CatBoostClassifier are :     "nan_mode": "Min",
             "eval_metric","iterations","sampling_frequency","leaf_estimation_method",
             "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
             "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -333,7 +372,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             "min_data_in_leaf","loss_function","learning_rate","score_function",
             "task_type","leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-            For CATBOOST_REGRESSION_PARAMS_DEFAULT are :
+            For CatBoostRegressor are :
             "nan_mode","eval_metric","iterations","sampling_frequency","leaf_estimation_method",
             "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
             "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -345,7 +384,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             "loss_function","learning_rate","score_function","task_type",
             "leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-            For XGBOOST_CLASSIFICATION_PARAMS_DEFAULT are :
+            For XGBClassifier are :
             "objective","use_label_encoder","base_score","booster",
             "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
             "early_stopping_rounds","enable_categorical","eval_metric","gamma",
@@ -356,7 +395,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
             "tree_method","validate_parameters","verbosity"
 
-            For XGBOOST_REGRESSION_PARAMS_DEFAULT are :
+            For XGBRegressor are :
             "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
             "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
             "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
@@ -366,40 +405,65 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
             "verbosity"
 
-            For RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT are :
+            For RandomForestClassifier are :
             "n_estimators","criterion","max_depth","min_samples_split",
             "min_samples_leaf","min_weight_fraction_leaf","max_features",
             "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
             "n_jobs","random_state","verbose","warm_start","class_weight",
             "ccp_alpha","max_samples"
 
-            For RANDOMFOREST_REGRESSION_PARAMS_DEFAULT are :
+            For RandomForestRegressor are :
             "n_estimators","criterion","max_depth","min_samples_split",
             "min_samples_leaf","min_weight_fraction_leaf","max_features",
             "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
             "n_jobs","random_state","verbose","warm_start","ccp_alpha","max_samples"
 
-            For BLF_CLASSIFICATION_PARAMS_DEFAULT are :
+            For BalancedRandomForestClassifier are :
             "n_estimators","criterion"","max_depth","min_samples_split","min_samples_leaf",
             "min_weight_fraction_leaf","max_features","max_leaf_nodes","min_impurity_decrease",
             "bootstrap","oob_score","sampling_strategy","replacement","n_jobs","random_state",
             "verbose","warm_start","class_weight","ccp_alpha","max_samples"
 
-            For LGB_CLASSIFICATION_PARAMS_DEFAULT are:
+            For LGBMClassifier are:
             "boosting_type","num_leaves","max_depth","learning_rate","n_estimators",
             "subsample_for_bin","objective","class_weight","min_split_gain","min_child_weight",
             "min_child_samples","subsample","subsample_freq","colsample_bytree","reg_alpha",
             "reg_lambda","random_state","n_jobs","silent","importance_type"
 
-            For LGB_REGRESSION_PARAMS_DEFAULT are:
+            For LGBMRegressor are:
             "boosting_type","num_leaves","max_depth","learning_rate",
             "n_estimators","subsample_for_bin","objective","class_weight",
             "min_split_gain","min_child_weight","min_child_samples","subsample",
             "subsample_freq","colsample_bytree","reg_alpha","reg_lambda","random_state",
             "n_jobs","silent","importance_type"
 
-            https://shap-lrjball.readthedocs.io/en/docs_update/generated/shap.TreeExplainer.html
+            For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "duration" set
+            for "xgbse_focus" parameters are exactly like XGBMRegressor:
+            "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
+            "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
+            "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
+            "learning_rate","max_bin","max_cat_to_onehot","max_delta_step","max_depth",
+            "max_leaves","min_child_weight","missing","monotone_constraints","n_estimators",
+            "n_jobs","num_parallel_tree","predictor","random_state","reg_alpha","reg_lambda",
+            "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
+            "verbosity"
 
+            For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "event" set
+            for "xgbse_focus" parameters are exactly like XGBMClassifier:
+            "objective","use_label_encoder","base_score","booster",
+            "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
+            "early_stopping_rounds","enable_categorical","eval_metric","gamma",
+            "gpu_id","grow_policy","importance_type","interaction_constraints",
+            "learning_rate","max_bin","max_cat_to_onehot","max_delta_step",
+            "max_depth","max_leaves","min_child_weight","missing","monotone_constraints",
+            "n_estimators","n_jobs","num_parallel_tree","predictor","random_state",
+            "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
+            "tree_method","validate_parameters","verbosity"
+
+            For a complete list of supported parameters, always check:
+            https://github.com/drhosseinjavedani/zoish/blob/main/zoish/model_conf.py
+
+        https://shap-lrjball.readthedocs.io/en/docs_update/generated/shap.TreeExplainer.html
         model_output : str
                 "raw", "probability", "log_loss", or model method name
                 What output of the model should be explained. If "raw" then we explain the raw output of the
@@ -489,29 +553,40 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         performance_metric : str
             Measurement of performance for classification and
             regression estimator during hyperparameter optimization while
-            estimating best estimator. Classification-supported measurments are
+            estimating best estimator. 
+            
+            Classification-supported measurments are: 
             f1, f1_score, acc, accuracy_score, pr, precision_score,
             recall, recall_score, roc, roc_auc_score, roc_auc,
-            tp, true positive, tn, true negative. Regression supported
-            measurements are r2, r2_score, explained_variance_score,
+            tp, true positive, tn, true negative. 
+            
+            Regression supported measurements are:
+            r2, r2_score, explained_variance_score,
             max_error, mean_absolute_error, mean_squared_error,
             median_absolute_error, and mean_absolute_percentage_error.
+
         cv : int, cross-validation generator or an iterable, default=None
             For more information visit
             https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 
+        xgbse_focus : str
+            It is only applicable for xgbse (xgboost-survival-embeddings) models. If
+            the focus of feature selection is to optimize "duration" it should be set 
+            xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+            xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
+            i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
+
         """
         self.logging_basicConfig = logging_basicConfig
         logging.basicConfig = self.logging_basicConfig
+        self.xgbse_focus=xgbse_focus
+
         self.verbose = verbose
         self.random_state = random_state
         self.n_features = n_features
-        self.list_of_obligatory_features_that_must_be_in_model = (
-            list_of_obligatory_features_that_must_be_in_model
-        )
-        self.list_of_features_to_drop_before_any_selection = (
-            list_of_features_to_drop_before_any_selection
-        )
+        self.list_of_obligatory_features_that_must_be_in_model = list_of_obligatory_features_that_must_be_in_model
+        
+        self.list_of_features_to_drop_before_any_selection = list_of_features_to_drop_before_any_selection
         self.estimator = estimator
         self.estimator_params = estimator_params
         self.model_output = model_output
@@ -529,9 +604,18 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.shap_fig = shap_fig
         self.cv = cv
         self.performance_metric = performance_metric
-
         self.best_estimator = None
         self.importance_df = None
+
+    @property
+    def xgbse_focus(self):
+        logging.info("Getting value for xgbse_focus")
+        return self._xgbse_focus
+
+    @xgbse_focus.setter
+    def xgbse_focus(self, value):
+        logging.info("Setting value for xgbse_focus")
+        self._xgbse_focus = value
 
     @property
     def logging_basicConfig(self):
@@ -623,6 +707,37 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
     @estimator_params.setter
     def estimator_params(self, value):
         logging.info(self.estimator)
+        # get parameters for xgbse.XGBSEKaplanNeighbors and others and check if
+        # the selected parameters in the list or not
+        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
+            self.xgbse_focus=='duration':
+
+            if value.keys() <= XGBOOST_REGRESSION_PARAMS_DEFAULT.keys():
+                logging.info("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+            # change the base estimator to XGBRegressor
+            self.estimator = xgboost.XGBRegressor()
+        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
+            self.xgbse_focus =='event':
+            if value.keys() <= XGBOOST_CLASSIFICATION_PARAMS_DEFAULT.keys():
+                logging.info("Setting value for estimator_params")
+                self._estimator_params = value
+            else:
+                raise TypeError(
+                    f"error occures during parameter checking for \
+                        {value.__class__.__name__}"
+                )
+            # change the base estimator to XGBRegressor
+            self.estimator = xgboost.XGBClassifier()
         # get parameters for lightgbm.LGBMRegressor and check if
         # the selected parameters in the list or not
         if self.estimator.__class__.__name__ == "LGBMRegressor":
@@ -909,7 +1024,6 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             step of the pipeline.
         """
         self.cols = X.columns
-        self.cols = X.columns
         self.best_estimator = _calc_best_estimator_grid_search(
             X,
             y,
@@ -919,6 +1033,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
             self.verbose,
             self.grid_search_n_jobs,
             self.cv,
+            self.xgbse_focus,
         )
         print(self.estimator.__class__.__name__)
 

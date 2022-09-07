@@ -21,8 +21,8 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
+from xgbse.metrics import concordance_index
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split
-
 from zoish.model_conf import Categorical_list, Integer_list
 
 maping_mesurements = {
@@ -46,6 +46,8 @@ maping_mesurements = {
     "roc_auc_score": roc_auc_score,
     "roc": roc_auc_score,
     "roc_auc": roc_auc_score,
+    "cind" :   concordance_index ,
+
 }
 
 
@@ -195,11 +197,29 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
     """
 
     sum_errors = 0
-    f1 = f1_score(valid_y, pred_labels)
-    acc = accuracy_score(valid_y, pred_labels)
-    pr = precision_score(valid_y, pred_labels)
-    recall = recall_score(valid_y, pred_labels)
-    roc = roc_auc_score(valid_y, pred_labels)
+    if SCORE_TYPE == "f1" or SCORE_TYPE == "f1_score":
+        f1 = f1_score(valid_y, pred_labels)
+    if (
+        SCORE_TYPE == "acc"
+        or SCORE_TYPE == "accuracy_score"
+        or SCORE_TYPE == "accuracy"
+    ):
+        acc = accuracy_score(valid_y, pred_labels)
+    if (
+        SCORE_TYPE == "pr"
+        or SCORE_TYPE == "precision_score"
+        or SCORE_TYPE == "precision"
+    ):
+        pr = precision_score(valid_y, pred_labels)
+    if SCORE_TYPE == "recall" or SCORE_TYPE == "recall_score" or SCORE_TYPE == "recall":
+        recall = recall_score(valid_y, pred_labels)
+    if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
+        roc = roc_auc_score(valid_y, pred_labels)
+    if (
+        SCORE_TYPE == "cind"
+        or SCORE_TYPE == "c-index"
+    ):
+        cind = concordance_index(valid_y, pred_labels)
 
     tn, _, _, tp = confusion_matrix(valid_y, pred_labels, labels=[0, 1]).ravel()
     if SCORE_TYPE == "f1" or SCORE_TYPE == "f1_score":
@@ -220,6 +240,12 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
         sum_errors = sum_errors + recall
     if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
         sum_errors = sum_errors + roc
+    if (
+        SCORE_TYPE == "cind"
+        or SCORE_TYPE == "c-index"
+    ):
+        sum_errors = sum_errors + cind
+
 
     # other metrics - not often use
 
@@ -248,23 +274,27 @@ def _calc_metric_for_single_output_regression(valid_y, pred_labels, SCORE_TYPE):
         "mean_absolute_percentage_error"
 
     """
-
-    r2 = r2_score(valid_y, pred_labels)
-    explained_variance_score_sr = explained_variance_score(valid_y, pred_labels)
-
-    max_error_err = max_error(valid_y, pred_labels)
-    mean_absolute_error_err = mean_absolute_error(valid_y, pred_labels)
-    mean_squared_error_err = mean_squared_error(valid_y, pred_labels)
-    median_absolute_error_err = median_absolute_error(valid_y, pred_labels)
-    mean_absolute_percentage_error_err = mean_absolute_percentage_error(
-        valid_y, pred_labels
-    )
+    if SCORE_TYPE == "r2" or SCORE_TYPE == "r2_score":
+        r2 = r2_score(valid_y, pred_labels)
+    if SCORE_TYPE == "explained_variance_score":
+        explained_variance_score_sr = explained_variance_score(valid_y, pred_labels)
+    if SCORE_TYPE == "max_error":
+        max_error_err = max_error(valid_y, pred_labels)
+    if SCORE_TYPE == "mean_absolute_error":
+        mean_absolute_error_err = mean_absolute_error(valid_y, pred_labels)
+    if SCORE_TYPE == "mean_squared_error":
+        mean_squared_error_err = mean_squared_error(valid_y, pred_labels)
+    if SCORE_TYPE == "median_absolute_error":
+        median_absolute_error_err = median_absolute_error(valid_y, pred_labels)
+    if SCORE_TYPE == "mean_absolute_percentage_error":
+        mean_absolute_percentage_error_err = mean_absolute_percentage_error(
+            valid_y, pred_labels
+        )
 
     if SCORE_TYPE == "r2" or SCORE_TYPE == "r2_score":
         return r2
     if SCORE_TYPE == "explained_variance_score":
         return explained_variance_score_sr
-
     if SCORE_TYPE == "max_error":
         return max_error_err
     if SCORE_TYPE == "mean_absolute_error":
@@ -278,7 +308,8 @@ def _calc_metric_for_single_output_regression(valid_y, pred_labels, SCORE_TYPE):
 
 
 def _calc_best_estimator_grid_search(
-    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, cv
+    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, cv,
+    xgbse_focus,
 ):
     """Internal function for returning best estimator using
     assigned parameters by GridSearch.
@@ -297,10 +328,11 @@ def _calc_best_estimator_grid_search(
         ``XGBClassifier``, ``RandomForestClassifier``,``RandomForestRegressor``,
         ``CatBoostClassifier``,``CatBoostRegressor``,
         ``BalancedRandomForestClassifier``,
-        ``LGBMClassifier``, and ``LGBMRegressor``.
+        ``LGBMClassifier``,  ``LGBMRegressor``, ``XGBSEKaplanNeighbors``,``XGBSEDebiasedBCE``
+        ``XGBSEBootstrapEstimator``
     estimator_params: dict
         Parameters passed to find the best estimator using optimization
-        method. For CATBOOST_CLASSIFICATION_PARAMS_DEFAULT are :     "nan_mode": "Min",
+        method. For CatBoostClassifier are :     "nan_mode": "Min",
         "eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -312,7 +344,7 @@ def _calc_best_estimator_grid_search(
         "min_data_in_leaf","loss_function","learning_rate","score_function",
         "task_type","leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For CATBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For CatBoostRegressor are :
         "nan_mode","eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -324,7 +356,7 @@ def _calc_best_estimator_grid_search(
         "loss_function","learning_rate","score_function","task_type",
         "leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For XGBOOST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For XGBClassifier are :
         "objective","use_label_encoder","base_score","booster",
         "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
         "early_stopping_rounds","enable_categorical","eval_metric","gamma",
@@ -335,7 +367,7 @@ def _calc_best_estimator_grid_search(
         "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
         "tree_method","validate_parameters","verbosity"
 
-        For XGBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For XGBRegressor are :
         "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
         "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
         "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
@@ -345,37 +377,63 @@ def _calc_best_estimator_grid_search(
         "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
         "verbosity"
 
-        For RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For RandomForestClassifier are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","class_weight",
         "ccp_alpha","max_samples"
 
-        For RANDOMFOREST_REGRESSION_PARAMS_DEFAULT are :
+    For RandomForestRegressor are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","ccp_alpha","max_samples"
 
-        For BLF_CLASSIFICATION_PARAMS_DEFAULT are :
+    For BalancedRandomForestClassifier are :
         "n_estimators","criterion"","max_depth","min_samples_split","min_samples_leaf",
         "min_weight_fraction_leaf","max_features","max_leaf_nodes","min_impurity_decrease",
         "bootstrap","oob_score","sampling_strategy","replacement","n_jobs","random_state",
         "verbose","warm_start","class_weight","ccp_alpha","max_samples"
 
-        For LGB_CLASSIFICATION_PARAMS_DEFAULT are:
+    For LGBMClassifier are:
         "boosting_type","num_leaves","max_depth","learning_rate","n_estimators",
         "subsample_for_bin","objective","class_weight","min_split_gain","min_child_weight",
         "min_child_samples","subsample","subsample_freq","colsample_bytree","reg_alpha",
         "reg_lambda","random_state","n_jobs","silent","importance_type"
 
-        For LGB_REGRESSION_PARAMS_DEFAULT are:
+    For LGBMRegressor are:
         "boosting_type","num_leaves","max_depth","learning_rate",
         "n_estimators","subsample_for_bin","objective","class_weight",
         "min_split_gain","min_child_weight","min_child_samples","subsample",
         "subsample_freq","colsample_bytree","reg_alpha","reg_lambda","random_state",
         "n_jobs","silent","importance_type"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "duration" set
+        for "xgbse_focus" parameters are exactly like XGBMRegressor:
+        "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
+        "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
+        "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step","max_depth",
+        "max_leaves","min_child_weight","missing","monotone_constraints","n_estimators",
+        "n_jobs","num_parallel_tree","predictor","random_state","reg_alpha","reg_lambda",
+        "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
+        "verbosity"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "event" set
+        for "xgbse_focus" parameters are exactly like XGBMClassifier:
+        "objective","use_label_encoder","base_score","booster",
+        "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
+        "early_stopping_rounds","enable_categorical","eval_metric","gamma",
+        "gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step",
+        "max_depth","max_leaves","min_child_weight","missing","monotone_constraints",
+        "n_estimators","n_jobs","num_parallel_tree","predictor","random_state",
+        "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
+        "tree_method","validate_parameters","verbosity"
+
+    For a complete list of supported parameters, always check:
+        https://github.com/drhosseinjavedani/zoish/blob/main/zoish/model_conf.py
     measure_of_accuracy : str
         Measurement of performance for classification and
         regression estimator during hyperparameter optimization while
@@ -402,8 +460,30 @@ def _calc_best_estimator_grid_search(
             StratifiedKFold is used. In all other cases, Fold is used.
             These splitters are instantiated with shuffle=False, so the splits
             will be the same across calls.
-
+    xgbse_focus : str
+        It is only applicable for xgbse (xgboost-survival-embeddings) models. If
+        the focus of feature selection is to optimize "duration" it should be set 
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
+        i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
     """
+    # check to see if y has proper label names 
+    if (xgbse_focus=='duration' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBRegressor" )):
+            y = y['duration'].copy()
+            estimator = xgboost.XGBRegressor()
+
+    if (xgbse_focus =='event' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBClassifier" )):
+            y = y['event'].copy()
+            estimator = xgboost.XGBClassifier()
+
     grid_search = GridSearchCV(
         estimator,
         param_grid=estimator_params,
@@ -412,13 +492,15 @@ def _calc_best_estimator_grid_search(
         scoring=make_scorer(maping_mesurements[performance_metric]),
         verbose=verbose,
     )
+
     grid_search.fit(X, y)
     best_estimator = grid_search.best_estimator_
     return best_estimator
 
 
 def _calc_best_estimator_random_search(
-    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, n_iter, cv
+    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, n_iter, cv,
+    xgbse_focus,
 ):
     """Internal function for returning best estimator using
     assigned parameters by RandomSearch.
@@ -437,10 +519,11 @@ def _calc_best_estimator_random_search(
         ``XGBClassifier``, ``RandomForestClassifier``,``RandomForestRegressor``,
         ``CatBoostClassifier``,``CatBoostRegressor``,
         ``BalancedRandomForestClassifier``,
-        ``LGBMClassifier``, and ``LGBMRegressor``.
+        ``LGBMClassifier``,  ``LGBMRegressor``, ``XGBSEKaplanNeighbors``,``XGBSEDebiasedBCE``
+        ``XGBSEBootstrapEstimator``
     estimator_params: dict
         Parameters passed to find the best estimator using optimization
-        method. For CATBOOST_CLASSIFICATION_PARAMS_DEFAULT are :     "nan_mode": "Min",
+        method. For CatBoostClassifier are :     "nan_mode": "Min",
         "eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -452,7 +535,7 @@ def _calc_best_estimator_random_search(
         "min_data_in_leaf","loss_function","learning_rate","score_function",
         "task_type","leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For CATBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For CatBoostRegressor are :
         "nan_mode","eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -464,7 +547,7 @@ def _calc_best_estimator_random_search(
         "loss_function","learning_rate","score_function","task_type",
         "leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For XGBOOST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For XGBClassifier are :
         "objective","use_label_encoder","base_score","booster",
         "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
         "early_stopping_rounds","enable_categorical","eval_metric","gamma",
@@ -475,7 +558,7 @@ def _calc_best_estimator_random_search(
         "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
         "tree_method","validate_parameters","verbosity"
 
-        For XGBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For XGBRegressor are :
         "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
         "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
         "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
@@ -485,37 +568,63 @@ def _calc_best_estimator_random_search(
         "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
         "verbosity"
 
-        For RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For RandomForestClassifier are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","class_weight",
         "ccp_alpha","max_samples"
 
-        For RANDOMFOREST_REGRESSION_PARAMS_DEFAULT are :
+    For RandomForestRegressor are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","ccp_alpha","max_samples"
 
-        For BLF_CLASSIFICATION_PARAMS_DEFAULT are :
+    For BalancedRandomForestClassifier are :
         "n_estimators","criterion"","max_depth","min_samples_split","min_samples_leaf",
         "min_weight_fraction_leaf","max_features","max_leaf_nodes","min_impurity_decrease",
         "bootstrap","oob_score","sampling_strategy","replacement","n_jobs","random_state",
         "verbose","warm_start","class_weight","ccp_alpha","max_samples"
 
-        For LGB_CLASSIFICATION_PARAMS_DEFAULT are:
+    For LGBMClassifier are:
         "boosting_type","num_leaves","max_depth","learning_rate","n_estimators",
         "subsample_for_bin","objective","class_weight","min_split_gain","min_child_weight",
         "min_child_samples","subsample","subsample_freq","colsample_bytree","reg_alpha",
         "reg_lambda","random_state","n_jobs","silent","importance_type"
 
-        For LGB_REGRESSION_PARAMS_DEFAULT are:
+    For LGBMRegressor are:
         "boosting_type","num_leaves","max_depth","learning_rate",
         "n_estimators","subsample_for_bin","objective","class_weight",
         "min_split_gain","min_child_weight","min_child_samples","subsample",
         "subsample_freq","colsample_bytree","reg_alpha","reg_lambda","random_state",
         "n_jobs","silent","importance_type"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "duration" set
+        for "xgbse_focus" parameters are exactly like XGBMRegressor:
+        "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
+        "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
+        "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step","max_depth",
+        "max_leaves","min_child_weight","missing","monotone_constraints","n_estimators",
+        "n_jobs","num_parallel_tree","predictor","random_state","reg_alpha","reg_lambda",
+        "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
+        "verbosity"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "event" set
+        for "xgbse_focus" parameters are exactly like XGBMClassifier:
+        "objective","use_label_encoder","base_score","booster",
+        "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
+        "early_stopping_rounds","enable_categorical","eval_metric","gamma",
+        "gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step",
+        "max_depth","max_leaves","min_child_weight","missing","monotone_constraints",
+        "n_estimators","n_jobs","num_parallel_tree","predictor","random_state",
+        "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
+        "tree_method","validate_parameters","verbosity"
+
+    For a complete list of supported parameters, always check:
+        https://github.com/drhosseinjavedani/zoish/blob/main/zoish/model_conf.py
     measure_of_accuracy : str
         Measurement of performance for classification and
         regression estimator during hyperparameter optimization while
@@ -546,8 +655,32 @@ def _calc_best_estimator_random_search(
             These splitters are instantiated with shuffle=False, so the splits
             will be the same across calls.
 
+    xgbse_focus : str
+        It is only applicable for xgbse (xgboost-survival-embeddings) models. If
+        the focus of feature selection is to optimize "duration" it should be set 
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
+        i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
     """
+    # check to see if y has proper label names 
+    # check to see if y has proper label names 
+    if (xgbse_focus=='duration' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBRegressor" )):
+            y = y['duration'].copy()
+            estimator = xgboost.XGBRegressor()
+
+    if (xgbse_focus =='event' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBClassifier" )):
+            y = y['event'].copy()
+            estimator = xgboost.XGBClassifier()
+
     random_search = RandomizedSearchCV(
         estimator,
         param_distributions=estimator_params,
@@ -557,10 +690,10 @@ def _calc_best_estimator_random_search(
         scoring=make_scorer(maping_mesurements[performance_metric]),
         verbose=verbose,
     )
+
     random_search.fit(X, y)
     best_estimator = random_search.best_estimator_
     return best_estimator
-
 
 def _calc_best_estimator_optuna_univariate(
     X,
@@ -581,6 +714,7 @@ def _calc_best_estimator_optuna_univariate(
     study_optimize_gc_after_trial,
     study_optimize_show_progress_bar,
     with_stratified,
+    xgbse_focus,
 ):
     """Internal function for returning best estimator using
     assigned parameters by Optuna.
@@ -599,10 +733,11 @@ def _calc_best_estimator_optuna_univariate(
         ``XGBClassifier``, ``RandomForestClassifier``,``RandomForestRegressor``,
         ``CatBoostClassifier``,``CatBoostRegressor``,
         ``BalancedRandomForestClassifier``,
-        ``LGBMClassifier``, and ``LGBMRegressor``.
+        ``LGBMClassifier``,  ``LGBMRegressor``, ``XGBSEKaplanNeighbors``,``XGBSEDebiasedBCE``
+        ``XGBSEBootstrapEstimator``
     estimator_params: dict
         Parameters passed to find the best estimator using optimization
-        method. For CATBOOST_CLASSIFICATION_PARAMS_DEFAULT are :     "nan_mode": "Min",
+        method. For CatBoostClassifier are :     "nan_mode": "Min",
         "eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -614,7 +749,7 @@ def _calc_best_estimator_optuna_univariate(
         "min_data_in_leaf","loss_function","learning_rate","score_function",
         "task_type","leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For CATBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For CatBoostRegressor are :
         "nan_mode","eval_metric","iterations","sampling_frequency","leaf_estimation_method",
         "grow_policy","penalties_coefficient","boosting_type","model_shrink_mode",
         "feature_border_type","bayesian_matrix_reg","force_unit_auto_pair_weights",
@@ -626,7 +761,7 @@ def _calc_best_estimator_optuna_univariate(
         "loss_function","learning_rate","score_function","task_type",
         "leaf_estimation_iterations","bootstrap_type","max_leaves"
 
-        For XGBOOST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For XGBClassifier are :
         "objective","use_label_encoder","base_score","booster",
         "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
         "early_stopping_rounds","enable_categorical","eval_metric","gamma",
@@ -637,7 +772,7 @@ def _calc_best_estimator_optuna_univariate(
         "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
         "tree_method","validate_parameters","verbosity"
 
-        For XGBOOST_REGRESSION_PARAMS_DEFAULT are :
+    For XGBRegressor are :
         "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
         "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
         "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
@@ -647,37 +782,63 @@ def _calc_best_estimator_optuna_univariate(
         "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
         "verbosity"
 
-        For RANDOMFOREST_CLASSIFICATION_PARAMS_DEFAULT are :
+    For RandomForestClassifier are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","class_weight",
         "ccp_alpha","max_samples"
 
-        For RANDOMFOREST_REGRESSION_PARAMS_DEFAULT are :
+    For RandomForestRegressor are :
         "n_estimators","criterion","max_depth","min_samples_split",
         "min_samples_leaf","min_weight_fraction_leaf","max_features",
         "max_leaf_nodes","min_impurity_decrease","bootstrap","oob_score",
         "n_jobs","random_state","verbose","warm_start","ccp_alpha","max_samples"
 
-        For BLF_CLASSIFICATION_PARAMS_DEFAULT are :
+    For BalancedRandomForestClassifier are :
         "n_estimators","criterion"","max_depth","min_samples_split","min_samples_leaf",
         "min_weight_fraction_leaf","max_features","max_leaf_nodes","min_impurity_decrease",
         "bootstrap","oob_score","sampling_strategy","replacement","n_jobs","random_state",
         "verbose","warm_start","class_weight","ccp_alpha","max_samples"
 
-        For LGB_CLASSIFICATION_PARAMS_DEFAULT are:
+    For LGBMClassifier are:
         "boosting_type","num_leaves","max_depth","learning_rate","n_estimators",
         "subsample_for_bin","objective","class_weight","min_split_gain","min_child_weight",
         "min_child_samples","subsample","subsample_freq","colsample_bytree","reg_alpha",
         "reg_lambda","random_state","n_jobs","silent","importance_type"
 
-        For LGB_REGRESSION_PARAMS_DEFAULT are:
+    For LGBMRegressor are:
         "boosting_type","num_leaves","max_depth","learning_rate",
         "n_estimators","subsample_for_bin","objective","class_weight",
         "min_split_gain","min_child_weight","min_child_samples","subsample",
         "subsample_freq","colsample_bytree","reg_alpha","reg_lambda","random_state",
         "n_jobs","silent","importance_type"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "duration" set
+        for "xgbse_focus" parameters are exactly like XGBMRegressor:
+        "objective","base_score","booster","callbacks","colsample_bylevel","colsample_bynode",
+        "colsample_bytree","early_stopping_rounds","enable_categorical","eval_metric",
+        "gamma","gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step","max_depth",
+        "max_leaves","min_child_weight","missing","monotone_constraints","n_estimators",
+        "n_jobs","num_parallel_tree","predictor","random_state","reg_alpha","reg_lambda",
+        "sampling_method","scale_pos_weight","subsample","tree_method","validate_parameters",
+        "verbosity"
+
+    For "XGBSEKaplanNeighbors","XGBSEDebiasedBCE", and "XGBSEBootstrapEstimator" if "event" set
+        for "xgbse_focus" parameters are exactly like XGBMClassifier:
+        "objective","use_label_encoder","base_score","booster",
+        "callbacks","colsample_bylevel","colsample_bynode","colsample_bytree",
+        "early_stopping_rounds","enable_categorical","eval_metric","gamma",
+        "gpu_id","grow_policy","importance_type","interaction_constraints",
+        "learning_rate","max_bin","max_cat_to_onehot","max_delta_step",
+        "max_depth","max_leaves","min_child_weight","missing","monotone_constraints",
+        "n_estimators","n_jobs","num_parallel_tree","predictor","random_state",
+        "reg_alpha","reg_lambda","sampling_method","scale_pos_weight","subsample",
+        "tree_method","validate_parameters","verbosity"
+
+    For a complete list of supported parameters, always check:
+        https://github.com/drhosseinjavedani/zoish/blob/main/zoish/model_conf.py
     measure_of_accuracy : str
         Measurement of performance for classification and
         regression estimator during hyperparameter optimization while
@@ -713,62 +874,48 @@ def _calc_best_estimator_optuna_univariate(
         ``https://optuna.readthedocs.io/en/stable/reference/pruners.html``.
     with_stratified : bool
         Set True if you want data split in a stratified fashion. (default ``True``).
+    xgbse_focus : str
+        It is only applicable for xgbse (xgboost-survival-embeddings) models. If
+        the focus of feature selection is to optimize "duration" it should be set 
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
+        i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
+
     """
-    if estimator.__class__.__name__ == "XGBClassifier" and with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
-        )
-        print(train_x)
 
-    if estimator.__class__.__name__ == "XGBClassifier" and not with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, test_size=test_size, random_state=random_state
-        )
-        print(train_x)
-    if estimator.__class__.__name__ == "XGBRegressor":
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, test_size=test_size, random_state=random_state
-        )
+    # check to see if y has proper label names 
+    # for XGBSEKaplanNeighbors model !
+    # check to see if y has proper label names 
+    if (xgbse_focus=='duration' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBRegressor" )):
+            y = y['duration'].copy()
+            estimator = xgboost.XGBRegressor()
 
-    if estimator.__class__.__name__ == "CatBoostClassifier" and with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
-        )
-    if estimator.__class__.__name__ == "CatBoostClassifier" and not with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
-    if estimator.__class__.__name__ == "CatBoostRegressor":
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+    if (xgbse_focus =='event' and \
+            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBClassifier" )):
+            y = y['event'].copy()
+            estimator = xgboost.XGBClassifier()
+    
+    # train-test split for classifications
+    # and regression
 
-    if estimator.__class__.__name__ == "RandomForestClassifier" and with_stratified:
+    if xgbse_focus =='event' or \
+        'Classifier' in estimator.__class__.__name__  :
+        if with_stratified:
+            train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size)
+        else :
+            train_x, valid_x, train_y, valid_y = train_test_split(
+            X, y, stratify=None, test_size=test_size)
+    else :
         train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
-        )
-    if estimator.__class__.__name__ == "RandomForestClassifier" and not with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
-    if estimator.__class__.__name__ == "RandomForestRegressor":
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
-
-    if (
-        estimator.__class__.__name__ == "BalancedRandomForestClassifier"
-        and with_stratified
-    ):
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
-        )
-    if (
-        estimator.__class__.__name__ == "BalancedRandomForestClassifier"
-        and not with_stratified
-    ):
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
-
-    if estimator.__class__.__name__ == "LGBMClassifier" and with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
-        )
-    if estimator.__class__.__name__ == "LGBMClassifier" and not with_stratified:
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
-    if estimator.__class__.__name__ == "LGBMRegressor":
-        train_x, valid_x, train_y, valid_y = train_test_split(X, y, test_size=test_size)
+            X, y, stratify=None, test_size=test_size)
 
     def objective(trial):
         nonlocal train_x
@@ -777,46 +924,35 @@ def _calc_best_estimator_optuna_univariate(
         nonlocal valid_y
 
         if (
-            estimator.__class__.__name__ == "XGBClassifier"
-            or estimator.__class__.__name__ == "XGBRegressor"
+            estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
+            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
+            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
+            estimator.__class__.__name__ == "XGBClassifier" or \
+            estimator.__class__.__name__ == "XGBRegressor" 
+
         ):
             dtrain = xgboost.DMatrix(train_x, label=train_y)
             dvalid = xgboost.DMatrix(valid_x, label=valid_y)
             param = {}
             param["verbosity"] = verbose
-            # param["eval_metric"] = eval_metric
 
+            # add params to dict and make them
+            # ready for optuna
             for param_key in estimator_params.keys():
                 param[param_key] = _trail_param_retrive(
                     trial, estimator_params, param_key
                 )
-
-            # Add a callback for pruning.
-        if estimator.__class__.__name__ == "XGBClassifier":
-            pruning_callback = optuna.integration.XGBoostPruningCallback(
-                trial, "validation-auc"
-            )
-            pruning_callback = None
-        if estimator.__class__.__name__ == "XGBRegressor":
-            pruning_callback = optuna.integration.XGBoostPruningCallback(
-                trial, "validation-rmse"
-            )
-        if estimator.__class__.__name__ == "XGBRegressor":
             est = xgboost.train(
                 param,
                 dtrain,
-                evals=[(dvalid, "validation")],
-                callbacks=None,
+                evals=[(dvalid, "validation")]
             )
-        if estimator.__class__.__name__ == "XGBClassifier":
-            est = xgboost.train(
-                param,
-                dtrain,
-                evals=[(dvalid, "validation")],
-                callbacks=pruning_callback,
-            )
+            # predictions
             preds = est.predict(dvalid)
-            pred_labels = np.rint(preds)
+            # predictions will be ready for classification
+            if estimator.__class__.__name__ == "XGBClassifier" or \
+                xgbse_focus =='event':
+                pred_labels = np.rint(preds)
 
         if estimator.__class__.__name__ == "CatBoostClassifier":
 
@@ -826,7 +962,6 @@ def _calc_best_estimator_optuna_univariate(
                     trial, estimator_params, param_key
                 )
             param["verbose"] = verbose
-            # param["eval_metric"] = eval_metric
 
             catest = catboost.CatBoostClassifier(**param)
             catest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
@@ -841,7 +976,6 @@ def _calc_best_estimator_optuna_univariate(
                     trial, estimator_params, param_key
                 )
             param["verbose"] = verbose
-            # param["eval_metric"] = eval_metric
             lgbest = lightgbm.LGBMClassifier(**param)
             lgbest.fit(train_x, train_y, eval_set=[(valid_x, valid_y)], verbose=verbose)
             preds = lgbest.predict(valid_x)
@@ -936,9 +1070,14 @@ def _calc_best_estimator_optuna_univariate(
     trial = study.best_trial
 
     if (
-        estimator.__class__.__name__ == "XGBRegressor"
-        or estimator.__class__.__name__ == "XGBClassifier"
-    ):
+        estimator.__class__.__name__ == "XGBRegressor" or 
+        estimator.__class__.__name__ == "XGBClassifier" or 
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or 
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or 
+        estimator.__class__.__name__ == "XGBSEDebiasedBCE" or 
+        estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        ):
+
         dtrain = xgboost.DMatrix(train_x, label=train_y)
         dvalid = xgboost.DMatrix(valid_x, label=valid_y)
         print(trial.params)

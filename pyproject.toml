@@ -35,6 +35,9 @@ catboost = "^1.0.6"
 imblearn = "^0.0"
 lightgbm = "^3.3.2"
 category-encoders = "^2.5.0"
+xgbse = "^0.2.3"
+pycox = "^0.2.3"
+
 
 [tool.poetry.dev-dependencies]
 pytest = ">=6.2.4"

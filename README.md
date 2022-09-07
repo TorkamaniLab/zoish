@@ -30,6 +30,9 @@ pip install zoish
 - BalancedRandomForestClassifier 
 - LGBMClassifier [LightGBM](https://github.com/microsoft/LightGBM)
 - LGBMRegressor [LightGBM](https://github.com/microsoft/LightGBM)
+- XGBSEKaplanNeighbors [XGBoost Survival Embeddings](https://loft-br.github.io/xgboost-survival-embeddings/index.html)
+- XGBSEDebiasedBCE [XGBoost Survival Embeddings](https://loft-br.github.io/xgboost-survival-embeddings/index.html)
+- XGBSEBootstrapEstimator [XGBoost Survival Embeddings](https://loft-br.github.io/xgboost-survival-embeddings/index.html)
 
 ## Usage
 

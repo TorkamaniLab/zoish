@@ -10,6 +10,9 @@ SUPPORTED_MODELS = [
     "BalancedRandomForestClassifier",
     "LGBMClassifier",
     "LGBMRegressor",
+    "XGBSEKaplanNeighbors",
+    "XGBSEDebiasedBCE",
+    "XGBSEBootstrapEstimator",
 ]
 
 # list of Integer parameters for the estimator. This is needed for breaking down parameters for trial
@@ -368,3 +371,4 @@ LGB_REGRESSION_PARAMS_DEFAULT = {
     "silent": "warn",
     "importance_type": "split",
 }
+
