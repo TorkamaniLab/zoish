@@ -1,10 +1,11 @@
 import logging
-import xgboost
+
 import fasttreeshap
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import shap
+import xgboost
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import StratifiedKFold
 
@@ -253,13 +254,13 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
     performance_metric : str
         Measurement of performance for classification and
         regression estimator during hyperparameter optimization while
-        estimating best estimator. 
-        
-        Classification-supported measurments are: 
+        estimating best estimator.
+
+        Classification-supported measurments are:
         f1, f1_score, acc, accuracy_score, pr, precision_score,
         recall, recall_score, roc, roc_auc_score, roc_auc,
-        tp, true positive, tn, true negative. 
-        
+        tp, true positive, tn, true negative.
+
         Regression supported measurements are:
         r2, r2_score, explained_variance_score,
         max_error, mean_absolute_error, mean_squared_error,
@@ -271,8 +272,8 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
 
     xgbse_focus : str
         It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-        the focus of feature selection is to optimize "duration" it should be set 
-        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        the focus of feature selection is to optimize "duration" it should be set
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
         xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
         i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
@@ -326,7 +327,7 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         # grid params
         cv=StratifiedKFold(n_splits=3, shuffle=True),
         performance_metric="f1",
-        xgbse_focus = None,
+        xgbse_focus=None,
     ):
         """
             Parameters
@@ -553,13 +554,13 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         performance_metric : str
             Measurement of performance for classification and
             regression estimator during hyperparameter optimization while
-            estimating best estimator. 
-            
-            Classification-supported measurments are: 
+            estimating best estimator.
+
+            Classification-supported measurments are:
             f1, f1_score, acc, accuracy_score, pr, precision_score,
             recall, recall_score, roc, roc_auc_score, roc_auc,
-            tp, true positive, tn, true negative. 
-            
+            tp, true positive, tn, true negative.
+
             Regression supported measurements are:
             r2, r2_score, explained_variance_score,
             max_error, mean_absolute_error, mean_squared_error,
@@ -571,22 +572,26 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
 
         xgbse_focus : str
             It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-            the focus of feature selection is to optimize "duration" it should be set 
-            xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+            the focus of feature selection is to optimize "duration" it should be set
+            xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
             xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
             i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
         """
         self.logging_basicConfig = logging_basicConfig
         logging.basicConfig = self.logging_basicConfig
-        self.xgbse_focus=xgbse_focus
+        self.xgbse_focus = xgbse_focus
 
         self.verbose = verbose
         self.random_state = random_state
         self.n_features = n_features
-        self.list_of_obligatory_features_that_must_be_in_model = list_of_obligatory_features_that_must_be_in_model
-        
-        self.list_of_features_to_drop_before_any_selection = list_of_features_to_drop_before_any_selection
+        self.list_of_obligatory_features_that_must_be_in_model = (
+            list_of_obligatory_features_that_must_be_in_model
+        )
+
+        self.list_of_features_to_drop_before_any_selection = (
+            list_of_features_to_drop_before_any_selection
+        )
         self.estimator = estimator
         self.estimator_params = estimator_params
         self.model_output = model_output
@@ -709,10 +714,12 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
         logging.info(self.estimator)
         # get parameters for xgbse.XGBSEKaplanNeighbors and others and check if
         # the selected parameters in the list or not
-        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
-            self.xgbse_focus=='duration':
+        if (
+            self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+            or self.estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+            or self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+            and self.xgbse_focus == "duration"
+        ):
 
             if value.keys() <= XGBOOST_REGRESSION_PARAMS_DEFAULT.keys():
                 logging.info("Setting value for estimator_params")
@@ -724,10 +731,12 @@ class GridSearchCVShapFeatureSelector(BaseEstimator, TransformerMixin):
                 )
             # change the base estimator to XGBRegressor
             self.estimator = xgboost.XGBRegressor()
-        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
-            self.xgbse_focus =='event':
+        if (
+            self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+            or self.estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+            or self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+            and self.xgbse_focus == "event"
+        ):
             if value.keys() <= XGBOOST_CLASSIFICATION_PARAMS_DEFAULT.keys():
                 logging.info("Setting value for estimator_params")
                 self._estimator_params = value

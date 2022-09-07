@@ -1,7 +1,6 @@
 import catboost
 import lightgbm
 import numpy as np
-import optuna
 import xgboost
 from imblearn.ensemble import BalancedRandomForestClassifier
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
@@ -21,8 +20,9 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-from xgbse.metrics import concordance_index
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split
+from xgbse.metrics import concordance_index
+
 from zoish.model_conf import Categorical_list, Integer_list
 
 maping_mesurements = {
@@ -46,8 +46,7 @@ maping_mesurements = {
     "roc_auc_score": roc_auc_score,
     "roc": roc_auc_score,
     "roc_auc": roc_auc_score,
-    "cind" :   concordance_index ,
-
+    "cind": concordance_index,
 }
 
 
@@ -215,10 +214,7 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
         recall = recall_score(valid_y, pred_labels)
     if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
         roc = roc_auc_score(valid_y, pred_labels)
-    if (
-        SCORE_TYPE == "cind"
-        or SCORE_TYPE == "c-index"
-    ):
+    if SCORE_TYPE == "cind" or SCORE_TYPE == "c-index":
         cind = concordance_index(valid_y, pred_labels)
 
     tn, _, _, tp = confusion_matrix(valid_y, pred_labels, labels=[0, 1]).ravel()
@@ -240,12 +236,8 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
         sum_errors = sum_errors + recall
     if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
         sum_errors = sum_errors + roc
-    if (
-        SCORE_TYPE == "cind"
-        or SCORE_TYPE == "c-index"
-    ):
+    if SCORE_TYPE == "cind" or SCORE_TYPE == "c-index":
         sum_errors = sum_errors + cind
-
 
     # other metrics - not often use
 
@@ -308,7 +300,14 @@ def _calc_metric_for_single_output_regression(valid_y, pred_labels, SCORE_TYPE):
 
 
 def _calc_best_estimator_grid_search(
-    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, cv,
+    X,
+    y,
+    estimator,
+    estimator_params,
+    performance_metric,
+    verbose,
+    n_jobs,
+    cv,
     xgbse_focus,
 ):
     """Internal function for returning best estimator using
@@ -462,27 +461,29 @@ def _calc_best_estimator_grid_search(
             will be the same across calls.
     xgbse_focus : str
         It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-        the focus of feature selection is to optimize "duration" it should be set 
-        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        the focus of feature selection is to optimize "duration" it should be set
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
         xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
         i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
     """
-    # check to see if y has proper label names 
-    if (xgbse_focus=='duration' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBRegressor" )):
-            y = y['duration'].copy()
-            estimator = xgboost.XGBRegressor()
+    # check to see if y has proper label names
+    if xgbse_focus == "duration" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBRegressor"
+    ):
+        y = y["duration"].copy()
+        estimator = xgboost.XGBRegressor()
 
-    if (xgbse_focus =='event' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBClassifier" )):
-            y = y['event'].copy()
-            estimator = xgboost.XGBClassifier()
+    if xgbse_focus == "event" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBClassifier"
+    ):
+        y = y["event"].copy()
+        estimator = xgboost.XGBClassifier()
 
     grid_search = GridSearchCV(
         estimator,
@@ -499,7 +500,15 @@ def _calc_best_estimator_grid_search(
 
 
 def _calc_best_estimator_random_search(
-    X, y, estimator, estimator_params, performance_metric, verbose, n_jobs, n_iter, cv,
+    X,
+    y,
+    estimator,
+    estimator_params,
+    performance_metric,
+    verbose,
+    n_jobs,
+    n_iter,
+    cv,
     xgbse_focus,
 ):
     """Internal function for returning best estimator using
@@ -657,29 +666,31 @@ def _calc_best_estimator_random_search(
 
     xgbse_focus : str
         It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-        the focus of feature selection is to optimize "duration" it should be set 
-        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        the focus of feature selection is to optimize "duration" it should be set
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
         xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
         i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
     """
-    # check to see if y has proper label names 
-    # check to see if y has proper label names 
-    if (xgbse_focus=='duration' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBRegressor" )):
-            y = y['duration'].copy()
-            estimator = xgboost.XGBRegressor()
+    # check to see if y has proper label names
+    # check to see if y has proper label names
+    if xgbse_focus == "duration" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBRegressor"
+    ):
+        y = y["duration"].copy()
+        estimator = xgboost.XGBRegressor()
 
-    if (xgbse_focus =='event' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBClassifier" )):
-            y = y['event'].copy()
-            estimator = xgboost.XGBClassifier()
+    if xgbse_focus == "event" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBClassifier"
+    ):
+        y = y["event"].copy()
+        estimator = xgboost.XGBClassifier()
 
     random_search = RandomizedSearchCV(
         estimator,
@@ -694,6 +705,7 @@ def _calc_best_estimator_random_search(
     random_search.fit(X, y)
     best_estimator = random_search.best_estimator_
     return best_estimator
+
 
 def _calc_best_estimator_optuna_univariate(
     X,
@@ -876,46 +888,50 @@ def _calc_best_estimator_optuna_univariate(
         Set True if you want data split in a stratified fashion. (default ``True``).
     xgbse_focus : str
         It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-        the focus of feature selection is to optimize "duration" it should be set 
-        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        the focus of feature selection is to optimize "duration" it should be set
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
         xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
         i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
     """
 
-    # check to see if y has proper label names 
+    # check to see if y has proper label names
     # for XGBSEKaplanNeighbors model !
-    # check to see if y has proper label names 
-    if (xgbse_focus=='duration' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBRegressor" )):
-            y = y['duration'].copy()
-            estimator = xgboost.XGBRegressor()
+    # check to see if y has proper label names
+    if xgbse_focus == "duration" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBRegressor"
+    ):
+        y = y["duration"].copy()
+        estimator = xgboost.XGBRegressor()
 
-    if (xgbse_focus =='event' and \
-            (estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBClassifier" )):
-            y = y['event'].copy()
-            estimator = xgboost.XGBClassifier()
-    
+    if xgbse_focus == "event" and (
+        estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+        or estimator.__class__.__name__ == "XGBClassifier"
+    ):
+        y = y["event"].copy()
+        estimator = xgboost.XGBClassifier()
+
     # train-test split for classifications
     # and regression
 
-    if xgbse_focus =='event' or \
-        'Classifier' in estimator.__class__.__name__  :
+    if xgbse_focus == "event" or "Classifier" in estimator.__class__.__name__:
         if with_stratified:
             train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size)
-        else :
+                X, y, stratify=y[y.columns.to_list()[0]], test_size=test_size
+            )
+        else:
             train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=None, test_size=test_size)
-    else :
+                X, y, stratify=None, test_size=test_size
+            )
+    else:
         train_x, valid_x, train_y, valid_y = train_test_split(
-            X, y, stratify=None, test_size=test_size)
+            X, y, stratify=None, test_size=test_size
+        )
 
     def objective(trial):
         nonlocal train_x
@@ -924,12 +940,11 @@ def _calc_best_estimator_optuna_univariate(
         nonlocal valid_y
 
         if (
-            estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            estimator.__class__.__name__ == "XGBSEBootstrapEstimator" or \
-            estimator.__class__.__name__ == "XGBClassifier" or \
-            estimator.__class__.__name__ == "XGBRegressor" 
-
+            estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+            or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+            or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+            or estimator.__class__.__name__ == "XGBClassifier"
+            or estimator.__class__.__name__ == "XGBRegressor"
         ):
             dtrain = xgboost.DMatrix(train_x, label=train_y)
             dvalid = xgboost.DMatrix(valid_x, label=valid_y)
@@ -942,16 +957,14 @@ def _calc_best_estimator_optuna_univariate(
                 param[param_key] = _trail_param_retrive(
                     trial, estimator_params, param_key
                 )
-            est = xgboost.train(
-                param,
-                dtrain,
-                evals=[(dvalid, "validation")]
-            )
+            est = xgboost.train(param, dtrain, evals=[(dvalid, "validation")])
             # predictions
             preds = est.predict(dvalid)
             # predictions will be ready for classification
-            if estimator.__class__.__name__ == "XGBClassifier" or \
-                xgbse_focus =='event':
+            if (
+                estimator.__class__.__name__ == "XGBClassifier"
+                or xgbse_focus == "event"
+            ):
                 pred_labels = np.rint(preds)
 
         if estimator.__class__.__name__ == "CatBoostClassifier":
@@ -1070,13 +1083,13 @@ def _calc_best_estimator_optuna_univariate(
     trial = study.best_trial
 
     if (
-        estimator.__class__.__name__ == "XGBRegressor" or 
-        estimator.__class__.__name__ == "XGBClassifier" or 
-        estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or 
-        estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or 
-        estimator.__class__.__name__ == "XGBSEDebiasedBCE" or 
-        estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
-        ):
+        estimator.__class__.__name__ == "XGBRegressor"
+        or estimator.__class__.__name__ == "XGBClassifier"
+        or estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+        or estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+        or estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+    ):
 
         dtrain = xgboost.DMatrix(train_x, label=train_y)
         dvalid = xgboost.DMatrix(valid_x, label=valid_y)

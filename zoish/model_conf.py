@@ -371,4 +371,3 @@ LGB_REGRESSION_PARAMS_DEFAULT = {
     "silent": "warn",
     "importance_type": "split",
 }
-

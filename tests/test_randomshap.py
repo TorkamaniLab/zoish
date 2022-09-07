@@ -150,39 +150,39 @@ def test_random_feature_selector():
 
     )
 
-    random_classification_lightgbm = RandomizedSearchCVShapFeatureSelector(
-            # general argument setting        
-            verbose=5,
-            random_state=0,
-            logging_basicConfig = None,
-            # general argument setting        
-            n_features=4,
-            list_of_obligatory_features_that_must_be_in_model=[],
-            list_of_features_to_drop_before_any_selection=[],
-            # shap argument setting        
-            estimator=lightgbm.LGBMClassifier(),
-            estimator_params={
-            "max_depth": [4, 5],
-            },
-            # shap arguments
-            model_output="raw", 
-            feature_perturbation="interventional", 
-            algorithm="auto", 
-            shap_n_jobs=-1, 
-            memory_tolerance=-1, 
-            feature_names=None, 
-            approximate=False, 
-            shortcut=False, 
-            plot_shap_summary=False,
-            save_shap_summary_plot=False,
-            path_to_save_plot = './summary_plot.png',
-            shap_fig = plt.figure(),
-            ## optuna params
-            performance_metric = 'roc',
-            n_iter=10,
-            cv = StratifiedKFold(n_splits=3, shuffle=True),
+#     random_classification_lightgbm = RandomizedSearchCVShapFeatureSelector(
+#             # general argument setting        
+#             verbose=5,
+#             random_state=0,
+#             logging_basicConfig = None,
+#             # general argument setting        
+#             n_features=4,
+#             list_of_obligatory_features_that_must_be_in_model=[],
+#             list_of_features_to_drop_before_any_selection=[],
+#             # shap argument setting        
+#             estimator=lightgbm.LGBMClassifier(),
+#             estimator_params={
+#             "max_depth": [4, 5],
+#             },
+#             # shap arguments
+#             model_output="raw", 
+#             feature_perturbation="interventional", 
+#             algorithm="auto", 
+#             shap_n_jobs=-1, 
+#             memory_tolerance=-1, 
+#             feature_names=None, 
+#             approximate=False, 
+#             shortcut=False, 
+#             plot_shap_summary=False,
+#             save_shap_summary_plot=False,
+#             path_to_save_plot = './summary_plot.png',
+#             shap_fig = plt.figure(),
+#             ## optuna params
+#             performance_metric = 'roc',
+#             n_iter=10,
+#             cv = StratifiedKFold(n_splits=3, shuffle=True),
 
-    )
+#     )
 
     random_regression_xgb = RandomizedSearchCVShapFeatureSelector(
             # general argument setting        
@@ -286,39 +286,39 @@ def test_random_feature_selector():
 
     )
 
-    random_regression_lightgbm = RandomizedSearchCVShapFeatureSelector(
-            # general argument setting        
-            verbose=5,
-            random_state=0,
-            logging_basicConfig = None,
-            # general argument setting        
-            n_features=4,
-            list_of_obligatory_features_that_must_be_in_model=[],
-            list_of_features_to_drop_before_any_selection=[],
-            # shap argument setting        
-            estimator=lightgbm.LGBMRegressor(),
-            estimator_params={
-            "max_depth": [4, 5],
-            },
-            # shap arguments
-            model_output="raw", 
-            feature_perturbation="interventional", 
-            algorithm="auto", 
-            shap_n_jobs=-1, 
-            memory_tolerance=-1, 
-            feature_names=None, 
-            approximate=False, 
-            shortcut=False, 
-            plot_shap_summary=False,
-            save_shap_summary_plot=False,
-            path_to_save_plot = './summary_plot.png',
-            shap_fig = plt.figure(),
-            ## optuna params
-            performance_metric = 'r2',
-            n_iter=10,
-            cv = StratifiedKFold(n_splits=3, shuffle=True),
+#     random_regression_lightgbm = RandomizedSearchCVShapFeatureSelector(
+#             # general argument setting        
+#             verbose=5,
+#             random_state=0,
+#             logging_basicConfig = None,
+#             # general argument setting        
+#             n_features=4,
+#             list_of_obligatory_features_that_must_be_in_model=[],
+#             list_of_features_to_drop_before_any_selection=[],
+#             # shap argument setting        
+#             estimator=lightgbm.LGBMRegressor(),
+#             estimator_params={
+#             "max_depth": [4, 5],
+#             },
+#             # shap arguments
+#             model_output="raw", 
+#             feature_perturbation="interventional", 
+#             algorithm="auto", 
+#             shap_n_jobs=-1, 
+#             memory_tolerance=-1, 
+#             feature_names=None, 
+#             approximate=False, 
+#             shortcut=False, 
+#             plot_shap_summary=False,
+#             save_shap_summary_plot=False,
+#             path_to_save_plot = './summary_plot.png',
+#             shap_fig = plt.figure(),
+#             ## optuna params
+#             performance_metric = 'r2',
+#             n_iter=10,
+#             cv = StratifiedKFold(n_splits=3, shuffle=True),
 
-    )
+#     )
 
     try:
         #ROOT_PROJECT = Path(__file__).parent.parent
@@ -348,8 +348,8 @@ def test_random_feature_selector():
     random_classification_brf.fit_transform(X_train, y_train)
     random_classification_brf = random_classification_brf.transform(X_test)
     # test Lightgbm
-    random_classification_lightgbm.fit_transform(X_train, y_train)
-    random_classification_lightgbm = random_classification_lightgbm.transform(X_test)
+#     random_classification_lightgbm.fit_transform(X_train, y_train)
+#     random_classification_lightgbm = random_classification_lightgbm.transform(X_test)
 
 
     ## test regressions
@@ -363,8 +363,8 @@ def test_random_feature_selector():
     random_regression_rf.fit_transform(X_train, y_train)
     random_regression_rf = random_regression_rf.transform(X_test)
     # test Lightgbm
-    random_regression_lightgbm.fit_transform(X_train, y_train)
-    random_regression_lightgbm = random_regression_lightgbm.transform(X_test)
+#     random_regression_lightgbm.fit_transform(X_train, y_train)
+#     random_regression_lightgbm = random_regression_lightgbm.transform(X_test)
 
 
 
@@ -373,11 +373,11 @@ def test_random_feature_selector():
     assert len(random_classification_catboost.columns.to_list())==4
     assert len(random_classification_rf.columns.to_list())==4
     assert len(random_classification_brf.columns.to_list())==4
-    assert len(random_classification_lightgbm.columns.to_list())==4
+    #assert len(random_classification_lightgbm.columns.to_list())==4
 
     assert len(random_regression_xgb.columns.to_list())==4
     assert len(random_regression_catboost.columns.to_list())==4
     assert len(random_regression_rf.columns.to_list())==4
-    assert len(random_regression_lightgbm.columns.to_list())==4
+    #assert len(random_regression_lightgbm.columns.to_list())==4
 
 

@@ -1,11 +1,12 @@
 import logging
-import xgboost
+
 import fasttreeshap
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
 import shap
+import xgboost
 from optuna.pruners import HyperbandPruner
 from optuna.samplers import TPESampler
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -295,11 +296,11 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         flag to :obj:`True`.
     study_optimize_show_progress_bar: bool
         Flag to show progress bars or not. To disable progress bar.
-    
+
     xgbse_focus : str
         It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-        the focus of feature selection is to optimize "duration" it should be set 
-        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+        the focus of feature selection is to optimize "duration" it should be set
+        xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
         xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
         i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
@@ -375,8 +376,7 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         study_optimize_callbacks=None,
         study_optimize_gc_after_trial=False,
         study_optimize_show_progress_bar=False,
-        xgbse_focus = None,
-
+        xgbse_focus=None,
     ):
         """
             Parameters
@@ -643,11 +643,11 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
             flag to :obj:`True`.
         study_optimize_show_progress_bar: bool
             Flag to show progress bars or not. To disable progress bar.
-        
+
         xgbse_focus : str
             It is only applicable for xgbse (xgboost-survival-embeddings) models. If
-            the focus of feature selection is to optimize "duration" it should be set 
-            xgbse_focus = "duration", if feature selection is to optimize "event" it should be set 
+            the focus of feature selection is to optimize "duration" it should be set
+            xgbse_focus = "duration", if feature selection is to optimize "event" it should be set
             xgbse_focus = "event". In both cases estimator argument, should be one of supported models,
             i.e., "XGBSEKaplanNeighbors", "XGBSEDebiasedBCE", or "XGBSEBootstrapEstimator".
 
@@ -655,7 +655,7 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         """
         self.logging_basicConfig = logging_basicConfig
         self.verbose = verbose
-        self.xgbse_focus=xgbse_focus
+        self.xgbse_focus = xgbse_focus
         self.random_state = random_state
         self.n_features = n_features
         self.list_of_obligatory_features_that_must_be_in_model = (
@@ -704,6 +704,7 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
     def xgbse_focus(self, value):
         logging.info("Setting value for xgbse_focus")
         self._xgbse_focus = value
+
     @property
     def logging_basicConfig(self):
         logging.info("Getting value for logging_basicConfig")
@@ -796,10 +797,12 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
         logging.info(self.estimator)
         # get parameters for xgbse.XGBSEKaplanNeighbors and others and check if
         # the selected parameters in the list or not
-        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
-            self.xgbse_focus=='duration':
+        if (
+            self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+            or self.estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+            or self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+            and self.xgbse_focus == "duration"
+        ):
 
             if value.keys() <= XGBOOST_REGRESSION_PARAMS_DEFAULT.keys():
                 logging.info("Setting value for estimator_params")
@@ -811,10 +814,12 @@ class OptunaShapFeatureSelector(BaseEstimator, TransformerMixin):
                 )
             # change the base estimator to XGBRegressor
             self.estimator = xgboost.XGBRegressor()
-        if self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors" or \
-            self.estimator.__class__.__name__ == "XGBSEDebiasedBCE" or \
-            self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator" and \
-            self.xgbse_focus =='event':
+        if (
+            self.estimator.__class__.__name__ == "XGBSEKaplanNeighbors"
+            or self.estimator.__class__.__name__ == "XGBSEDebiasedBCE"
+            or self.estimator.__class__.__name__ == "XGBSEBootstrapEstimator"
+            and self.xgbse_focus == "event"
+        ):
             if value.keys() <= XGBOOST_CLASSIFICATION_PARAMS_DEFAULT.keys():
                 logging.info("Setting value for estimator_params")
                 self._estimator_params = value

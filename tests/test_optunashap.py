@@ -236,52 +236,52 @@ def test_optuna_feature_selector():
 
     )
 
-    optuna_classification_lightgbm = OptunaShapFeatureSelector(
-        # general argument setting        
-        verbose=1,
-        random_state=0,
-        logging_basicConfig = None,
-        # general argument setting        
-        n_features=4,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        # shap argument setting        
-        estimator=lightgbm.LGBMClassifier(),
-        estimator_params={
-        "max_depth": [4, 9],
-        "reg_alpha": [0, 1],
+    # optuna_classification_lightgbm = OptunaShapFeatureSelector(
+    #     # general argument setting        
+    #     verbose=1,
+    #     random_state=0,
+    #     logging_basicConfig = None,
+    #     # general argument setting        
+    #     n_features=4,
+    #     list_of_obligatory_features_that_must_be_in_model=[],
+    #     list_of_features_to_drop_before_any_selection=[],
+    #     # shap argument setting        
+    #     estimator=lightgbm.LGBMClassifier(),
+    #     estimator_params={
+    #     "max_depth": [4, 9],
+    #     "reg_alpha": [0, 1],
 
-        },
-        # shap arguments
-        model_output="raw", 
-        feature_perturbation="interventional", 
-        algorithm="auto", 
-        shap_n_jobs=-1, 
-        memory_tolerance=-1, 
-        feature_names=None, 
-        approximate=False, 
-        shortcut=False, 
-        plot_shap_summary=False,
-        save_shap_summary_plot=True,
-        path_to_save_plot = './summary_plot.png',
-        shap_fig = plt.figure(),
-        ## optuna params
-        test_size=0.33,
-        with_stratified = False,
-        performance_metric = 'f1',
-        # optuna study init params
-        study = optuna.create_study(
-            storage = None,
-            sampler = TPESampler(),
-            pruner= HyperbandPruner(),
-            study_name  = None,
-            direction = "maximize",
-            load_if_exists = False,
-            directions  = None,
-            ),
-        study_optimize_objective_n_trials=10, 
+    #     },
+    #     # shap arguments
+    #     model_output="raw", 
+    #     feature_perturbation="interventional", 
+    #     algorithm="auto", 
+    #     shap_n_jobs=-1, 
+    #     memory_tolerance=-1, 
+    #     feature_names=None, 
+    #     approximate=False, 
+    #     shortcut=False, 
+    #     plot_shap_summary=False,
+    #     save_shap_summary_plot=True,
+    #     path_to_save_plot = './summary_plot.png',
+    #     shap_fig = plt.figure(),
+    #     ## optuna params
+    #     test_size=0.33,
+    #     with_stratified = False,
+    #     performance_metric = 'f1',
+    #     # optuna study init params
+    #     study = optuna.create_study(
+    #         storage = None,
+    #         sampler = TPESampler(),
+    #         pruner= HyperbandPruner(),
+    #         study_name  = None,
+    #         direction = "maximize",
+    #         load_if_exists = False,
+    #         directions  = None,
+    #         ),
+    #     study_optimize_objective_n_trials=10, 
 
-    )
+    # )
 
     optuna_regression_xgb = OptunaShapFeatureSelector(
         # general argument setting        
@@ -451,61 +451,61 @@ def test_optuna_feature_selector():
 
     )
 
-    optuna_regression_lightgbm = OptunaShapFeatureSelector(
-        # general argument setting        
-        verbose=1,
-        random_state=0,
-        logging_basicConfig = None,
-        # general argument setting        
-        n_features=4,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        # shap argument setting        
-        estimator=lightgbm.LGBMRegressor(),
-        estimator_params={
-        "max_depth": [4, 5],
-        # "min_child_weight": [0.1, 0.9],
-        # "gamma": [1, 9],
-        },
-        # shap arguments
-        model_output="raw", 
-        feature_perturbation="interventional", 
-        algorithm="auto", 
-        shap_n_jobs=-1, 
-        memory_tolerance=-1, 
-        feature_names=None, 
-        approximate=False, 
-        shortcut=False, 
-        plot_shap_summary=False,
-        save_shap_summary_plot=False,
-        path_to_save_plot = './summary_plot.png',
-        shap_fig = plt.figure(),
-        ## optuna params
-        test_size=0.33,
-        with_stratified = False,
-        performance_metric = 'r2',
-        # optuna study init params
-        study = optuna.create_study(
-            storage = None,
-            sampler = TPESampler(),
-            pruner= HyperbandPruner(),
-            study_name  = None,
-            direction = "maximize",
-            load_if_exists = False,
-            directions  = None,
-        ),
-        # optuna optimization params
-        study_optimize_objective = None,
-        study_optimize_objective_n_trials=10, 
-        study_optimize_objective_timeout=600,
-        study_optimize_n_jobs = -1,
-        study_optimize_catch= (),
-        study_optimize_callbacks = None,
-        study_optimize_gc_after_trial = False,
-        study_optimize_show_progress_bar=False,
+    # optuna_regression_lightgbm = OptunaShapFeatureSelector(
+    #     # general argument setting        
+    #     verbose=1,
+    #     random_state=0,
+    #     logging_basicConfig = None,
+    #     # general argument setting        
+    #     n_features=4,
+    #     list_of_obligatory_features_that_must_be_in_model=[],
+    #     list_of_features_to_drop_before_any_selection=[],
+    #     # shap argument setting        
+    #     estimator=lightgbm.LGBMRegressor(),
+    #     estimator_params={
+    #     "max_depth": [4, 5],
+    #     # "min_child_weight": [0.1, 0.9],
+    #     # "gamma": [1, 9],
+    #     },
+    #     # shap arguments
+    #     model_output="raw", 
+    #     feature_perturbation="interventional", 
+    #     algorithm="auto", 
+    #     shap_n_jobs=-1, 
+    #     memory_tolerance=-1, 
+    #     feature_names=None, 
+    #     approximate=False, 
+    #     shortcut=False, 
+    #     plot_shap_summary=False,
+    #     save_shap_summary_plot=False,
+    #     path_to_save_plot = './summary_plot.png',
+    #     shap_fig = plt.figure(),
+    #     ## optuna params
+    #     test_size=0.33,
+    #     with_stratified = False,
+    #     performance_metric = 'r2',
+    #     # optuna study init params
+    #     study = optuna.create_study(
+    #         storage = None,
+    #         sampler = TPESampler(),
+    #         pruner= HyperbandPruner(),
+    #         study_name  = None,
+    #         direction = "maximize",
+    #         load_if_exists = False,
+    #         directions  = None,
+    #     ),
+    #     # optuna optimization params
+    #     study_optimize_objective = None,
+    #     study_optimize_objective_n_trials=10, 
+    #     study_optimize_objective_timeout=600,
+    #     study_optimize_n_jobs = -1,
+    #     study_optimize_catch= (),
+    #     study_optimize_callbacks = None,
+    #     study_optimize_gc_after_trial = False,
+    #     study_optimize_show_progress_bar=False,
 
 
-    )
+    # )
 
     try:
         #ROOT_PROJECT = Path(__file__).parent.parent
@@ -551,8 +551,8 @@ def test_optuna_feature_selector():
     optuna_regression_rf.fit_transform(X_train, y_train)
     optuna_regression_rf = optuna_regression_rf.transform(X_test)
 #     # test Lightgbm
-    optuna_regression_lightgbm.fit_transform(X_train, y_train)
-    optuna_regression_lightgbm = optuna_regression_lightgbm.transform(X_test)
+    # optuna_regression_lightgbm.fit_transform(X_train, y_train)
+    # optuna_regression_lightgbm = optuna_regression_lightgbm.transform(X_test)
 
 
 
@@ -566,6 +566,6 @@ def test_optuna_feature_selector():
     assert len(optuna_regression_xgb.columns.to_list())==4
     assert len(optuna_regression_catboost.columns.to_list())==4
     assert len(optuna_regression_rf.columns.to_list())==4
-    assert len(optuna_regression_lightgbm.columns.to_list())==4
+    #assert len(optuna_regression_lightgbm.columns.to_list())==4
 
 

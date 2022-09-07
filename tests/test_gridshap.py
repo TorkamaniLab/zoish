@@ -146,38 +146,38 @@ def test_grid_feature_selector():
 
     )
 
-    grid_classification_lightgbm = GridSearchCVShapFeatureSelector(
-            # general argument setting        
-            verbose=5,
-            random_state=0,
-            logging_basicConfig = None,
-            # general argument setting        
-            n_features=4,
-            list_of_obligatory_features_that_must_be_in_model=[],
-            list_of_features_to_drop_before_any_selection=[],
-            # shap argument setting        
-            estimator=lightgbm.LGBMClassifier(),
-            estimator_params={
-            "max_depth": [4, 5],
-            },
-            # shap arguments
-            model_output="raw", 
-            feature_perturbation="interventional", 
-            algorithm="auto", 
-            shap_n_jobs=-1, 
-            memory_tolerance=-1, 
-            feature_names=None, 
-            approximate=False, 
-            shortcut=False, 
-            plot_shap_summary=False,
-            save_shap_summary_plot=False,
-            path_to_save_plot = './summary_plot.png',
-            shap_fig = plt.figure(),
-            ## optuna params
-            performance_metric = 'roc',
-            cv = StratifiedKFold(n_splits=3, shuffle=True),
+#     grid_classification_lightgbm = GridSearchCVShapFeatureSelector(
+#             # general argument setting        
+#             verbose=5,
+#             random_state=0,
+#             logging_basicConfig = None,
+#             # general argument setting        
+#             n_features=4,
+#             list_of_obligatory_features_that_must_be_in_model=[],
+#             list_of_features_to_drop_before_any_selection=[],
+#             # shap argument setting        
+#             estimator=lightgbm.LGBMClassifier(),
+#             estimator_params={
+#             "max_depth": [4, 5],
+#             },
+#             # shap arguments
+#             model_output="raw", 
+#             feature_perturbation="interventional", 
+#             algorithm="auto", 
+#             shap_n_jobs=-1, 
+#             memory_tolerance=-1, 
+#             feature_names=None, 
+#             approximate=False, 
+#             shortcut=False, 
+#             plot_shap_summary=False,
+#             save_shap_summary_plot=False,
+#             path_to_save_plot = './summary_plot.png',
+#             shap_fig = plt.figure(),
+#             ## optuna params
+#             performance_metric = 'roc',
+#             cv = StratifiedKFold(n_splits=3, shuffle=True),
 
-    )
+#     )
 
     grid_regression_xgb = GridSearchCVShapFeatureSelector(
             # general argument setting        
@@ -280,38 +280,38 @@ def test_grid_feature_selector():
 
 
 
-    grid_regression_lightgbm = GridSearchCVShapFeatureSelector(
-            # general argument setting        
-            verbose=5,
-            random_state=0,
-            logging_basicConfig = None,
-            # general argument setting        
-            n_features=4,
-            list_of_obligatory_features_that_must_be_in_model=[],
-            list_of_features_to_drop_before_any_selection=[],
-            # shap argument setting        
-            estimator=lightgbm.LGBMRegressor(),
-            estimator_params={
-            "max_depth": [4, 5],
-            },
-            # shap arguments
-            model_output="raw", 
-            feature_perturbation="interventional", 
-            algorithm="auto", 
-            shap_n_jobs=-1, 
-            memory_tolerance=-1, 
-            feature_names=None, 
-            approximate=False, 
-            shortcut=False, 
-            plot_shap_summary=False,
-            save_shap_summary_plot=False,
-            path_to_save_plot = './summary_plot.png',
-            shap_fig = plt.figure(),
-            ## optuna params
-            performance_metric = 'r2',
-            cv = StratifiedKFold(n_splits=3, shuffle=True),
+#     grid_regression_lightgbm = GridSearchCVShapFeatureSelector(
+#             # general argument setting        
+#             verbose=5,
+#             random_state=0,
+#             logging_basicConfig = None,
+#             # general argument setting        
+#             n_features=4,
+#             list_of_obligatory_features_that_must_be_in_model=[],
+#             list_of_features_to_drop_before_any_selection=[],
+#             # shap argument setting        
+#             estimator=lightgbm.LGBMRegressor(),
+#             estimator_params={
+#             "max_depth": [4, 5],
+#             },
+#             # shap arguments
+#             model_output="raw", 
+#             feature_perturbation="interventional", 
+#             algorithm="auto", 
+#             shap_n_jobs=-1, 
+#             memory_tolerance=-1, 
+#             feature_names=None, 
+#             approximate=False, 
+#             shortcut=False, 
+#             plot_shap_summary=False,
+#             save_shap_summary_plot=False,
+#             path_to_save_plot = './summary_plot.png',
+#             shap_fig = plt.figure(),
+#             ## optuna params
+#             performance_metric = 'r2',
+#             cv = StratifiedKFold(n_splits=3, shuffle=True),
 
-    )
+#     )
 
 
 
@@ -344,8 +344,8 @@ def test_grid_feature_selector():
     grid_classification_brf.fit_transform(X_train, y_train)
     grid_classification_brf = grid_classification_brf.transform(X_test)
     # test Lightgbm
-    grid_classification_lightgbm.fit_transform(X_train, y_train)
-    grid_classification_lightgbm = grid_classification_lightgbm.transform(X_test)
+#     grid_classification_lightgbm.fit_transform(X_train, y_train)
+#     grid_classification_lightgbm = grid_classification_lightgbm.transform(X_test)
 
 
     ## test regressions
@@ -359,8 +359,8 @@ def test_grid_feature_selector():
     grid_regression_rf.fit_transform(X_train, y_train)
     grid_regression_rf = grid_regression_rf.transform(X_test)
     # test Lightgbm
-    grid_regression_lightgbm.fit_transform(X_train, y_train)
-    grid_regression_lightgbm = grid_regression_lightgbm.transform(X_test)
+#     grid_regression_lightgbm.fit_transform(X_train, y_train)
+#     grid_regression_lightgbm = grid_regression_lightgbm.transform(X_test)
 
 
 
@@ -369,11 +369,11 @@ def test_grid_feature_selector():
     assert len(grid_classification_catboost.columns.to_list())==4
     assert len(grid_classification_rf.columns.to_list())==4
     assert len(grid_classification_brf.columns.to_list())==4
-    assert len(grid_classification_lightgbm.columns.to_list())==4
+    #assert len(grid_classification_lightgbm.columns.to_list())==4
 
     assert len(grid_regression_xgb.columns.to_list())==4
     assert len(grid_regression_catboost.columns.to_list())==4
     assert len(grid_regression_rf.columns.to_list())==4
-    assert len(grid_regression_lightgbm.columns.to_list())==4
+    #assert len(grid_regression_lightgbm.columns.to_list())==4
 
 
