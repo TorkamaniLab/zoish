@@ -198,6 +198,8 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
     sum_errors = 0
     if SCORE_TYPE == "f1" or SCORE_TYPE == "f1_score":
         f1 = f1_score(valid_y, pred_labels)
+    if SCORE_TYPE == "f1_multi" or SCORE_TYPE == "f1_score_f1_multi":
+        f1 = f1_score(valid_y, pred_labels, average="micro")
     if (
         SCORE_TYPE == "acc"
         or SCORE_TYPE == "accuracy_score"
@@ -205,34 +207,65 @@ def _calc_metric_for_single_output_classification(valid_y, pred_labels, SCORE_TY
     ):
         acc = accuracy_score(valid_y, pred_labels)
     if (
+        SCORE_TYPE == "acc_multi"
+        or SCORE_TYPE == "accuracy_score_multi"
+        or SCORE_TYPE == "accuracy_multi"
+    ):
+        acc = accuracy_score(valid_y, pred_labels, average="micro")
+    if (
         SCORE_TYPE == "pr"
         or SCORE_TYPE == "precision_score"
         or SCORE_TYPE == "precision"
     ):
         pr = precision_score(valid_y, pred_labels)
+    if (
+        SCORE_TYPE == "pr_multi"
+        or SCORE_TYPE == "precision_score_multi"
+        or SCORE_TYPE == "precision_multi"
+    ):
+        pr = precision_score(valid_y, pred_labels, average="micro")
+
+    if (
+        SCORE_TYPE == "recall_multi"
+        or SCORE_TYPE == "recall_score_multi"
+        or SCORE_TYPE == "recall_multi"
+    ):
+        recall = recall_score(valid_y, pred_labels, average="micro")
+
     if SCORE_TYPE == "recall" or SCORE_TYPE == "recall_score" or SCORE_TYPE == "recall":
         recall = recall_score(valid_y, pred_labels)
+
     if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
         roc = roc_auc_score(valid_y, pred_labels)
+
     if SCORE_TYPE == "cind" or SCORE_TYPE == "c-index":
         cind = concordance_index(valid_y, pred_labels)
 
     tn, _, _, tp = confusion_matrix(valid_y, pred_labels, labels=[0, 1]).ravel()
-    if SCORE_TYPE == "f1" or SCORE_TYPE == "f1_score":
+
+    if SCORE_TYPE == "f1" or SCORE_TYPE == "f1_score" or SCORE_TYPE == "f1_multi":
         sum_errors = sum_errors + f1
     if (
         SCORE_TYPE == "acc"
         or SCORE_TYPE == "accuracy_score"
         or SCORE_TYPE == "accuracy"
+        or SCORE_TYPE == "acc_multi"
     ):
         sum_errors = sum_errors + acc
     if (
         SCORE_TYPE == "pr"
         or SCORE_TYPE == "precision_score"
         or SCORE_TYPE == "precision"
+        or SCORE_TYPE == "pr_multi"
     ):
         sum_errors = sum_errors + pr
-    if SCORE_TYPE == "recall" or SCORE_TYPE == "recall_score" or SCORE_TYPE == "recall":
+    if (
+        SCORE_TYPE == "recall"
+        or SCORE_TYPE == "recall_score"
+        or SCORE_TYPE == "recall"
+        or SCORE_TYPE == "recall_multi"
+    ):
+
         sum_errors = sum_errors + recall
     if SCORE_TYPE == "roc" or SCORE_TYPE == "roc_auc_score" or SCORE_TYPE == "roc_auc":
         sum_errors = sum_errors + roc
