@@ -1,5 +1,38 @@
+# FROM python
+
+# # Keeps Python from generating .pyc files in the container
+# ENV PYTHONDONTWRITEBYTECODE 1
+# # Turns off buffering for easier container logging
+# ENV PYTHONUNBUFFERED 1
+# ENV username = $username
+# ENV password = $password
+# ENV gitusername = $gitusername
+# ENV gitpassword = $gitpassword
+
+# # Install and setup poetry
+# RUN pip install -U pip \
+#     && apt-get update \
+#     && apt install -y curl netcat \
+#     && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+# ENV PATH="${PATH}:/root/.poetry/bin"
+
+# WORKDIR /usr/src/zoish
+# COPY . .
+# RUN poetry config virtualenvs.create false 
+# RUN poetry install --no-interaction --no-ansi
+# RUN poetry build 
+# RUN chmod +x /usr/src/zoish/entrypoint.sh
+
+
+# # run entrypoint.sh
+# ENTRYPOINT ["/usr/src/zoish/entrypoint.sh"]
+
+
 FROM python
 
+RUN useradd -ms /bin/sh admin
+COPY --chown=admin:admin . /zoish
+ 
 # Keeps Python from generating .pyc files in the container
 ENV PYTHONDONTWRITEBYTECODE 1
 # Turns off buffering for easier container logging
@@ -8,21 +41,18 @@ ENV username = $username
 ENV password = $password
 ENV gitusername = $gitusername
 ENV gitpassword = $gitpassword
+ENV POETRY_VERSION=1.1.13
 
 # Install and setup poetry
-RUN pip install -U pip \
-    && apt-get update \
-    && apt install -y curl netcat \
-    && curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-ENV PATH="${PATH}:/root/.poetry/bin"
-
-WORKDIR /usr/src/zoish
-COPY . .
+WORKDIR /zoish
+RUN pip install "poetry==$POETRY_VERSION"
 RUN poetry config virtualenvs.create false 
-RUN poetry install --no-interaction --no-ansi
+RUN poetry install  --no-interaction --no-ansi
+
+USER admin
 RUN poetry build 
-RUN chmod +x /usr/src/zoish/entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
 
 # run entrypoint.sh
-ENTRYPOINT ["/usr/src/zoish/entrypoint.sh"]
+CMD ["bash", "./entrypoint.sh"]
