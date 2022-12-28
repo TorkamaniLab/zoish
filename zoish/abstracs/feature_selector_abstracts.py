@@ -14,31 +14,30 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
     def prepare_data(self):
         pass
-
+    
+    @abstractmethod
     def fit(self, *args, **kwargs):
         """
         Fit estimator using params
         """
         pass
+    
+    @abstractmethod
     def calc_best_estimator(self, *args, **kwargs):
         """
         Calculate best estimator using params
         """
         pass
 
+    @abstractmethod
     def transform(self, *args, **kwargs):
         """
         Return a transform
         """
         pass
-    def predict(self, *args, **kwargs):
-        """
-        Predict 
-        """
-        pass
     
 
-class BestEstimatorSetter(metaclass=ABCMeta):
+class BestEstimatorGetterStrategy(metaclass=ABCMeta):
     """Base class for creating feature selector. """
 
     def __init__(self, *args, **kwargs):
@@ -48,20 +47,41 @@ class BestEstimatorSetter(metaclass=ABCMeta):
         """
         pass
 
-    def get_best_estomator(self, *args, **kwargs):
+    @abstractmethod
+    def best_estimator_getter(self, *args, **kwargs):
         """
-        Get best estomator 
-        """
-        pass
-
-    def get_feature_selector(self, *args, **kwargs):
-        """
-        Get best estomator 
+        Get best estomator if any
         """
         pass
 
-    def set_best_estomator_to_feature_selector(self, *args, **kwargs):
+
+class PlotFeatures(metaclass=ABCMeta):
+    """Base class for creating plots for feature selector. """
+
+    def __init__(self, *args, **kwargs):
+
         """
-        Asign best estomator to feature selector 
+        Class initalizer
         """
         pass
+
+    @abstractmethod
+    def get_list_of_features_and_grades(self, *args, **kwargs):
+        """
+        Get list of features grades
+        """
+        pass
+
+    @abstractmethod
+    def plot_features(self, *args, **kwargs):
+        """
+        Get feature selector requirements  
+        """
+        pass
+    @abstractmethod
+    def expose_plot_object(self, *args, **kwargs):
+        """
+        Expose plot object of feature selector
+        """
+        pass
+

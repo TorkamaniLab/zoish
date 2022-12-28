@@ -1,89 +1,10 @@
+import pprint
 from lohrasb.best_estimator import BaseModel
-from factories.factories import BestEstimatorFactory
+from zoish.abstracs.feature_selector_abstracts import BestEstimatorGetterStrategy
 
-class GridBestEstimatorFactory(BestEstimatorFactory):
-    """Factory for building GridSeachCv."""
 
-    def __init__(
-        self,
-        X,
-        y,
-        estimator,
-        estimator_params,
-        measure_of_accuracy,
-        add_extra_args_for_measure_of_accuracy,
-        verbose,
-        n_jobs,
-        cv,
-    ):
 
-        """
-        Parameters
-        ----------
-        estimator: object
-            An unfitted estimator that has fit and predicts methods.
-        estimator_params: dict
-            Parameters were passed to find the best estimator using the optimization
-            method.
-        measure_of_accuracy : str
-            Measurement of performance for classification and
-            regression estimator during hyperparameter optimization while
-            estimating best estimator.
-            Classification-supported measurements are :
-            "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
-            "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
-            "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
-            "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
-            "zero_one_loss"
-            # custom
-            "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
-            "precision_recall_fscore_support".
-            Regression Classification-supported measurements are:
-            "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
-            "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
-            "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-            "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
-            "tn", "tp", "tn_score" ,"tp_score".
-        add_extra_args_for_measure_of_accuracy : boolean
-            True if the user wants to add extra arguments for measure_of_accuracy
-            False otherwise.
-        verbose: int
-            Controls the verbosity across all objects: the higher, the more messages.
-        n_jobs: int
-            The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
-            ``-1`` means using all processors. (default -1)
-        """
-        self.X = X
-        self.y = y
-        self.estimator = estimator
-        self.estimator_params = estimator_params
-        self.measure_of_accuracy = measure_of_accuracy
-        self.add_extra_args_for_measure_of_accuracy = (
-            add_extra_args_for_measure_of_accuracy
-        )
-        self.verbose = verbose
-        self.n_jobs = n_jobs
-        self.cv = cv
-
-    def get_best_estimator(self):
-        """
-        Return a Best Estimator instance based on Random Search.
-        """
-
-        print("Building Best Estimator")
-
-        bst = BaseModel.bestmodel_factory.using_gridsearch(
-            estimator=self.estimator,
-            estimator_params=self.estimator_params,
-            measure_of_accuracy=self.measure_of_accuracy,
-            verbose=self.verbose,
-            n_jobs=self.n_jobs,
-            cv = self.cv
-        )
-        return bst
-
-class OptunaBestEstimatorFactory(BestEstimatorFactory):
-    """Factory for building Optuna engine."""
+class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
 
     def __init__(
         self,
@@ -93,9 +14,7 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
         random_state,
         estimator,
         estimator_params,
-        # grid search and random search
         measure_of_accuracy,
-        add_extra_args_for_measure_of_accuracy,
         n_jobs,
         # optuna params
         test_size,
@@ -112,8 +31,7 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
         study_optimize_callbacks,
         study_optimize_gc_after_trial,
         study_optimize_show_progress_bar,
-    ):
-
+        ):
         """
         Parameters
         ----------
@@ -193,7 +111,6 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
             study_optimize_show_progress_bar: bool
                 Flag to show progress bars or not. To disable the progress bar.
         """
-
         self.X = X
         self.y = y
         self.verbose = verbose
@@ -202,9 +119,6 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
         self.estimator_params = estimator_params
         # grid search and random search
         self.measure_of_accuracy = measure_of_accuracy
-        self.add_extra_args_for_measure_of_accuracy = (
-            add_extra_args_for_measure_of_accuracy
-        )
         self.n_jobs = n_jobs
         # optuna params
         self.test_size = test_size
@@ -222,16 +136,15 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
         self.study_optimize_gc_after_trial = study_optimize_gc_after_trial
         self.study_optimize_show_progress_bar = study_optimize_show_progress_bar
 
-    def get_best_estimator(self):
+    def best_estimator_getter(self):
         """
         Return a Best Estimator instance based on Optuna.
         """
         print("Building Best Estimator")
-        bst = BaseModel.bestmodel_factory.using_optuna(
+        bst = BaseModel().optimize_by_optuna(
             estimator=self.estimator,
             estimator_params=self.estimator_params,
             measure_of_accuracy=self.measure_of_accuracy,
-            add_extra_args_for_measure_of_accuracy = self.add_extra_args_for_measure_of_accuracy,
             verbose=self.verbose,
             n_jobs=self.n_jobs,
             random_state=self.random_state,
@@ -251,8 +164,7 @@ class OptunaBestEstimatorFactory(BestEstimatorFactory):
         return bst
 
 
-class RandomBestEstimatorFactory(BestEstimatorFactory):
-    """Factory for building GridSeachCv."""
+class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
 
     def __init__(
         self,
@@ -261,13 +173,90 @@ class RandomBestEstimatorFactory(BestEstimatorFactory):
         estimator,
         estimator_params,
         measure_of_accuracy,
-        add_extra_args_for_measure_of_accuracy,
+        verbose,
+        n_jobs,
+        cv,
+    ):
+
+        """
+        Parameters
+        ----------
+        estimator: object
+            An unfitted estimator that has fit and predicts methods.
+        estimator_params: dict
+            Parameters were passed to find the best estimator using the optimization
+            method.
+        measure_of_accuracy : str
+            Measurement of performance for classification and
+            regression estimator during hyperparameter optimization while
+            estimating best estimator.
+            Classification-supported measurements are :
+            "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
+            "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
+            "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
+            "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
+            "zero_one_loss"
+            # custom
+            "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+            "precision_recall_fscore_support".
+            Regression Classification-supported measurements are:
+            "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
+            "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
+            "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
+            "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+            "tn", "tp", "tn_score" ,"tp_score".
+        add_extra_args_for_measure_of_accuracy : boolean
+            True if the user wants to add extra arguments for measure_of_accuracy
+            False otherwise.
+        verbose: int
+            Controls the verbosity across all objects: the higher, the more messages.
+        n_jobs: int
+            The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
+            ``-1`` means using all processors. (default -1)
+        """
+        self.X = X
+        self.y = y
+        self.estimator = estimator
+        self.estimator_params = estimator_params
+        self.measure_of_accuracy = measure_of_accuracy
+        self.verbose = verbose
+        self.n_jobs = n_jobs
+        self.cv = cv
+
+    def best_estimator_getter(self):
+        """
+        Return a Best Estimator instance based on Random Search.
+        """
+
+        print("Building Best Estimator")
+
+        bst = BaseModel().optimize_by_gridsearchcv(
+            estimator=self.estimator,
+            estimator_params=self.estimator_params,
+            measure_of_accuracy=self.measure_of_accuracy,
+            verbose=self.verbose,
+            n_jobs=self.n_jobs,
+            cv = self.cv
+        )
+        return bst
+
+
+class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
+
+    """Find """
+
+    def __init__(
+        self,
+        X,
+        y,
+        estimator,
+        estimator_params,
+        measure_of_accuracy,
         verbose,
         n_jobs,
         n_iter,
         cv,
-    ):
-
+    ): 
         """
         Parameters
         ----------
@@ -313,28 +302,36 @@ class RandomBestEstimatorFactory(BestEstimatorFactory):
         self.estimator = estimator
         self.estimator_params = estimator_params
         self.measure_of_accuracy = measure_of_accuracy
-        self.add_extra_args_for_measure_of_accuracy = (
-            add_extra_args_for_measure_of_accuracy
-        )
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.n_iter = n_iter
         self.cv = cv
+    
+    @property
+    def bst(self):
+        return self._bst
 
-    def get_best_estimator(self):
+    @bst.setter
+    def bst(self, value):
+        self._bst = value
+
+
+    def best_estimator_getter(self):
         """
         Return a Best Estimator instance based on Random Search.
         """
 
         print("Building Best Estimator")
 
-        bst = BaseModel.bestmodel_factory.using_gridsearch(
+        self.bst = BaseModel().optimize_by_randomsearchcv(
             estimator=self.estimator,
             estimator_params=self.estimator_params,
             measure_of_accuracy=self.measure_of_accuracy,
             verbose=self.verbose,
             n_jobs=self.n_jobs,
-            n_iter = self.n_iter
-            cv = self.cv
-        )
-        return bst
+            n_iter = self.n_iter,
+            cv = self.cv,
+            )
+        return self.bst
+
+

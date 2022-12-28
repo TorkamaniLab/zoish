@@ -37,7 +37,7 @@ lightgbm = "^3.3.2"
 category-encoders = "^2.5.0"
 xgbse = "^0.2.3"
 pycox = "^0.2.3"
-lohrasb = "^1.5.0"
+lohrasb = "^2.1.0"
 
 
 [tool.poetry.dev-dependencies]
@@ -48,6 +48,9 @@ bump2version = "^1.0.1"
 nox = "^2022.1.7"
 bumpver = "^2022.1116"
 ipykernel = "^6.15.1"
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
