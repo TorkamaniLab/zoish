@@ -2,7 +2,7 @@
 # ### Imports
 
 # %%
-from zoish.feature_selectors.feature_selectors import SingleFeaturePerformanceFeatureSelector
+from zoish.feature_selectors.single_feature_selectors import SingleFeaturePerformanceFeatureSelector
 import xgboost
 from sklearn.model_selection import KFold, train_test_split
 import pandas as pd
@@ -93,6 +93,7 @@ single_feature_performance_feature_selector_factory = (
         threshold=0.6,
         cv=3,
         variables=None,
+        confirm_variables=None,
         scoring='roc_auc',
         
     )

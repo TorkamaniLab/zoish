@@ -1,0 +1,19 @@
+2022-12-28 13:11:10,686 :: INFO     :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
+2022-12-28 13:11:10,686 :: WARNING  :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
+2022-12-28 13:11:10,686 :: CRITICAL :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
+2022-12-28 13:13:58,710 :: INFO     :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
+2022-12-28 13:13:58,710 :: WARNING  :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
+2022-12-28 13:13:58,710 :: CRITICAL :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
+2022-12-28 13:14:10,705 :: INFO     :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
+2022-12-28 13:14:10,705 :: WARNING  :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
+2022-12-28 13:14:10,706 :: CRITICAL :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
+2022-12-28 13:16:33,626 :: INFO     :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
+2022-12-28 13:16:33,626 :: WARNING  :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
+2022-12-28 13:16:33,626 :: CRITICAL :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
+2022-12-28 13:16:59,408 :: INFO     :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
+2022-12-28 13:16:59,408 :: WARNING  :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
+2022-12-28 13:16:59,408 :: CRITICAL :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
+2022-12-28 21:06:19,831 :: INFO     :: [22047]MainProcess :: MainThread[4535772672] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/__init__.py :: 24 :: Zosih feature selector has started !
+2022-12-28 21:07:57,129 :: INFO     :: [22178]MainProcess :: MainThread[4612023808] :: /Users/hjavedani/Documents/zoish/zoish/__init__.py :: 27 :: Zosih feature selector has started !
+2022-12-28 21:07:57,137 :: INFO     :: [22178]MainProcess :: MainThread[4612023808] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/__init__.py :: 24 :: Zosih feature selector has started !
+2022-12-28 21:09:08,986 :: INFO     :: [22223]MainProcess :: MainThread[4535764480] :: /Users/hjavedani/Documents/zoish/zoish/__init__.py :: 27 :: Zosih feature selector has started !
