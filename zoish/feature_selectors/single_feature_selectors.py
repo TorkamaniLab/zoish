@@ -1,16 +1,16 @@
+from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
 from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByGridSearch,
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
 )
-import fasttreeshap
-import shap
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from feature_engine.selection import SelectBySingleFeaturePerformance
 
+logger.info("Single Feature Performance Feature Selector has started !")
 
 class SingleFeaturePerformancePlotFeatures(PlotFeatures):
     """Base class for creating plots for feature selector."""
@@ -66,6 +66,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         random_state=None,
         estimator=None,
         estimator_params=None,
+        fit_params=None,
         variables=None,
         threshold=None,
         n_features=None,
@@ -104,6 +105,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.random_state = random_state
         self.estimator = estimator
         self.estimator_params = estimator_params
+        self.fit_params=fit_params
         self.list_of_obligatory_features_that_must_be_in_model = (
             list_of_obligatory_features_that_must_be_in_model,
         )
@@ -224,7 +226,13 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     @estimator_params.setter
     def estimator_params(self, value):
         self._estimator_params = value
+    @property
+    def fit_params(self):
+        return self._fit_params
 
+    @fit_params.setter
+    def fit_params(self, value):
+        self._fit_params = value
     @property
     def n_features(self):
         return self._n_features
@@ -410,6 +418,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 random_state=self.random_state,
                 estimator=self.estimator,
                 estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
                 measure_of_accuracy=self.measure_of_accuracy,
                 n_jobs=self.n_jobs,
                 # optuna params
@@ -435,6 +444,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 y=self.y,
                 estimator=self.estimator,
                 estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
                 measure_of_accuracy=self.measure_of_accuracy,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
@@ -446,6 +456,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 y=self.y,
                 estimator=self.estimator,
                 estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
                 measure_of_accuracy=self.measure_of_accuracy,
                 verbose=self.verbose,
                 n_jobs=self.n_jobs,
@@ -569,6 +580,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             random_state,
             estimator,
             estimator_params,
+            fit_params,
             method,
             n_features,
             list_of_obligatory_features_that_must_be_in_model,
@@ -583,6 +595,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             self.feature_selector.random_state = random_state
             self.feature_selector.estimator = estimator
             self.feature_selector.estimator_params = estimator_params
+            self.feature_selector.fit_params = fit_params
             self.feature_selector.n_features = n_features
             self.feature_selector.list_of_obligatory_features_that_must_be_in_model = (
                 list_of_obligatory_features_that_must_be_in_model

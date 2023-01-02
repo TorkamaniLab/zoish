@@ -1,19 +1,14 @@
-2022-12-28 13:11:10,686 :: INFO     :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
-2022-12-28 13:11:10,686 :: WARNING  :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
-2022-12-28 13:11:10,686 :: CRITICAL :: [19006]MainProcess :: MainThread[4558259712] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
-2022-12-28 13:13:58,710 :: INFO     :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
-2022-12-28 13:13:58,710 :: WARNING  :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
-2022-12-28 13:13:58,710 :: CRITICAL :: [19126]MainProcess :: MainThread[4717766144] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
-2022-12-28 13:14:10,705 :: INFO     :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
-2022-12-28 13:14:10,705 :: WARNING  :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
-2022-12-28 13:14:10,706 :: CRITICAL :: [19139]MainProcess :: MainThread[4448843264] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
-2022-12-28 13:16:33,626 :: INFO     :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
-2022-12-28 13:16:33,626 :: WARNING  :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
-2022-12-28 13:16:33,626 :: CRITICAL :: [19211]MainProcess :: MainThread[4577863168] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
-2022-12-28 13:16:59,408 :: INFO     :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 37 :: info message
-2022-12-28 13:16:59,408 :: WARNING  :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 38 :: warn message
-2022-12-28 13:16:59,408 :: CRITICAL :: [19230]MainProcess :: MainThread[4315604480] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/feature_selectors.py :: 40 :: critical message
-2022-12-28 21:06:19,831 :: INFO     :: [22047]MainProcess :: MainThread[4535772672] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/__init__.py :: 24 :: Zosih feature selector has started !
-2022-12-28 21:07:57,129 :: INFO     :: [22178]MainProcess :: MainThread[4612023808] :: /Users/hjavedani/Documents/zoish/zoish/__init__.py :: 27 :: Zosih feature selector has started !
-2022-12-28 21:07:57,137 :: INFO     :: [22178]MainProcess :: MainThread[4612023808] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/__init__.py :: 24 :: Zosih feature selector has started !
-2022-12-28 21:09:08,986 :: INFO     :: [22223]MainProcess :: MainThread[4535764480] :: /Users/hjavedani/Documents/zoish/zoish/__init__.py :: 27 :: Zosih feature selector has started !
+
+2022-12-28 21:23:49,405 :: INFO     :: [22952]MainProcess :: MainThread[4494870016] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 15 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:20:49,503 :: INFO     :: [43804]MainProcess :: MainThread[4638377472] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:20:49,801 :: INFO     :: [43804]MainProcess :: MainThread[4638377472] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
+2023-01-02 11:21:47,977 :: INFO     :: [43824]MainProcess :: MainThread[4420240896] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:21:48,238 :: INFO     :: [43824]MainProcess :: MainThread[4420240896] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
+2023-01-02 11:28:50,187 :: INFO     :: [44017]MainProcess :: MainThread[4598199808] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:28:50,450 :: INFO     :: [44017]MainProcess :: MainThread[4598199808] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
+2023-01-02 11:29:43,003 :: INFO     :: [44044]MainProcess :: MainThread[4600690176] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:29:43,270 :: INFO     :: [44044]MainProcess :: MainThread[4600690176] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
+2023-01-02 11:30:06,952 :: INFO     :: [44066]MainProcess :: MainThread[4555056640] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:30:08,198 :: INFO     :: [44066]MainProcess :: MainThread[4555056640] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
+2023-01-02 11:30:33,664 :: INFO     :: [44087]MainProcess :: MainThread[4441236992] :: /Users/hjavedani/Documents/zoish/zoish/feature_selectors/single_feature_selectors.py :: 13 :: Single Feature Performance Feature Selector has started !
+2023-01-02 11:30:33,941 :: INFO     :: [44087]MainProcess :: MainThread[4441236992] :: /Users/hjavedani/Documents/zoish/zoish/base_classes/best_estimator_getters.py :: 508 :: Building Best Estimator by GridSearchCV !
