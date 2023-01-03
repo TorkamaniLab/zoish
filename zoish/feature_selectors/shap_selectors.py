@@ -84,10 +84,18 @@ class ShapPlotFeatures(PlotFeatures):
 
     def get_list_of_features_and_grades(self, *args, **kwargs):
         """
-        Get list of features and grades
+        Get a Pandas Dataframe of features and grades
         """
+        print(
+            f"list of selected features+list of obligatory features that must be in model-list of features to drop before any selection   \
+            {self.feature_selector.selected_cols}"
+        )
+        print("list of selected features and their grades")
+        print("---------------------------------------------------------")
         self.list_of_selected_features = self.feature_selector.selected_cols
-        return self.importance_df["column_name"][0 : self.num_feat].to_list()
+        df = self.importance_df[["column_name", "feature_importance"]].copy()
+        df = df.loc[df["column_name"].isin(self.list_of_selected_features)]
+        return df
 
     def plot_features(self, *args, **kwargs):
         """
@@ -112,7 +120,9 @@ class ShapPlotFeatures(PlotFeatures):
                 )
                 self.plt = plt
             except Exception as e:
-                logger.error(f"For this problem, the plotting is not supported yet! : {e}")
+                logger.error(
+                    f"For this problem, the plotting is not supported yet! : {e}"
+                )
         if self.type_of_plot == "summary_plot":
             try:
                 shap.summary_plot(
@@ -124,7 +134,9 @@ class ShapPlotFeatures(PlotFeatures):
                 )
                 self.plt = plt
             except Exception as e:
-                logger.error(f"For this problem, the plotting is not supported yet! : {e}")
+                logger.error(
+                    f"For this problem, the plotting is not supported yet! : {e}"
+                )
         if self.type_of_plot == "decision_plot":
             if len(self.X) >= 1000:
                 self.X = self.X[0:1000]
@@ -137,7 +149,9 @@ class ShapPlotFeatures(PlotFeatures):
                 )
                 self.plt = plt
             except Exception as e:
-                logger.error(f"For this problem, the plotting is not supported yet! : {e}")
+                logger.error(
+                    f"For this problem, the plotting is not supported yet! : {e}"
+                )
         if self.type_of_plot == "bar_plot":
             try:
                 shap.bar_plot(
@@ -148,7 +162,9 @@ class ShapPlotFeatures(PlotFeatures):
                 )
                 self.plt = plt
             except Exception as e:
-                logger.error(f"For this problem, the plotting is not supported yet! : {e}")
+                logger.error(
+                    f"For this problem, the plotting is not supported yet! : {e}"
+                )
         if self.type_of_plot == "bar_plot_full":
             try:
                 shap.bar_plot(
@@ -159,7 +175,9 @@ class ShapPlotFeatures(PlotFeatures):
                 )
                 self.plt = plt
             except Exception as e:
-                logger.error(f"For this problem, the plotting is not supported yet! : {e}")
+                logger.error(
+                    f"For this problem, the plotting is not supported yet! : {e}"
+                )
         if self.plt is not None:
             if self.path_to_save_plot is not None:
                 self.plt.tight_layout()
@@ -198,7 +216,7 @@ class ShapFeatureSelector(FeatureSelector):
         Parameters were passed to find the best estimator using the optimization
         method.
     fit_params : dict
-        Parameters passed to the fit method of the estimator.    
+        Parameters passed to the fit method of the estimator.
     n_features : int
         The number of features seen during term:`fit`. Only defined if the
         underlying estimator exposes such an attribute when fitted. If ``threshold``
@@ -466,7 +484,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.random_state = random_state
         self.estimator = estimator
         self.estimator_params = estimator_params
-        self.fit_params=fit_params
+        self.fit_params = fit_params
         self.n_features = n_features
         self.threshold = threshold
         self.list_of_obligatory_features_that_must_be_in_model = (
@@ -563,11 +581,11 @@ class ShapFeatureSelector(FeatureSelector):
     @property
     def fit_params(self):
         return self._fit_params
-    
+
     @fit_params.setter
     def fit_params(self, value):
         self._fit_params = value
-   
+
     @property
     def n_features(self):
         return self._n_features
@@ -906,19 +924,19 @@ class ShapFeatureSelector(FeatureSelector):
             shap_sum = shap_sum.tolist()
 
         self.importance_df = pd.DataFrame([X.columns.tolist(), shap_sum]).T
-        self.importance_df.columns = ["column_name", "shap_importance"]
+        self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
         # for multi-class shap values are show in a list
-        if isinstance(self.importance_df["shap_importance"][0], list):
-            self.importance_df["shap_importance"] = self.importance_df[
-                "shap_importance"
+        if isinstance(self.importance_df["feature_importance"][0], list):
+            self.importance_df["feature_importance"] = self.importance_df[
+                "feature_importance"
             ].apply(np.mean)
         self.importance_df = self.importance_df.sort_values(
-            "shap_importance", ascending=False
+            "feature_importance", ascending=False
         )
         if self.threshold is not None:
             temp_df = self.importance_df[
-                self.importance_df["shap_importance"] >= self.threshold
+                self.importance_df["feature_importance"] >= self.threshold
             ]
             self.n_features = len(temp_df)
 
@@ -930,7 +948,7 @@ class ShapFeatureSelector(FeatureSelector):
             logger.info(
                 f"this list of features also will be selectec! {self.list_of_obligatory_features_that_must_be_in_model}"
             )
-            set_of_selected_features.union(
+            set_of_selected_features = set_of_selected_features.union(
                 set(self.list_of_obligatory_features_that_must_be_in_model)
             )
 
@@ -938,7 +956,7 @@ class ShapFeatureSelector(FeatureSelector):
             logger.info(
                 f"this list of features  will be dropped! {self.list_of_features_to_drop_before_any_selection}"
             )
-            set_of_selected_features.difference(
+            set_of_selected_features = set_of_selected_features.difference(
                 set(self.list_of_features_to_drop_before_any_selection)
             )
         self.selected_cols = list(set_of_selected_features)
@@ -1045,7 +1063,7 @@ class ShapFeatureSelector(FeatureSelector):
                 Parameters were passed to find the best estimator using the optimization
                 method.
             fit_params : dict
-                Parameters passed to the fit method of the estimator.    
+                Parameters passed to the fit method of the estimator.
             method: str
                 ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
                 check this : ``https://optuna.org/``
@@ -1503,8 +1521,9 @@ class ShapFeatureSelector(FeatureSelector):
                 path_to_save_plot=None,
             )
             if self.feature_selector is not None:
-                logger.info(
-                    f" list of selected features : {shap_plot_features.get_list_of_features_and_grades()}"
+                print(f"{shap_plot_features.get_list_of_features_and_grades()}")
+                print(
+                    "Note: list of obligatory features that must be in model-list of features to drop before any selection also has considered !"
                 )
 
             return self.feature_selector

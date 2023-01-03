@@ -19,9 +19,7 @@ def log_setup(log_cfg_path=path):
             # set up logging configuration
             return True
     except:
-        print(
-            f"In this module the default logging will be applied."
-        )
+        print(f"In this module the default logging will be applied.")
         return False
 
 

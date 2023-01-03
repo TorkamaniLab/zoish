@@ -2,6 +2,7 @@ from zoish import logger
 from lohrasb.best_estimator import BaseModel
 from zoish.abstracs.feature_selector_abstracts import BestEstimatorGetterStrategy
 
+
 class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
 
     """
@@ -95,10 +96,10 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     -------
     best_estimator_getter()
         Return the Best Estimator instance based on Optuna.
-        
+
     Notes
     -----
-    This class will be used as a parent class for 
+    This class will be used as a parent class for
     finding the best estimator by Optuna optimization.
 
     """
@@ -129,14 +130,14 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
         study_optimize_callbacks,
         study_optimize_gc_after_trial,
         study_optimize_show_progress_bar,
-        ):
+    ):
         self.X = X
         self.y = y
         self.verbose = verbose
         self.random_state = random_state
         self.estimator = estimator
         self.estimator_params = estimator_params
-        self.fit_params=fit_params
+        self.fit_params = fit_params
         # grid search and random search
         self.measure_of_accuracy = measure_of_accuracy
         self.n_jobs = n_jobs
@@ -163,6 +164,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @X.setter
     def X(self, value):
         self._X = value
+
     @property
     def y(self):
         return self._y
@@ -170,7 +172,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @y.setter
     def y(self, value):
         self._y = value
-    
+
     @property
     def estimator(self):
         return self._estimator
@@ -178,6 +180,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @estimator.setter
     def estimator(self, value):
         self._estimator = value
+
     @property
     def estimator_params(self):
         return self._estimator_params
@@ -185,6 +188,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @estimator_params.setter
     def estimator_params(self, value):
         self._estimator_params = value
+
     @property
     def fit_params(self):
         return self._fit_params
@@ -192,6 +196,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @fit_params.setter
     def fit_params(self, value):
         self._fit_params = value
+
     @property
     def measure_of_accuracy(self):
         return self._measure_of_accuracy
@@ -207,7 +212,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @verbose.setter
     def verbose(self, value):
         self._verbose = value
-    
+
     @property
     def n_jobs(self):
         return self._n_jobs
@@ -215,7 +220,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @n_jobs.setter
     def n_jobs(self, value):
         self._n_jobs = value
-    
+
     @property
     def test_size(self):
         return self._test_size
@@ -223,6 +228,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @test_size.setter
     def test_size(self, value):
         self._test_size = value
+
     @property
     def with_stratified(self):
         return self._with_stratified
@@ -230,6 +236,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @with_stratified.setter
     def with_stratified(self, value):
         self._with_stratified = value
+
     @property
     def study(self):
         return self._study
@@ -237,6 +244,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @study.setter
     def study(self, value):
         self._study = value
+
     @property
     def study_optimize_objective(self):
         return self._study_optimize_objective
@@ -244,6 +252,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @study_optimize_objective.setter
     def study_optimize_objective(self, value):
         self._study_optimize_objective = value
+
     @property
     def study_optimize_objective_n_trials(self):
         return self._study_optimize_objective_n_trials
@@ -251,19 +260,23 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @study_optimize_objective_n_trials.setter
     def study_optimize_objective_n_trials(self, value):
         self._study_optimize_objective_n_trials = value
+
     @property
     def study_optimize_objective_timeout(self):
         return self._study_optimize_objective_timeout
+
     @study_optimize_objective_timeout.setter
     def study_optimize_objective_timeout(self, value):
         self._study_optimize_objective_timeout = value
-    
+
     @property
     def study_optimize_n_jobs(self):
         return self._study_optimize_n_jobs
+
     @study_optimize_n_jobs.setter
     def study_optimize_n_jobs(self, value):
         self._study_optimize_n_jobs = value
+
     @property
     def study_optimize_catch(self):
         return self._study_optimize_catch
@@ -271,6 +284,7 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     @study_optimize_catch.setter
     def study_optimize_catch(self, value):
         self._study_optimize_catch = value
+
     @property
     def study_optimize_callbacks(self):
         return self._study_optimize_callbacks
@@ -306,17 +320,17 @@ class BestEstimatorFindByOptuna(BestEstimatorGetterStrategy):
     def best_estimator_getter(self):
         """
         Return the Best Estimator instance based on Optuna.
-        
+
         """
         logger.info("Building Best Estimator by Optuna !")
 
         bst = BaseModel().optimize_by_optuna(
             estimator=self.estimator,
             estimator_params=self.estimator_params,
-            fit_params = self.fit_params,
+            fit_params=self.fit_params,
             measure_of_accuracy=self.measure_of_accuracy,
-            with_stratified = self.with_stratified,
-            test_size =self.test_size,
+            with_stratified=self.with_stratified,
+            test_size=self.test_size,
             n_jobs=self.n_jobs,
             verbose=self.verbose,
             random_state=self.random_state,
@@ -396,7 +410,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
 
         Notes
         -----
-        This class will be used as a parent class for 
+        This class will be used as a parent class for
         finding the best estimator by GridSearchCV.
     """
 
@@ -422,7 +436,6 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
         self.n_jobs = n_jobs
         self.cv = cv
 
-
     @property
     def X(self):
         return self._X
@@ -430,6 +443,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @X.setter
     def X(self, value):
         self._X = value
+
     @property
     def y(self):
         return self._y
@@ -437,7 +451,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @y.setter
     def y(self, value):
         self._y = value
-    
+
     @property
     def estimator(self):
         return self._estimator
@@ -445,6 +459,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @estimator.setter
     def estimator(self, value):
         self._estimator = value
+
     @property
     def estimator_params(self):
         return self._estimator_params
@@ -452,6 +467,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @estimator_params.setter
     def estimator_params(self, value):
         self._estimator_params = value
+
     @property
     def fit_params(self):
         return self._fit_params
@@ -459,6 +475,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @fit_params.setter
     def fit_params(self, value):
         self._fit_params = value
+
     @property
     def measure_of_accuracy(self):
         return self._measure_of_accuracy
@@ -474,7 +491,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @verbose.setter
     def verbose(self, value):
         self._verbose = value
-    
+
     @property
     def n_jobs(self):
         return self._n_jobs
@@ -482,6 +499,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @n_jobs.setter
     def n_jobs(self, value):
         self._n_jobs = value
+
     @property
     def cv(self):
         return self._cv
@@ -489,6 +507,7 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     @cv.setter
     def cv(self, value):
         self._cv = value
+
     @property
     def bst(self):
         return self._bst
@@ -497,9 +516,8 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
     def bst(self, value):
         self._bst = value
 
-
     def best_estimator_getter(self):
-        
+
         """
         Return the Best Estimator instance based on GridSearchCV.
 
@@ -510,11 +528,11 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
         bst = BaseModel().optimize_by_gridsearchcv(
             estimator=self.estimator,
             estimator_params=self.estimator_params,
-            fit_params = self.fit_params,
+            fit_params=self.fit_params,
             measure_of_accuracy=self.measure_of_accuracy,
             verbose=self.verbose,
             n_jobs=self.n_jobs,
-            cv = self.cv
+            cv=self.cv,
         )
         return bst
 
@@ -572,13 +590,14 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
         These splitters are instantiated with shuffle=False, so the splits
         will be the same across calls. It is only used when the hyper_parameter_optimization_method
         is grid or random.
-        
+
     Notes
     -----
-    This class will be used as a parent class for 
+    This class will be used as a parent class for
     finding the best estimator by RandomizedSearchCV.
 
     """
+
     def __init__(
         self,
         X,
@@ -591,19 +610,19 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
         n_jobs,
         n_iter,
         cv,
-    ): 
-        
+    ):
+
         self.X = X
         self.y = y
         self.estimator = estimator
         self.estimator_params = estimator_params
-        self.fit_params =fit_params
+        self.fit_params = fit_params
         self.measure_of_accuracy = measure_of_accuracy
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.n_iter = n_iter
         self.cv = cv
-    
+
     @property
     def X(self):
         return self._X
@@ -611,6 +630,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @X.setter
     def X(self, value):
         self._X = value
+
     @property
     def y(self):
         return self._y
@@ -618,7 +638,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @y.setter
     def y(self, value):
         self._y = value
-    
+
     @property
     def estimator(self):
         return self._estimator
@@ -626,6 +646,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @estimator.setter
     def estimator(self, value):
         self._estimator = value
+
     @property
     def estimator_params(self):
         return self._estimator_params
@@ -633,6 +654,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @estimator_params.setter
     def estimator_params(self, value):
         self._estimator_params = value
+
     @property
     def fit_params(self):
         return self._fit_params
@@ -640,6 +662,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @fit_params.setter
     def fit_params(self, value):
         self._fit_params = value
+
     @property
     def measure_of_accuracy(self):
         return self._measure_of_accuracy
@@ -655,7 +678,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @verbose.setter
     def verbose(self, value):
         self._verbose = value
-    
+
     @property
     def n_jobs(self):
         return self._n_jobs
@@ -663,6 +686,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @n_jobs.setter
     def n_jobs(self, value):
         self._n_jobs = value
+
     @property
     def n_iter(self):
         return self._n_iter
@@ -670,6 +694,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @n_iter.setter
     def n_iter(self, value):
         self._n_iter = value
+
     @property
     def cv(self):
         return self._cv
@@ -677,6 +702,7 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     @cv.setter
     def cv(self, value):
         self._cv = value
+
     @property
     def bst(self):
         return self._bst
@@ -685,9 +711,8 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
     def bst(self, value):
         self._bst = value
 
-
     def best_estimator_getter(self):
-        
+
         """
         Return a Best Estimator instance based on Random Search.
 
@@ -698,13 +723,11 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
         self.bst = BaseModel().optimize_by_randomsearchcv(
             estimator=self.estimator,
             estimator_params=self.estimator_params,
-            fit_params = self.fit_params,
+            fit_params=self.fit_params,
             measure_of_accuracy=self.measure_of_accuracy,
             verbose=self.verbose,
             n_jobs=self.n_jobs,
-            n_iter = self.n_iter,
-            cv = self.cv,
-            )
+            n_iter=self.n_iter,
+            cv=self.cv,
+        )
         return self.bst
-
-

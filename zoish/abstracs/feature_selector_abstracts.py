@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
-    """Base class for creating feature selector. """
+    """Base class for creating feature selector."""
 
     def __init__(self, *args, **kwargs):
 
@@ -14,14 +14,14 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
 
     def prepare_data(self):
         pass
-    
+
     @abstractmethod
     def fit(self, *args, **kwargs):
         """
         Fit estimator using params
         """
         pass
-    
+
     @abstractmethod
     def calc_best_estimator(self, *args, **kwargs):
         """
@@ -35,10 +35,10 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
         Return a transform
         """
         pass
-    
+
 
 class BestEstimatorGetterStrategy(metaclass=ABCMeta):
-    """Base class for creating feature selector. """
+    """Base class for creating feature selector."""
 
     def __init__(self, *args, **kwargs):
 
@@ -56,7 +56,7 @@ class BestEstimatorGetterStrategy(metaclass=ABCMeta):
 
 
 class PlotFeatures(metaclass=ABCMeta):
-    """Base class for creating plots for feature selector. """
+    """Base class for creating plots for feature selector."""
 
     def __init__(self, *args, **kwargs):
 
@@ -75,13 +75,13 @@ class PlotFeatures(metaclass=ABCMeta):
     @abstractmethod
     def plot_features(self, *args, **kwargs):
         """
-        Get feature selector requirements  
+        Get feature selector requirements
         """
         pass
+
     @abstractmethod
     def expose_plot_object(self, *args, **kwargs):
         """
         Expose plot object of feature selector
         """
         pass
-
