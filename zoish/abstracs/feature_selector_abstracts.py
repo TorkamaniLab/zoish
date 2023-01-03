@@ -66,7 +66,13 @@ class PlotFeatures(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def get_list_of_features_and_grades(self, *args, **kwargs):
+    def get_info_of_features_and_grades(self, *args, **kwargs):
+        """
+        Get info of features grades
+        """
+        pass
+    @abstractmethod
+    def get_list_of_features(self, *args, **kwargs):
         """
         Get list of features grades
         """

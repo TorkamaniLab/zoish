@@ -15,9 +15,9 @@ logger.info("Single Feature Performance Feature Selector has started !")
 
 class SingleFeaturePerformancePlotFeatures(PlotFeatures):
     """Class for creating plots for Single Feature Performance feature selector.
-    check this : 
+    check this :
     https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectBySingleFeaturePerformance.html#feature_engine.selection.SelectBySingleFeaturePerformance
-    
+
     Parameters
     ----------
     feature_selector : object
@@ -29,10 +29,10 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
 
     Methods
     -------
-    get_list_of_features_and_grades(*args, **kwargs)
-        return a list of features and grades.
+    get_info_of_features_and_grades(*args, **kwargs)
+        return information of features and grades.
     plot_features(*args, **kwargs)
-        Plot feature importance of selected. 
+        Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
         information for the Shap plot.
@@ -63,9 +63,9 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
         self.X = self.feature_selector.X
         self.y = self.feature_selector.y
 
-    def get_list_of_features_and_grades(self, *args, **kwargs):
+    def get_info_of_features_and_grades(self, *args, **kwargs):
         """
-        return a list of features and grades.
+        return a info of features and grades.
         """
         print(
             f"list of selected features+list of obligatory features that must be in \
@@ -79,9 +79,16 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
         df = df.loc[df["column_name"].isin(self.list_of_selected_features)]
         return df
 
+    def get_list_of_features(self, *args, **kwargs):
+        """
+        Get a list of selected features
+        """
+        self.list_of_selected_features = self.feature_selector.selected_cols
+        return self.list_of_selected_features
+
     def plot_features(self, *args, **kwargs):
         """
-        Plot feature importance of selected. 
+        Plot feature importance of selected.
         """
 
         plot = self.importance_df.plot(
@@ -96,7 +103,9 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
         try:
             fig.savefig(self.path_to_save_plot)
         except Exception as e:
-            logger.error(f"plot can not be saved in {self.path_to_save_plot} becuase of {e}")
+            logger.error(
+                f"plot can not be saved in {self.path_to_save_plot} becuase of {e}"
+            )
         plt.show()
         self.plt = plt
 
@@ -132,7 +141,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     fit_params : dict
         Parameters passed to the fit method of the estimator.
     variables: str or list, default=None
-        The list of variable(s) to be evaluated. If None, the transformer will 
+        The list of variable(s) to be evaluated. If None, the transformer will
         evaluate all numerical variables in the dataset.
     n_features : int
         The number of features seen during term:`fit`. Only defined if the
@@ -142,7 +151,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         A cut-off number for grades of features for selecting them.
     confirm_variables: bool, default=False
         If set to True, variables that are not present in the input dataframe will
-        be removed from the list of variables. Only used when passing a variable 
+        be removed from the list of variables. Only used when passing a variable
         list to the parameter variables. See parameter variables for more details.
 
     list_of_obligatory_features_that_must_be_in_model : [str]
@@ -199,7 +208,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 is a classifier, and y is either binary or multiclass,
                 StratifiedKFold is used. In all other cases, Fold is used.
                 These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when the 
+                will be the same across calls. It is only used when the
                 hyper_parameter_optimization_method
                 is grid or random.
 
@@ -268,24 +277,24 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     method: str
         ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
         check this: ``https://optuna.org/``
-        ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` 
+        ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV``
         class will use Optuna optimizer.
         check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html``
-        ``gridsearchcv`` : If this argument set to ``GridSearchCV`` 
+        ``gridsearchcv`` : If this argument set to ``GridSearchCV``
         class will use Optuna optimizer.
         check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
-    
+
     scoring: str, default=’roc_auc’
-        Metric to evaluate the performance of the estimator. 
+        Metric to evaluate the performance of the estimator.
         Comes from sklearn.metrics. See the model evaluation documentation for more
-         options: https://scikit-learn.org/stable/modules/model_evaluation.html    
-    
+         options: https://scikit-learn.org/stable/modules/model_evaluation.html
+
     Methods
     -------
     get_list_of_features_and_grades(*args, **kwargs)
         return a list of features and grades.
     plot_features(*args, **kwargs)
-        Plot feature importance of selected. 
+        Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
         information for the Shap plot.
@@ -295,6 +304,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     This class is not stand by itself. First ShapFeatureSelector should be
     implemented.
     """
+
     def __init__(
         self,
         X=None,
@@ -722,6 +732,9 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 scoring=self.scoring,
                 cv=self.cv,
                 threshold=self.threshold,
+                variables=self.variables,
+                confirm_variables=self.confirm_variables,
+
             )
             sel.fit(X, y)
             feature_dict = sel.feature_performance_
@@ -789,10 +802,10 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         method: str
             ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
             check this: ``https://optuna.org/``
-            ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` class will 
+            ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` class will
             use Optuna optimizer.
             check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html``
-            ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use 
+            ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use
             Optuna optimizer.
             check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
         feature_selector : object
@@ -812,10 +825,11 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             A method to set RandomizedSearchCV parameters.
         plot_features_all(*args,**kwargs)
             A method that uses ShapPlotFeatures to plot different shap plots.
-        get_list_of_features_and_grades()
-            A method that uses ShapPlotFeatures to get a list of selected features.
+        get_info_of_features_and_grades()
+            A method that uses ShapPlotFeatures to get information of selected features.
 
         """
+
         def __init__(self, method):
             self.method = None
             self.feature_selector = None
@@ -851,7 +865,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
         ):
-        
+
             """A method to set model parameters.
 
             Parameters
@@ -932,7 +946,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
             Parameters
             ----------
-        
+
             cv: int
                 cross-validation generator or an iterable.
                 Determines the cross-validation splitting strategy. Possible inputs
@@ -946,16 +960,16 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 will be the same across calls. It is only used when hyper_parameter_optimization_method
                 is grid or random.
             variables: str or list, default=None
-                The list of variable(s) to be evaluated. If None, the transformer will evaluate 
+                The list of variable(s) to be evaluated. If None, the transformer will evaluate
                 all numerical variables in the dataset.
             confirm_variables: bool, default=False
                 If set to True, variables that are not present in the input dataframe will
-                be removed from the list of variables. Only used when passing a variable 
+                be removed from the list of variables. Only used when passing a variable
                 list to the parameter variables. See parameter variables for more details.
             scoring: str, default=’roc_auc’
-                Metric to evaluate the performance of the estimator. 
+                Metric to evaluate the performance of the estimator.
                 Comes from sklearn.metrics. See the model evaluation documentation for more
-                options: https://scikit-learn.org/stable/modules/model_evaluation.html    
+                options: https://scikit-learn.org/stable/modules/model_evaluation.html
 
             """
             self.feature_selector.cv = cv
@@ -998,7 +1012,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", 
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
                 "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
@@ -1129,7 +1143,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", 
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
                 "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
@@ -1234,7 +1248,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 is a classifier, and y is either binary or multiclass,
                 StratifiedKFold is used. In all other cases, Fold is used.
                 These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when 
+                will be the same across calls. It is only used when
                 hyper_parameter_optimization_method
                 is grid or random.
 
@@ -1252,9 +1266,9 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             path_to_save_plot,
         ):
 
-            """A method that uses SingleFeaturePerformancePlotFeatures to 
+            """A method that uses SingleFeaturePerformancePlotFeatures to
             plot feature importance.
-            
+
             Parameters
             ----------
             path_to_save_plot : str
@@ -1270,25 +1284,39 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
-        def get_list_of_features_and_grades(
+        def get_info_of_features_and_grades(
             self,
         ):
-            """A method that uses SingleFeaturePerformancePlotFeatures to get a 
+            """A method that uses SingleFeaturePerformancePlotFeatures to get a
             list of selected features.
             """
 
-            shap_plot_features = SingleFeaturePerformancePlotFeatures(
+            single_plot_features = SingleFeaturePerformancePlotFeatures(
                 feature_selector=self.feature_selector,
                 path_to_save_plot=None,
             )
             if self.feature_selector is not None:
-                print(f"{shap_plot_features.get_list_of_features_and_grades()}")
+                print(f"{single_plot_features.get_info_of_features_and_grades()}")
                 print(
                     "Note: list of obligatory features that must be in model-list of \
                         features to drop before any selection also has considered !"
                 )
 
             return self.feature_selector
+
+        def get_list_of_features(
+            self,
+        ):
+            """A method that uses ShapPlotFeatures to get a list of selected features."""
+
+            single_plot_features = SingleFeaturePerformancePlotFeatures(
+                feature_selector=self.feature_selector,
+                path_to_save_plot=None,
+            )
+            if single_plot_features.get_list_of_features() is not None:
+                return single_plot_features.get_list_of_features()
+            else:
+                return None
 
     single_feature_performance_feature_selector_factory = (
         SingleFeaturePerformanceFeatureSelectorFactory(method=None)

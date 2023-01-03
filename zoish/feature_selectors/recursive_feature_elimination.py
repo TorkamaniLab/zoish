@@ -5,27 +5,21 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
 )
-import fasttreeshap
-import shap
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from feature_engine.selection import RecursiveFeatureElimination
+
+logger.info("Recursive Feature Elimination Feature Selector has started !")
 
 
-class ShapPlotFeatures(PlotFeatures):
-    """Class for creating plots for Shap feature selector.
+class RecursiveFeatureEliminationPlotFeatures(PlotFeatures):
+    """Class for creating plots for recursive feature elimination feature selector.
+    check this :
+    https://feature-engine.readthedocs.io/en/latest/user_guide/selection/RecursiveFeatureElimination.html
+
     Parameters
     ----------
-    type_of_plot: str
-
-        ``summary_plot_full`` : it will plot a Shap summary plot for all features, both selected and
-        not selected.
-        ``summary_plot`` : using this argument a Shap summary plot will be presented.
-        ``decision_plot`` : using this argument a Shap decision plot will be presented.
-        ``bar_plot`` : using this argument a Shap bar plot will be presented.
-        ``bar_plot_full`` : it will plot the Shap bar plot for all features, both selected and
-        not selected.
-
     feature_selector : object
         It is an instance of ShapFeatureSelector. Before using ShapPlotFeatures
         ShapFeatureSelector should be implemented.
@@ -35,42 +29,29 @@ class ShapPlotFeatures(PlotFeatures):
 
     Methods
     -------
-    get_list_of_features_and_grades(*args, **kwargs)
-        return a list of features and grades.
+    get_info_of_features_and_grades(*args, **kwargs)
+        return information of features and grades.
     plot_features(*args, **kwargs)
-        It is using type_of_plot argument from the class constructor
-        and plot accordingly.
-        If type_of_plot be ``summary_plot_full`` : it will plot Shap summary plot for all features, both selected and
-        not selected.
-        If type_of_plot be ``summary_plot`` : using this argument a Shap summary plot will be presented.
-        If type_of_plot be ``decision_plot`` : using this argument a Shap decision plot will be presented.
-        If type_of_plot be ``bar_plot`` : using this argument a Shap bar plot will be presented.
-        If type_of_plot be ``bar_plot_full`` : it will plot Shap bar plot for all features, both selected and
-        not selected.
-
+        Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
         information for the Shap plot.
 
     Notes
     -----
-    This class is not stand by itself. First ShapFeatureSelector should be
+    This class is not stand by itself. First RecursiveFeatureEliminationPlotFeatures should be
     implemented.
 
     """
 
     def __init__(
         self,
-        type_of_plot=None,
         feature_selector=None,
         path_to_save_plot=None,
     ):
         self.feature_selector = feature_selector
-        self.shap_values = self.feature_selector.shap_values
-        self.expected_value = self.feature_selector.expected_value
         self.importance_df = self.feature_selector.importance_df
         self.list_of_selected_features = self.feature_selector.list_of_selected_features
-        self.type_of_plot = type_of_plot
         self.path_to_save_plot = path_to_save_plot
         self.plt = None
         self.num_feat = min(
@@ -84,10 +65,11 @@ class ShapPlotFeatures(PlotFeatures):
 
     def get_info_of_features_and_grades(self, *args, **kwargs):
         """
-        Get a Pandas Dataframe of features and grades
+        return a info of features and grades.
         """
         print(
-            f"list of selected features+list of obligatory features that must be in model-list of features to drop before any selection   \
+            f"list of selected features+list of obligatory features that must be in \
+                model-list of features to drop before any selection   \
             {self.feature_selector.selected_cols}"
         )
         print("list of selected features and their grades")
@@ -106,92 +88,26 @@ class ShapPlotFeatures(PlotFeatures):
 
     def plot_features(self, *args, **kwargs):
         """
-        It is using type_of_plot argument from class constructor
-        and plot accordingly.
+        Plot feature importance of selected.
         """
-        feature_names = [
-            a + ": " + str(b)
-            for a, b in zip(
-                self.X.columns, np.abs(self.shap_values.values).mean(0).round(2)
-            )
-        ]
 
-        if self.type_of_plot == "summary_plot_full":
-            try:
-                shap.summary_plot(
-                    self.shap_values.values,
-                    self.X,
-                    max_display=self.X.shape[1],
-                    feature_names=feature_names,
-                    show=False,
-                )
-                self.plt = plt
-            except Exception as e:
-                logger.error(
-                    f"For this problem, the plotting is not supported yet! : {e}"
-                )
-        if self.type_of_plot == "summary_plot":
-            try:
-                shap.summary_plot(
-                    self.shap_values.values,
-                    self.X,
-                    max_display=self.num_feat,
-                    feature_names=feature_names,
-                    show=False,
-                )
-                self.plt = plt
-            except Exception as e:
-                logger.error(
-                    f"For this problem, the plotting is not supported yet! : {e}"
-                )
-        if self.type_of_plot == "decision_plot":
-            if len(self.X) >= 1000:
-                self.X = self.X[0:1000]
-            try:
-                shap.decision_plot(
-                    self.expected_value[0 : len(self.X)],
-                    self.shap_values.values[0 : len(self.X)],
-                    feature_names=feature_names,
-                    show=False,
-                )
-                self.plt = plt
-            except Exception as e:
-                logger.error(
-                    f"For this problem, the plotting is not supported yet! : {e}"
-                )
-        if self.type_of_plot == "bar_plot":
-            try:
-                shap.bar_plot(
-                    self.shap_values.values[0],
-                    feature_names=feature_names,
-                    max_display=self.num_feat,
-                    show=False,
-                )
-                self.plt = plt
-            except Exception as e:
-                logger.error(
-                    f"For this problem, the plotting is not supported yet! : {e}"
-                )
-        if self.type_of_plot == "bar_plot_full":
-            try:
-                shap.bar_plot(
-                    self.shap_values.values[0],
-                    feature_names=feature_names,
-                    max_display=self.X.shape[1],
-                    show=False,
-                )
-                self.plt = plt
-            except Exception as e:
-                logger.error(
-                    f"For this problem, the plotting is not supported yet! : {e}"
-                )
-        if self.plt is not None:
-            if self.path_to_save_plot is not None:
-                self.plt.tight_layout()
-                self.plt.savefig(self.path_to_save_plot)
-                self.plt.show()
-            else:
-                self.plt.show()
+        plot = self.importance_df.plot(
+            x="column_name",
+            xlabel="feature name",
+            y="feature_importance",
+            ylabel="feature importance",
+            kind="bar",
+        )
+        fig = plot.get_figure()
+        # save plot
+        try:
+            fig.savefig(self.path_to_save_plot)
+        except Exception as e:
+            logger.error(
+                f"plot can not be saved in {self.path_to_save_plot} becuase of {e}"
+            )
+        plt.show()
+        self.plt = plt
 
     def expose_plot_object(self, *args, **kwargs):
         """return an object of matplotlib.pyplot that has
@@ -200,9 +116,9 @@ class ShapPlotFeatures(PlotFeatures):
         return self.plt
 
 
-class ShapFeatureSelector(FeatureSelector):
+class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
     """
-    Feature selector class using Shapely Values.
+    Feature selector class based on  Recursive Feature Elimination.
 
     Parameters
     ----------
@@ -224,12 +140,18 @@ class ShapFeatureSelector(FeatureSelector):
         method.
     fit_params : dict
         Parameters passed to the fit method of the estimator.
-    n_features : int
-        The number of features seen during term:`fit`. Only defined if the
-        underlying estimator exposes such an attribute when fitted. If ``threshold``
-        set to some values ``n_features`` will be affected by threshold cut-off.
+    variables: str or list, default=None
+        The list of variable(s) to be evaluated. If None, the transformer will
+        evaluate all numerical variables in the dataset.
+    n_features : None
+        This should be always None.
     threshold: float
         A cut-off number for grades of features for selecting them.
+    confirm_variables: bool, default=False
+        If set to True, variables that are not present in the input dataframe will
+        be removed from the list of variables. Only used when passing a variable
+        list to the parameter variables. See parameter variables for more details.
+
     list_of_obligatory_features_that_must_be_in_model : [str]
         A list of strings (columns names of feature set pandas data frame)
         that should be among the selected features. No matter if they have high or
@@ -251,7 +173,8 @@ class ShapFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+                 "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
                 "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
@@ -283,7 +206,8 @@ class ShapFeatureSelector(FeatureSelector):
                 is a classifier, and y is either binary or multiclass,
                 StratifiedKFold is used. In all other cases, Fold is used.
                 These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when the hyper_parameter_optimization_method
+                will be the same across calls. It is only used when the
+                hyper_parameter_optimization_method
                 is grid or random.
 
     n_jobs: int
@@ -347,91 +271,28 @@ class ShapFeatureSelector(FeatureSelector):
         These splitters are instantiated with shuffle=False, so the splits
         will be the same across calls. It is only used when hyper_parameter_optimization_method
         is grid or random.
-    model_output : str
-        "raw", "probability", "log_loss", or model method name
-        What output of the model should be explained? If "raw" then we explain the raw output of the
-        trees, which varies by model. For regression models "raw" is the standard output, for binary
-        classification in XGBoost, this is the log odds ratio. If model_output is the name of a supported
-        prediction method on the model object then we explain the output of that model method name.
-        For example model_output="predict_proba" explains the result of calling model.predict_proba.
-        If "probability" then we explain the output of the model transformed into probability space
-        (note that this means the SHAP values now sum to the probability output of the model). If "logloss"
-        then we explain the log base e of the model loss function, so that the SHAP values sum up to the
-        log loss of the model for each sample. This helps break down model performance by feature.
-        Currently, the probability and logloss options are only supported when feature_dependence="independent".
-        For more info visit : https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-    feature_perturbation: str
-        "interventional" (default) or "tree_path_dependent" (default when data=None)
-        Since SHAP values rely on conditional expectations we need to decide how to handle correlated
-        (or otherwise dependent) input features. The "interventional" approach breaks the dependencies between
-        features according to the rules dictated by causal inference (Janzing et al. 2019). Note that the
-        "interventional" option requires a background dataset and its runtime scales linearly with the size
-        of the background dataset you use. Anywhere from 100 to 1000 random background samples are good
-        sizes to use. The "tree_path_dependent" approach is to just follow the trees and use the number
-        of training examples that went down each leaf to represent the background distribution. This approach
-        does not require a background dataset and so is used by default when no background dataset is provided.
-        For more info visit : https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
 
-    algorithm: str
-        "auto" (default), "v0", "v1" or "v2"
-        The "v0" algorithm refers to the TreeSHAP algorithm in the SHAP package (https://github.com/slundberg/shap).
-        The "v1" and "v2" algorithms refer to Fast TreeSHAP v1 algorithm and Fast TreeSHAP v2 algorithm
-        proposed in the paper https://arxiv.org/abs/2109.09847 (Jilei 2021). In practice, Fast TreeSHAP v1 is 1.5x
-        faster than TreeSHAP while keeping the memory cost unchanged, and Fast TreeSHAP v2 is 2.5x faster than
-        TreeSHAP at the cost of slightly higher memory usage. The default value of the algorithm is "auto",
-        which automatically chooses the most appropriate algorithm to use. Specifically, we always prefer
-        "v1" over "v0", and we prefer "v2" over "v1" when the number of samples to be explained is sufficiently
-        large, and the memory constraint is also satisfied.
-        For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-    shap_n_jobs : int
-        (default), or a positive integer
-        Number of parallel threads used to run Fast TreeSHAP. The default value of n_jobs is -1, which utilizes
-        all available cores in parallel computing (Setting OMP_NUM_THREADS is unnecessary since n_jobs will
-        overwrite this parameter).
-        For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-    memory_tolerance : int
-        (default), or a positive number
-        Upper limit of memory allocation (in GB) to run Fast TreeSHAP v2. The default value of memory_tolerance is -1,
-        which allocates a maximum of 0.25 * total memory of the machine to run Fast TreeSHAP v2.
-        For more info visit : https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-    feature_names : [str]
-        Feature names.
-    approximate : bool
-        Run fast, but only roughly approximate the Tree SHAP values. This runs a method
-        previously proposed by Saabas which only considers a single feature ordering. Take care
-        since this does not have the consistency guarantees of Shapley values and places too
-        much weight on lower splits in the tree.
-        For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-    shortcut: False (default) or True
-        Whether to use the C++ version of TreeSHAP embedded in XGBoost, LightGBM and CatBoost packages directly
-        when computing SHAP values for XGBoost, LightGBM and CatBoost models, and when computing SHAP interaction
-        values for XGBoost models. The current version of the FastTreeSHAP package supports XGBoost and LightGBM models,
-        and its support to the CatBoost model is working in progress (the shortcut is automatically set to be True for
-        Boost model).
-        For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
     method: str
         ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
         check this: ``https://optuna.org/``
-        ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` class will use Optuna optimizer.
+        ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV``
+        class will use Optuna optimizer.
         check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html``
-        ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use Optuna optimizer.
+        ``gridsearchcv`` : If this argument set to ``GridSearchCV``
+        class will use Optuna optimizer.
         check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
+
+    scoring: str, default=’roc_auc’
+        Metric to evaluate the performance of the estimator.
+        Comes from sklearn.metrics. See the model evaluation documentation for more
+         options: https://scikit-learn.org/stable/modules/model_evaluation.html
 
     Methods
     -------
     get_list_of_features_and_grades(*args, **kwargs)
         return a list of features and grades.
     plot_features(*args, **kwargs)
-        It is using type_of_plot argument from the class constructor
-        and plot accordingly.
-        If type_of_plot be ``summary_plot_full`` : it will plot Shap summary plot for all features, both selected and
-        not selected.
-        If type_of_plot be ``summary_plot`` : using this argument a Shap summary plot will be presented.
-        If type_of_plot be ``decision_plot`` : using this argument a Shap decision plot will be presented.
-        If type_of_plot be ``bar_plot`` : using this argument a Shap bar plot will be presented.
-        If type_of_plot be ``bar_plot_full`` : it will plot Shap bar plot for all features, both selected and
-        not selected.
-
+        Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
         information for the Shap plot.
@@ -451,10 +312,15 @@ class ShapFeatureSelector(FeatureSelector):
         estimator=None,
         estimator_params=None,
         fit_params=None,
-        n_features=None,
+        variables=None,
         threshold=None,
+        n_features=None,
+        cv=None,
+        confirm_variables=None,
+        feature_names=None,
         list_of_obligatory_features_that_must_be_in_model=None,
         list_of_features_to_drop_before_any_selection=None,
+        # grid search and random search
         measure_of_accuracy=None,
         n_jobs=None,
         # optuna params
@@ -472,38 +338,31 @@ class ShapFeatureSelector(FeatureSelector):
         study_optimize_gc_after_trial=None,
         study_optimize_show_progress_bar=None,
         n_iter=None,
-        cv=None,
-        # shap arguments
-        model_output=None,
-        feature_perturbation=None,
-        algorithm=None,
-        shap_n_jobs=None,
-        memory_tolerance=None,
-        feature_names=None,
-        approximate=None,
-        shortcut=None,
         method=None,
+        scoring=None,
     ):
-
         self.X = X
         self.y = y
         self.verbose = verbose
+        self.n_features = n_features
         self.random_state = random_state
         self.estimator = estimator
         self.estimator_params = estimator_params
         self.fit_params = fit_params
-        self.n_features = n_features
-        self.threshold = threshold
         self.list_of_obligatory_features_that_must_be_in_model = (
             list_of_obligatory_features_that_must_be_in_model,
         )
         self.list_of_features_to_drop_before_any_selection = (
             list_of_features_to_drop_before_any_selection,
         )
+
+        # grid search and random search
         self.measure_of_accuracy = measure_of_accuracy
         self.n_jobs = n_jobs
+        # optuna params
         self.test_size = test_size
         self.with_stratified = with_stratified
+        # number_of_trials=100,
         # optuna study init params
         self.study = study
         # optuna optimization params
@@ -517,25 +376,43 @@ class ShapFeatureSelector(FeatureSelector):
         self.study_optimize_show_progress_bar = study_optimize_show_progress_bar
         self.n_iter = n_iter
         self.cv = cv
-        # shap arguments
-        self.model_output = model_output
-        self.feature_perturbation = feature_perturbation
-        self.algorithm = algorithm
-        self.shap_n_jobs = shap_n_jobs
-        self.memory_tolerance = memory_tolerance
+        self.threshold = threshold
+        self.variables = variables
+        self.confirm_variables = confirm_variables
         self.feature_names = feature_names
-        self.approximate = approximate
-        self.shortcut = shortcut
-        # internal params
+        self.scoring = scoring
+
+        # independent params
         self.list_of_selected_features = None
-        self.shap_values = None
-        self.explainer = None
-        self.expected_value = None
         self.bst = None
         self.columns = None
         self.importance_df = None
         self.method = method
         self.selected_cols = None
+
+    @property
+    def scoring(self):
+        return self._scoring
+
+    @scoring.setter
+    def scoring(self, value):
+        self._scoring = value
+
+    @property
+    def variables(self):
+        return self._variables
+
+    @variables.setter
+    def variables(self, value):
+        self._variables = value
+
+    @property
+    def confirm_variables(self):
+        return self._confirm_variables
+
+    @confirm_variables.setter
+    def confirm_variables(self, value):
+        self._confirm_variables = value
 
     @property
     def X(self):
@@ -746,68 +623,12 @@ class ShapFeatureSelector(FeatureSelector):
         self._cv = value
 
     @property
-    def model_output(self):
-        return self._model_output
-
-    @model_output.setter
-    def model_output(self, value):
-        self._model_output = value
-
-    @property
-    def feature_perturbation(self):
-        return self._feature_perturbation
-
-    @feature_perturbation.setter
-    def feature_perturbation(self, value):
-        self._feature_perturbation = value
-
-    @property
-    def algorithm(self):
-        return self._algorithm
-
-    @algorithm.setter
-    def algorithm(self, value):
-        self._algorithm = value
-
-    @property
-    def shap_n_jobs(self):
-        return self._shap_n_jobs
-
-    @shap_n_jobs.setter
-    def shap_n_jobs(self, value):
-        self._shap_n_jobs = value
-
-    @property
-    def memory_tolerance(self):
-        return self._memory_tolerance
-
-    @memory_tolerance.setter
-    def memory_tolerance(self, value):
-        self._memory_tolerance = value
-
-    @property
     def feature_names(self):
         return self._feature_names
 
     @feature_names.setter
     def feature_names(self, value):
         self._feature_names = value
-
-    @property
-    def approximate(self):
-        return self._approximate
-
-    @approximate.setter
-    def approximate(self, value):
-        self._approximate = value
-
-    @property
-    def shortcut(self):
-        return self._shortcut
-
-    @shortcut.setter
-    def shortcut(self, value):
-        self._shortcut = value
 
     @property
     def method(self):
@@ -887,7 +708,7 @@ class ShapFeatureSelector(FeatureSelector):
         from optimization methods.
         Parameters
         ----------
-        X: Pandas DataFrame
+        X : Pandas DataFrame
             Training data. Must fulfill input requirements of the feature selection
             step of the pipeline.
         y : Pandas DataFrame or Pandas series
@@ -899,38 +720,33 @@ class ShapFeatureSelector(FeatureSelector):
         self.bst = self.bst.best_estimator_getter()
         # get columns names
         self.bst.fit(X, y)
-        best_estimator = self.bst.best_estimator
         self.cols = X.columns
+
         if self.bst is None:
-            logger.error("best estimator did not calculated !")
             raise NotImplementedError("best estimator did not calculated !")
         else:
-            try:
-                self.explainer = fasttreeshap.TreeExplainer(
-                    model=best_estimator,
-                    model_output=self.model_output,
-                    feature_perturbation=self.feature_perturbation,
-                    algorithm=self.algorithm,
-                    shap_n_jobs=self.shap_n_jobs,
-                    memory_tolerance=self.memory_tolerance,
-                    feature_names=self.feature_names,
-                    approximate=self.approximate,
-                    shortcut=self.shortcut,
-                )
-            # if fasttreeshap does not work we use shap library
-            except:
-                self.explainer = shap.TreeExplainer(
-                    model=best_estimator,
-                    shap_n_jobs=self.shap_n_jobs,
-                )
+            rf = RecursiveFeatureElimination(
+                estimator=self.bst.best_estimator,
+                scoring=self.scoring,
+                cv=self.cv,
+                threshold=self.threshold,
+                variables=self.variables,
+                confirm_variables=self.confirm_variables,
 
-            self.shap_values = self.explainer(X)
-            self.expected_value = self.explainer.expected_value
-
-            shap_sum = np.abs(self.shap_values.values).mean(axis=0)
-            shap_sum = shap_sum.tolist()
-
-        self.importance_df = pd.DataFrame([X.columns.tolist(), shap_sum]).T
+            )
+            rf.fit(X, y)
+            # Get list  of each feature to drop
+            feature_list_to_drop = rf.features_to_drop_
+            print(feature_list_to_drop)
+            # Get the performance drift of each feature
+            feature_dict_drift= rf.performance_drifts_
+            print(feature_dict_drift)
+            # Calculate the dict of features to remain (substract based on keys)
+            feature_dict = {k:v for k,v in feature_dict_drift.items() if k not in feature_list_to_drop}
+            col_names = feature_dict.keys()
+            print(col_names)
+        self.importance_df = pd.DataFrame([col_names, feature_dict.values()]).T
+        print(self.importance_df)
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
         # for multi-class shap values are show in a list
@@ -938,6 +754,7 @@ class ShapFeatureSelector(FeatureSelector):
             self.importance_df["feature_importance"] = self.importance_df[
                 "feature_importance"
             ].apply(np.mean)
+
         self.importance_df = self.importance_df.sort_values(
             "feature_importance", ascending=False
         )
@@ -952,21 +769,25 @@ class ShapFeatureSelector(FeatureSelector):
         set_of_selected_features = set(self.selected_cols)
 
         if len(self.list_of_obligatory_features_that_must_be_in_model) > 0:
-            logger.info(
-                f"this list of features also will be selectec! {self.list_of_obligatory_features_that_must_be_in_model}"
+            print(
+                f"this list of features also will be selected! \
+                    {self.list_of_obligatory_features_that_must_be_in_model}"
             )
             set_of_selected_features = set_of_selected_features.union(
                 set(self.list_of_obligatory_features_that_must_be_in_model)
             )
 
         if len(self.list_of_features_to_drop_before_any_selection) > 0:
-            logger.info(
-                f"this list of features  will be dropped! {self.list_of_features_to_drop_before_any_selection}"
+            print(
+                f"this list of features  will be dropped! \
+                    {self.list_of_features_to_drop_before_any_selection}"
             )
             set_of_selected_features = set_of_selected_features.difference(
                 set(self.list_of_features_to_drop_before_any_selection)
             )
+
         self.selected_cols = list(set_of_selected_features)
+        print(self.selected_cols)
         return self
 
     def transform(self, X, *args, **kwargs):
@@ -974,33 +795,35 @@ class ShapFeatureSelector(FeatureSelector):
         estimator.
         Parameters
         ----------
-        X: Pandas DataFrame
+        X : Pandas DataFrame
             Training data. Must fulfill input requirements of feature selection
             step of the pipeline.
         """
         return X[self.selected_cols]
 
-    class ShapFeatureSelectorFactory:
-        """Class factory for ShapFeatureSelector
+    class RecursiveFeatureEliminationFeatureSelectorFactory:
+        """Class factory for RecursiveFeatureEliminationSelector
 
         Parameters
         ----------
         method: str
             ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
             check this: ``https://optuna.org/``
-            ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` class will use Optuna optimizer.
+            ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV`` class will
+            use Optuna optimizer.
             check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html``
-            ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use Optuna optimizer.
+            ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use
+            Optuna optimizer.
             check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
-            feature_selector : object
-            An instance of type ShapFeatureSelector.
+        feature_selector : object
+            An instance of type RecursiveFeatureEliminationFeatureSelector.
 
         Methods
         -------
         set_model_params(*args,**kwargs)
             A method to set model parameters.
-        set_shap_params(*args,**kwargs)
-            A method to set Shap parameters.
+        set_recursive_elimination_feature_params(*args,**kwargs)
+            A method to set recursive elimination feature parameters.
         set_optuna_params(*args,**kwargs)
             A method to set Optuna parameters.
         set_gridsearchcv_params(*args,**kwargs)
@@ -1010,9 +833,7 @@ class ShapFeatureSelector(FeatureSelector):
         plot_features_all(*args,**kwargs)
             A method that uses ShapPlotFeatures to plot different shap plots.
         get_info_of_features_and_grades()
-            A method that uses ShapPlotFeatures to get a information of selected features.
-        get_list_of_features()
-            A method that uses ShapPlotFeatures to get a list of selected features.
+            A method that uses ShapPlotFeatures to get information of selected features.
 
         """
 
@@ -1046,7 +867,7 @@ class ShapFeatureSelector(FeatureSelector):
             estimator_params,
             fit_params,
             method,
-            n_features,
+            #n_features,
             threshold,
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
@@ -1082,10 +903,8 @@ class ShapFeatureSelector(FeatureSelector):
                 check this : ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
                 feature_selector : object
                 An instance of type ShapFeatureSelector.
-            n_features : int
-                The number of features seen during term:`fit`. Only defined if the
-                underlying estimator exposes such an attribute when fitted. If ``threshold``
-                set to some values ``n_features`` will be affected by threshold cut-off.
+            n_features : None
+                This always should be None.
             threshold: float
                 A cut-off number for grades of features for selecting them.
             list_of_obligatory_features_that_must_be_in_model : [str]
@@ -1100,7 +919,9 @@ class ShapFeatureSelector(FeatureSelector):
                 from feature space before selection starts.
             """
 
-            self.feature_selector = ShapFeatureSelector(method=method)
+            self.feature_selector = RecursiveFeatureEliminationFeatureSelector(
+                method=method
+            )
             self.feature_selector.X = X
             self.feature_selector.y = y
             self.feature_selector.verbose = verbose
@@ -1108,7 +929,7 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_selector.estimator = estimator
             self.feature_selector.estimator_params = estimator_params
             self.feature_selector.fit_params = fit_params
-            self.feature_selector.n_features = n_features
+            #self.feature_selector.n_features = n_features
             self.feature_selector.threshold = threshold
             self.feature_selector.list_of_obligatory_features_that_must_be_in_model = (
                 list_of_obligatory_features_that_must_be_in_model
@@ -1119,109 +940,59 @@ class ShapFeatureSelector(FeatureSelector):
 
             return self
 
-        def set_shap_params(
+        def set_recursive_elimination_feature_params(
             self,
-            model_output,
-            feature_perturbation,
-            algorithm,
-            shap_n_jobs,
-            memory_tolerance,
-            feature_names,
-            approximate,
-            shortcut,
+            cv,
+            variables,
+            confirm_variables,
+            scoring,
         ):
-            """A method to set Shap parameters.
+            """A method to set Optuna parameters.
 
             Parameters
             ----------
-            model_output : str
-                    "raw", "probability", "log_loss", or model method name
-                    What output of the model should be explained. If "raw" then we explain the raw output of the
-                    trees, which varies by model. For regression models "raw" is the standard output, for binary
-                    classification in XGBoost, this is the log odds ratio. If model_output is the name of a supported
-                    prediction method on the model object then we explain the output of that model method name.
-                    For example model_output="predict_proba" explains the result of calling model.predict_proba.
-                    If "probability" then we explain the output of the model transformed into probability space
-                    (note that this means the SHAP values now sum to the probability output of the model). If "logloss"
-                    then we explain the log base e of the model loss function so that the SHAP values sum up to the
-                    log loss of the model for each sample. This helps break down model performance by feature.
-                    Currently, the probability and logloss options are only supported when feature_dependence="independent".
-                    For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-                feature_perturbation: str
-                    "interventional" (default) or "tree_path_dependent" (default when data=None)
-                    Since SHAP values rely on conditional expectations we need to decide how to handle correlated
-                    (or otherwise dependent) input features. The "interventional" approach breaks the dependencies between
-                    features according to the rules dictated by causal inference (Janzing et al. 2019). Note that the
-                    The "interventional" option requires a background dataset and its runtime scales linearly with the size
-                    of the background dataset you use. Anywhere from 100 to 1000 random background samples are good
-                    sizes to use. The "tree_path_dependent" approach is to just follow the trees and use the number
-                    of training examples that went down each leaf to represent the background distribution. This approach
-                    does not require a background dataset and so is used by default when no background dataset is provided.
-                    For more info visit : https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
 
-                algorithm: str
-                    "auto" (default), "v0", "v1" or "v2"
-                    The "v0" algorithm refers to TreeSHAP algorithm in SHAP package (https://github.com/slundberg/shap).
-                    The "v1" and "v2" algorithms refer to Fast TreeSHAP v1 algorithm and Fast TreeSHAP v2 algorithm
-                    proposed in paper https://arxiv.org/abs/2109.09847 (Jilei 2021). In practice, Fast TreeSHAP v1 is 1.5x
-                    faster than TreeSHAP while keeping the memory cost unchanged, and Fast TreeSHAP v2 is 2.5x faster than
-                    TreeSHAP at the cost of slightly higher memory usage. The default value of the algorithm is "auto",
-                    which automatically chooses the most appropriate algorithm to use. Specifically, we always prefer
-                    "v1" over "v0", and we prefer "v2" over "v1" when the number of samples to be explained is sufficiently
-                    large, and the memory constraint is also satisfied.
-                    For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-                shap_n_jobs : int
-                    (default), or a positive integer
-                    A number of parallel threads used to run Fast TreeSHAP. The default value of n_jobs is -1, which utilizes
-                    all available cores in parallel computing (Setting OMP_NUM_THREADS is unnecessary since n_jobs will
-                    overwrite this parameter).
-                    For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-                memory_tolerance : int
-                    (default), or a positive number
-                    The upper limit of memory allocation (in GB) to run Fast TreeSHAP v2. The default value of memory_tolerance is -1,
-                    which allocates a maximum of 0.25 * total memory of the machine to run Fast TreeSHAP v2.
-                    For more info visit : https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-                feature_names : [str]
-                    Feature names.
-                approximate: bool
-                    Run fast, but only roughly approximate the Tree SHAP values. This runs a method
-                    previously proposed by Saabas which only considers a single feature ordering. Take care
-                    since this does not have the consistency guarantees of Shapley values and places too
-                    much weight on lower splits in the tree.
-                    For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py
-                shortcut: False (default) or True
-                    Whether to use the C++ version of TreeSHAP embedded in XGBoost, LightGBM, and CatBoost packages directly
-                    when computing SHAP values for XGBoost, LightGBM and CatBoost models, and when computing SHAP interaction
-                    values for XGBoost models. The current version of FastTreeSHAP package supports XGBoost and LightGBM models,
-                    and its support for CatBoost model is working in progress (the shortcut is automatically set to be True for
-                    CatBoost model).
-                    For more info visit: https://github.com/linkedin/FastTreeSHAP/blob/master/fasttreeshap/explainers/_tree.py            model_output,
-                        feature_perturbation,
-                        algorithm,
-                        shap_n_jobs,
-                        memory_tolerance,
-                        feature_names,
-                        approximate,
-                        shortcut,
+            cv: int
+                cross-validation generator or an iterable.
+                Determines the cross-validation splitting strategy. Possible inputs
+                for cv are: None, to use the default 5-fold cross-validation,
+                int, to specify the number of folds in a (Stratified)KFold,
+                CV splitter, An iterable yielding (train, test) splits
+                as arrays of indices. For int/None inputs, if the estimator
+                is a classifier, and y is either binary or multiclass,
+                StratifiedKFold is used. In all other cases, Fold is used.
+                These splitters are instantiated with shuffle=False, so the splits
+                will be the same across calls. It is only used when hyper_parameter_optimization_method
+                is grid or random.
+            variables: str or list, default=None
+                The list of variable(s) to be evaluated. If None, the transformer will evaluate
+                all numerical variables in the dataset.
+            confirm_variables: bool, default=False
+                If set to True, variables that are not present in the input dataframe will
+                be removed from the list of variables. Only used when passing a variable
+                list to the parameter variables. See parameter variables for more details.
+            scoring: str, default=’roc_auc’
+                Metric to evaluate the performance of the estimator.
+                Comes from sklearn.metrics. See the model evaluation documentation for more
+                options: https://scikit-learn.org/stable/modules/model_evaluation.html
 
             """
-            self.feature_selector.model_output = model_output
-            self.feature_selector.feature_perturbation = feature_perturbation
-            self.feature_selector.algorithm = algorithm
-            self.feature_selector.shap_n_jobs = shap_n_jobs
-            self.feature_selector.memory_tolerance = memory_tolerance
-            self.feature_selector.feature_names = feature_names
-            self.feature_selector.approximate = approximate
-            self.feature_selector.shortcut = shortcut
+            self.feature_selector.cv = cv
+            self.feature_selector.variables = variables
+            self.feature_selector.confirm_variables = confirm_variables
+            self.feature_selector.scoring = scoring
             return self
 
         def set_optuna_params(
             self,
+            # optuna params
             measure_of_accuracy,
             n_jobs,
             test_size,
             with_stratified,
+            # optuna study init params
             study,
+            # optuna optimization params
             study_optimize_objective,
             study_optimize_objective_n_trials,
             study_optimize_objective_timeout,
@@ -1246,13 +1017,15 @@ class ShapFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+                "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
                 "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
                 "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
                 "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score",
+                 "d2_absolute_error_score",
                 "tn", "tp", "tn_score" ,"tp_score".
                 Examples of use:
                 "f1_plus_tn(y_true, y_pred)"
@@ -1331,6 +1104,7 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_selector.n_jobs = n_jobs
             self.feature_selector.test_size = test_size
             self.feature_selector.with_stratified = with_stratified
+            # number_of_trials=100,
             # optuna study init params
             self.feature_selector.study = study
             # optuna optimization params
@@ -1354,7 +1128,6 @@ class ShapFeatureSelector(FeatureSelector):
 
         def set_gridsearchcv_params(
             self,
-            # gridsearchcv params
             measure_of_accuracy,
             verbose,
             n_jobs,
@@ -1375,13 +1148,15 @@ class ShapFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+                "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
                 "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
                 "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
                 "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss",
+                "d2_pinball_score", "d2_absolute_error_score",
                 "tn", "tp", "tn_score" ,"tp_score".
                 Examples of use:
                 "f1_plus_tn(y_true, y_pred)"
@@ -1419,6 +1194,7 @@ class ShapFeatureSelector(FeatureSelector):
 
         def set_randomsearchcv_params(
             self,
+            # randomsearchcv params
             measure_of_accuracy,
             verbose,
             n_jobs,
@@ -1440,13 +1216,15 @@ class ShapFeatureSelector(FeatureSelector):
                 "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
                 "zero_one_loss"
                 # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+                 "precision_recall_curve"
                 "precision_recall_fscore_support".
                 Regression Classification-supported measurements are:
                 "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
                 "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
-                "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+                "mean_absolute_percentage_error","r2_score","mean_poisson_deviance",
+                "mean_gamma_deviance","mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss",
+                "d2_pinball_score", "d2_absolute_error_score",
                 "tn", "tp", "tn_score" ,"tp_score".
                 Examples of use:
                 "f1_plus_tn(y_true, y_pred)"
@@ -1475,7 +1253,8 @@ class ShapFeatureSelector(FeatureSelector):
                 is a classifier, and y is either binary or multiclass,
                 StratifiedKFold is used. In all other cases, Fold is used.
                 These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when hyper_parameter_optimization_method
+                will be the same across calls. It is only used when
+                hyper_parameter_optimization_method
                 is grid or random.
 
             """
@@ -1490,49 +1269,42 @@ class ShapFeatureSelector(FeatureSelector):
         def plot_features_all(
             self,
             path_to_save_plot,
-            type_of_plot="summary_plot",
         ):
 
-            """A method that uses ShapPlotFeatures to plot different Shap plots.
+            """A method that uses RecursiveFeatureEliminationPlotFeatures to
+            plot feature importance.
+
             Parameters
             ----------
             path_to_save_plot : str
                 A path to set a place to save generated plot.
-            type_of_plot : str
-                If type_of_plot be ``summary_plot_full``: it will plot Shap summary plot for all features, both selected and
-                not selected.
-                If type_of_plot be ``summary_plot``: using this argument a Shap summary plot will be presented.
-                If type_of_plot be ``decision_plot``: using this argument a Shap decision plot will be presented.
-                If type_of_plot be ``bar_plot``: using this argument a Shap bar plot will be presented.
-                If type_of_plot be ``bar_plot_full``: it will plot Shap bar plot for all features, both selected and
-                not selected.
             """
 
-            logger.info(f"type of plot is : {type_of_plot}")
-            shap_plot_features = ShapPlotFeatures(
+            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
                 feature_selector=self.feature_selector,
-                type_of_plot=type_of_plot,
                 path_to_save_plot=path_to_save_plot,
             )
             if self.feature_selector is not None:
-                shap_plot_features.plot_features()
+                recursive_elimination_plot_features.plot_features()
 
             return self.feature_selector
 
         def get_info_of_features_and_grades(
             self,
         ):
-            """A method that uses ShapPlotFeatures to get a info of selected features and grades."""
+            """A method that uses RecursiveFeatureEliminationPlotFeatures to get a
+            list of selected features.
+            """
 
-            shap_plot_features = ShapPlotFeatures(
+            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
                 feature_selector=self.feature_selector,
-                type_of_plot=None,
                 path_to_save_plot=None,
             )
             if self.feature_selector is not None:
-                print(f"{shap_plot_features.get_info_of_features_and_grades()}")
+                print(f"{recursive_elimination_plot_features.get_info_of_features_and_grades()}")
                 print(
-                    "Note: list of obligatory features that must be in model-list of features to drop before any selection also has considered !"
+                    "Note: list of obligatory features that must be in model-list of \
+                        features to drop before any selection also has considered !"
                 )
 
             return self.feature_selector
@@ -1542,14 +1314,15 @@ class ShapFeatureSelector(FeatureSelector):
         ):
             """A method that uses ShapPlotFeatures to get a list of selected features."""
 
-            shap_plot_features = ShapPlotFeatures(
+            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
                 feature_selector=self.feature_selector,
-                type_of_plot=None,
                 path_to_save_plot=None,
             )
-            if shap_plot_features.get_list_of_features() is not None:
-                return shap_plot_features.get_list_of_features()
+            if recursive_elimination_plot_features.get_list_of_features() is not None:
+                return recursive_elimination_plot_features.get_list_of_features()
             else:
                 return None
 
-    shap_feature_selector_factory = ShapFeatureSelectorFactory(method=None)
+    recursive_elimination_feature_selector_factory = (
+        RecursiveFeatureEliminationFeatureSelectorFactory(method=None)
+    )
