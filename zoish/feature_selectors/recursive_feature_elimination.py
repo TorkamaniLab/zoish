@@ -21,8 +21,8 @@ class RecursiveFeatureEliminationPlotFeatures(PlotFeatures):
     Parameters
     ----------
     feature_selector : object
-        It is an instance of ShapFeatureSelector. Before using ShapPlotFeatures
-        ShapFeatureSelector should be implemented.
+        It is an instance of RecursiveFeatureEliminationFeatureSelector. Before using RecursiveFeatureEliminationPlotFeatures
+        RecursiveFeatureEliminationFeatureSelector should be implemented.
 
     path_to_save_plot: str
         Path to save generated plot.
@@ -35,7 +35,7 @@ class RecursiveFeatureEliminationPlotFeatures(PlotFeatures):
         Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
-        information for the Shap plot.
+        information for the  plot.
 
     Notes
     -----
@@ -111,7 +111,7 @@ class RecursiveFeatureEliminationPlotFeatures(PlotFeatures):
 
     def expose_plot_object(self, *args, **kwargs):
         """return an object of matplotlib.pyplot that has
-        information for Shap plot.
+        information for  plot.
         """
         return self.plt
 
@@ -155,7 +155,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
     list_of_obligatory_features_that_must_be_in_model : [str]
         A list of strings (columns names of feature set pandas data frame)
         that should be among the selected features. No matter if they have high or
-        low shap values, they will be selected at the end of the feature selection
+        low  values, they will be selected at the end of the feature selection
         step.
     list_of_features_to_drop_before_any_selection :  [str]
         A list of strings (columns names of feature set pandas data frame)
@@ -289,17 +289,20 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
 
     Methods
     -------
-    get_list_of_features_and_grades(*args, **kwargs)
-        return a list of features and grades.
-    plot_features(*args, **kwargs)
-        Plot feature importance of selected.
-    expose_plot_object(*args, **kwargs)
-        return an object of matplotlib.pyplot that has
-        information for the Shap plot.
+    def calc_best_estimator(self):
+        calculate best estimator
+    get_feature_selector_instance()
+        return an instance of feature selection with parameters that already provided.
+    fit(*args,**kwargs)
+        Fit the feature selection estimator by the best parameters extracted
+        from optimization methods.
+    def transform(self, X, *args, **kwargs):
+        Transform the data, and apply the transform to data to be ready for feature selection
+        estimator.
 
     Notes
     -----
-    This class is not stand by itself. First ShapFeatureSelector should be
+    This class is not stand by itself. First RecursiveFeatureEliminationFeatureSelector should be
     implemented.
     """
 
@@ -389,7 +392,16 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         self.importance_df = None
         self.method = method
         self.selected_cols = None
-
+        # feature object
+        self.feature_object = None
+    
+    @property
+    def feature_object(self):
+        return self._feature_object
+    @feature_object.setter
+    def feature_object(self, value):
+        self._feature_object = value
+    
     @property
     def scoring(self):
         return self._scoring
@@ -725,7 +737,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         if self.bst is None:
             raise NotImplementedError("best estimator did not calculated !")
         else:
-            rf = RecursiveFeatureElimination(
+            self.feature_object = RecursiveFeatureElimination(
                 estimator=self.bst.best_estimator,
                 scoring=self.scoring,
                 cv=self.cv,
@@ -734,12 +746,12 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 confirm_variables=self.confirm_variables,
 
             )
-            rf.fit(X, y)
+            self.feature_object.fit(X, y)
             # Get list  of each feature to drop
-            feature_list_to_drop = rf.features_to_drop_
+            feature_list_to_drop = self.feature_object.features_to_drop_
             print(feature_list_to_drop)
             # Get the performance drift of each feature
-            feature_dict_drift= rf.performance_drifts_
+            feature_dict_drift= self.feature_object.performance_drifts_
             print(feature_dict_drift)
             # Calculate the dict of features to remain (substract based on keys)
             feature_dict = {k:v for k,v in feature_dict_drift.items() if k not in feature_list_to_drop}
@@ -749,7 +761,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         print(self.importance_df)
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
-        # for multi-class shap values are show in a list
+        # for multi-class  values are show in a list
         if isinstance(self.importance_df["feature_importance"][0], list):
             self.importance_df["feature_importance"] = self.importance_df[
                 "feature_importance"
@@ -789,6 +801,10 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         self.selected_cols = list(set_of_selected_features)
         print(self.selected_cols)
         return self
+
+    def get_feature_selector_instance(self):
+        """Retrun an object of feature selection object"""
+        return self.feature_object 
 
     def transform(self, X, *args, **kwargs):
         """Transform the data, and apply the transform to data to be ready for feature selection
@@ -830,10 +846,12 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             A method to set GridSearchCV parameters.
         set_randomsearchcv_params(*args,**kwargs)
             A method to set RandomizedSearchCV parameters.
+        def get_feature_selector_instance(self):
+            Retrun an object of feature selection object
         plot_features_all(*args,**kwargs)
-            A method that uses ShapPlotFeatures to plot different shap plots.
+            A method that uses RecursiveFeatureEliminationPlotFeatures to plot different plots.
         get_info_of_features_and_grades()
-            A method that uses ShapPlotFeatures to get information of selected features.
+            A method that uses RecursiveFeatureEliminationPlotFeatures to get information of selected features.
 
         """
 
@@ -867,7 +885,6 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             estimator_params,
             fit_params,
             method,
-            #n_features,
             threshold,
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
@@ -902,7 +919,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use Optuna optimizer.
                 check this : ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
                 feature_selector : object
-                An instance of type ShapFeatureSelector.
+                An instance of type RecursiveFeatureEliminationFeatureSelector.
             n_features : None
                 This always should be None.
             threshold: float
@@ -910,7 +927,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model : [str]
                 A list of strings (columns names of feature set pandas data frame)
                 that should be among the selected features. No matter if they have high or
-                low shap values, they will be selected at the end of the feature selection
+                low values, they will be selected at the end of the feature selection
                 step.
             list_of_features_to_drop_before_any_selection :  [str]
                 A list of strings (columns names of feature set pandas data frame)
@@ -1266,6 +1283,10 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
+        def get_feature_selector_instance(self):
+            """Retrun an object of feature selection object"""
+            return self.feature_selector.get_feature_selector_instance()
+
         def plot_features_all(
             self,
             path_to_save_plot,
@@ -1312,7 +1333,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         def get_list_of_features(
             self,
         ):
-            """A method that uses ShapPlotFeatures to get a list of selected features."""
+            """A method that uses RecursiveFeatureEliminationPlotFeatures to get a list of selected features."""
 
             recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
                 feature_selector=self.feature_selector,

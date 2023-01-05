@@ -21,8 +21,8 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
     Parameters
     ----------
     feature_selector : object
-        It is an instance of ShapFeatureSelector. Before using ShapPlotFeatures
-        ShapFeatureSelector should be implemented.
+        It is an instance of SingleFeaturePerformanceFeatureSelector. Before using SingleFeaturePerformancePlotFeatures
+        SingleFeaturePerformanceFeatureSelector should be implemented.
 
     path_to_save_plot: str
         Path to save generated plot.
@@ -35,7 +35,7 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
         Plot feature importance of selected.
     expose_plot_object(*args, **kwargs)
         return an object of matplotlib.pyplot that has
-        information for the Shap plot.
+        information for the plot.
 
     Notes
     -----
@@ -111,7 +111,7 @@ class SingleFeaturePerformancePlotFeatures(PlotFeatures):
 
     def expose_plot_object(self, *args, **kwargs):
         """return an object of matplotlib.pyplot that has
-        information for Shap plot.
+        information for plot.
         """
         return self.plt
 
@@ -157,7 +157,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     list_of_obligatory_features_that_must_be_in_model : [str]
         A list of strings (columns names of feature set pandas data frame)
         that should be among the selected features. No matter if they have high or
-        low shap values, they will be selected at the end of the feature selection
+        low  values, they will be selected at the end of the feature selection
         step.
     list_of_features_to_drop_before_any_selection :  [str]
         A list of strings (columns names of feature set pandas data frame)
@@ -291,17 +291,20 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
     Methods
     -------
-    get_list_of_features_and_grades(*args, **kwargs)
-        return a list of features and grades.
-    plot_features(*args, **kwargs)
-        Plot feature importance of selected.
-    expose_plot_object(*args, **kwargs)
-        return an object of matplotlib.pyplot that has
-        information for the Shap plot.
+    def calc_best_estimator(self):
+        calculate best estimator
+    get_feature_selector_instance()
+        return an instance of feature selection with parameters that already provided.
+    fit(*args,**kwargs)
+        Fit the feature selection estimator by the best parameters extracted
+        from optimization methods.
+    def transform(self, X, *args, **kwargs):
+        Transform the data, and apply the transform to data to be ready for feature selection
+        estimator.
 
     Notes
     -----
-    This class is not stand by itself. First ShapFeatureSelector should be
+    This class is not stand by itself. First SingleFeaturePerformanceFeatureSelector should be
     implemented.
     """
 
@@ -391,7 +394,17 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.importance_df = None
         self.method = method
         self.selected_cols = None
+        # feature object
+        self.feature_object = None
 
+    @property
+    def feature_object(self):
+        return self._feature_object
+
+    @feature_object.setter
+    def feature_object(self, value):
+        self._feature_object = value
+    
     @property
     def scoring(self):
         return self._scoring
@@ -727,7 +740,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         if self.bst is None:
             raise NotImplementedError("best estimator did not calculated !")
         else:
-            sel = SelectBySingleFeaturePerformance(
+            self.feature_object = SelectBySingleFeaturePerformance(
                 estimator=self.bst.best_estimator,
                 scoring=self.scoring,
                 cv=self.cv,
@@ -736,13 +749,13 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 confirm_variables=self.confirm_variables,
 
             )
-            sel.fit(X, y)
-            feature_dict = sel.feature_performance_
+            self.feature_object .fit(X, y)
+            feature_dict = self.feature_object .feature_performance_
 
         self.importance_df = pd.DataFrame([X.columns.tolist(), feature_dict.values()]).T
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
-        # for multi-class shap values are show in a list
+        # for multi-class  values are show in a list
         if isinstance(self.importance_df["feature_importance"][0], list):
             self.importance_df["feature_importance"] = self.importance_df[
                 "feature_importance"
@@ -782,6 +795,10 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.selected_cols = list(set_of_selected_features)
         print(self.selected_cols)
         return self
+    
+    def get_feature_selector_instance(self):
+        """Retrun an object of feature selection object"""
+        return self.feature_object 
 
     def transform(self, X, *args, **kwargs):
         """Transform the data, and apply the transform to data to be ready for feature selection
@@ -823,10 +840,12 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             A method to set GridSearchCV parameters.
         set_randomsearchcv_params(*args,**kwargs)
             A method to set RandomizedSearchCV parameters.
+        def get_feature_selector_instance(self):
+            Retrun an object of feature selection object
         plot_features_all(*args,**kwargs)
-            A method that uses ShapPlotFeatures to plot different shap plots.
+            A method that uses SingleFeaturePerformancePlotFeatures to plot different  plots.
         get_info_of_features_and_grades()
-            A method that uses ShapPlotFeatures to get information of selected features.
+            A method that uses SingleFeaturePerformancePlotFeatures to get information of selected features.
 
         """
 
@@ -895,7 +914,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 ``gridsearchcv`` : If this argument set to ``GridSearchCV`` class will use Optuna optimizer.
                 check this : ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
                 feature_selector : object
-                An instance of type ShapFeatureSelector.
+                An instance of type SingleFeaturePerformanceFeatureSelector.
             n_features : int
                 The number of features seen during term:`fit`. Only defined if the
                 underlying estimator exposes such an attribute when fitted. If ``threshold``
@@ -905,7 +924,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model : [str]
                 A list of strings (columns names of feature set pandas data frame)
                 that should be among the selected features. No matter if they have high or
-                low shap values, they will be selected at the end of the feature selection
+                low  values, they will be selected at the end of the feature selection
                 step.
             list_of_features_to_drop_before_any_selection :  [str]
                 A list of strings (columns names of feature set pandas data frame)
@@ -1261,6 +1280,10 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
+        def get_feature_selector_instance(self):
+            """Retrun an object of feature selection object"""
+            return self.feature_selector.get_feature_selector_instance()
+
         def plot_features_all(
             self,
             path_to_save_plot,
@@ -1307,7 +1330,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         def get_list_of_features(
             self,
         ):
-            """A method that uses ShapPlotFeatures to get a list of selected features."""
+            """A method that uses SingleFeaturePerformancePlotFeatures to get a list of selected features."""
 
             single_plot_features = SingleFeaturePerformancePlotFeatures(
                 feature_selector=self.feature_selector,
