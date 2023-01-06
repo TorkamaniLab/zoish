@@ -1,45 +1,44 @@
 # Zoish
 
-Zoish is a package built to ease machine learning development by providing varoius feature selecting modules as:  
+Zoish is a package built to ease machine learning development by providing various feature-selecting modules such as:  
 - Select By Single Feature Performance
 - Recursive Feature Elimination
 - Recursive Feature Addition
 - Select By Shuffling
 
-which are developed and prepared by https://feature-engine.readthedocs.io/en/latest/api_doc/selection/index.html 
-
-All of them are compatible with [scikit-learn](https://scikit-learn.org) pipeline . 
+All of them are compatible with [scikit-learn](https://scikit-learn.org) pipeline. 
 
 
 ## Introduction
 
-All of the above-menthoned methods of Zoish package have class factories  that receive various parameters. From an estimator to its tunning parameters and from Grid search, Random Search, or Optuna optimizeors to their parameters. The goal is to create some objects to be used for a critical job, i.e., feature selection step in a machine learning pipeline. Samples will be split to train and validation set, and then optimization will estimate optimal related parameters. After that, the best subset of features with higher impoertance will be returned. This subset can be used as the next steps of the ml pipeline. 
+All of the above-mentioned modules of Zoish have class factories that have various methods and parameters. From an estimator to its tunning parameters and from optimizers to their parameters, the final goal is to automate the feature selection of the ML pipeline in a proper way. Optimizers like [Optuna](https://optuna.org/), [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html) ,and [RandomizedSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html) has critical role in Zoish. They are used to provide the best estimator on a train set that is later used by feature selectors to check what features can improve the accuracy of this best estimator based on desired metrics. In short, Optimizers use information every bit of information in rain set to select the best feature set. 
+
+The main process in Zoish is to split samples to train and validation set, and then optimization will estimate optimal hyper-parameters of the estimators. After that, this best estimator will be input to the feature selection objects and finally, the best subset of features with higher grades will be returned. This subset can be used as the next steps of the ML pipeline. In the next paragraphs, more details about feature selector modules have provided.
 
 ### ShapFeatureSelectorFactory
 
-ShapFeatureSelectorFactory uses  [SHAP](https://arxiv.org/abs/1705.07874) (SHapley Additive exPlanation)  for a better feature selection. This package  uses [FastTreeSHAP](https://arxiv.org/abs/2109.09847) while calculation shap values and [SHAP](https://shap.readthedocs.io/en/latest/index.html) for plotting. Using this class you can : 
+ShapFeatureSelectorFactory uses  [SHAP](https://arxiv.org/abs/1705.07874) (SHapley Additive exPlanation)  for a better feature selection. This package uses [FastTreeSHAP](https://arxiv.org/abs/2109.09847) while calculating shap values and [SHAP](https://shap.readthedocs.io/en/latest/index.html) for plotting. Using this module users can : 
 
-- find features using specific tree-based models with the highest shap values after hyper-parameter optimization
-- draw some shap related plot for selected features
+- find features using the best estimator of tree-based models with the highest shap values after hyper-parameter optimization.
+- draw some shap related plots for selected features.
 - return a  Pandas data frame with a list of features and shap values. 
 
 ### RecursiveFeatureEliminationFeatureSelectorFactory
 
-The base of this class is to selects features following a recursive elimination process. For more information of the logic of this class visit this [RecursiveFeatureElimination](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureElimination.html
-) page. 
+The job of this factory class is to ease the selection of features by following a recursive elimination process. The process uses the best estimator found by the optimizer using all the features. Then it ranks the features according to their importance derived from the best estimator. In the next step, it removes the least important feature and fits again with the best estimator. It calculates the performance of the best estimator again and calculates the performance difference between the new and old results. If the performance drop is below the threshold the feature is removed, and this process will continue until all features have been evaluated. For more information on the logic of the recursive elimination process visit this [RecursiveFeatureElimination](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureElimination.html) page. 
 
 ### RecursiveFeatureAdditionFeatureSelectorFactory
-It is very similar to RecursiveFeatureEliminationFeatureSelectorFactory, however it works opposite. It  selects features following a recursive addition process. For more details check the help page of [RecursiveFeatureAddition](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureAddition.html). 
+It is very similar to RecursiveFeatureEliminationFeatureSelectorFactory, however, the logic is the opposite. It selects features following a recursive addition process. Visit [RecursiveFeatureAddition](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureAddition.html) for more details. 
 
 ### SelectByShufflingFeatureSelectorFactory
 
-In this ,odule, selection of features is baed on determining the drop in machine learning model performance when each feature’s values are randomly shuffled.
+In this module, the selection of features is based on determining the drop in machine learning model performance when each feature’s values are randomly shuffled.
 
-If the variables are important, a random permutation of their values will decrease dramatically the machine learning model performance. Contrarily, the permutation of the values should have little to no effect on the model performance metric we are assessing if the feature is not predictive. To understand how it works go to its official page [SelectByShuffling](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectByShuffling.html).
+If the variables are important, a random permutation of their values will decrease dramatically the machine learning model performance. Contrarily, the permutation of the values should have little to no effect on the model performance metric we are assessing if the feature is not predictive. To understand how it works completely go to its official page [SelectByShuffling](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectByShuffling.html).
 
 ### SingleFeaturePerformanceFeatureSelectorFactory
 
-It selects features based on the performance of a machine learning model trained utilising a single feature. In other words, it trains a machine learning model for every single feature, then determines each model’s performance. If the performance of the model is greater than a user specified threshold, then the feature is retained, otherwise removed. Go to this [page](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectBySingleFeaturePerformance.html) for more information. 
+It selects features based on the performance of a machine learning model trained to utilize a single feature. In other words, it trains a machine-learning model for every single feature, then determines each model’s performance. If the performance of the model is greater than a user-specified threshold, then the feature is retained, otherwise removed. Go to this [page](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectBySingleFeaturePerformance.html) for more information. 
 
 ## Installation
 
