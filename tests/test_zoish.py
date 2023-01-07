@@ -2,6 +2,11 @@
 
 import pytest
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
+from zoish.feature_selectors.recursive_feature_addition import RecursiveFeatureAdditionFeatureSelector
+from zoish.feature_selectors.recursive_feature_elimination import RecursiveFeatureEliminationFeatureSelector
+from zoish.feature_selectors.single_feature_selectors import SingleFeaturePerformanceFeatureSelector
+from zoish.feature_selectors.select_by_shuffling import SelectByShufflingFeatureSelector
+
 from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
 from category_encoders import OrdinalEncoder
 from sklearn.linear_model import LinearRegression
@@ -23,74 +28,106 @@ from optuna.pruners import HyperbandPruner
 import xgboost
 import pandas as pd
 from sklearn.model_selection import train_test_split
-import optuna 
+import optuna
 
- 
+
 @pytest.fixture()
 def datasets():
     class DataHandling:
-        def __init__(self, url,col_names, problem_name, random_state, test_size):
-            self.url=url
-            self.col_names=col_names
-            self.problem_name=problem_name
-            self.random_state=random_state
-            self.test_size=test_size
-            self.data=None
-            self.X=None
-            self.y=None
-            self.X_train=None
-            self.y_train=None
-            self.X_test=None
-            self.y_test=None
-            self.int_cols=None
-            self.float_cols=None
-            self.cat_cols=None
-        
+        def __init__(self, url, col_names, problem_name, random_state, test_size):
+            self.url = url
+            self.col_names = col_names
+            self.problem_name = problem_name
+            self.random_state = random_state
+            self.test_size = test_size
+            self.data = None
+            self.X = None
+            self.y = None
+            self.X_train = None
+            self.y_train = None
+            self.X_test = None
+            self.y_test = None
+            self.int_cols = None
+            self.float_cols = None
+            self.cat_cols = None
+
         def read_data(self):
-            self.data = pd.read_csv(self.url, header=None, names=self.col_names, sep=",")
+            self.data = pd.read_csv(
+                self.url, header=None, names=self.col_names, sep=","
+            )
             return self.data
 
         def x_y_split(self):
             self.read_data()
-            if self.problem_name=="hardware":
-                    self.X = self.data.loc[:, self.data.columns != "PRP"]
-                    self.y = self.data.loc[:, self.data.columns == "PRP"]
-                    self.X_train,self.X_test,self.y_train,self.y_test= train_test_split(self.X, self.y, test_size=self.test_size, random_state=self.random_state)
-                    self.int_cols =  self.X_train.select_dtypes(include=['int']).columns.tolist()
-                    self.float_cols =  self.X_train.select_dtypes(include=['float']).columns.tolist()
-                    self.cat_cols =  self.X_train.select_dtypes(include=['object']).columns.tolist()
+            if self.problem_name == "hardware":
+                self.X = self.data.loc[:, self.data.columns != "PRP"]
+                self.y = self.data.loc[:, self.data.columns == "PRP"]
+                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                    self.X,
+                    self.y,
+                    test_size=self.test_size,
+                    random_state=self.random_state,
+                )
+                self.int_cols = self.X_train.select_dtypes(
+                    include=["int"]
+                ).columns.tolist()
+                self.float_cols = self.X_train.select_dtypes(
+                    include=["float"]
+                ).columns.tolist()
+                self.cat_cols = self.X_train.select_dtypes(
+                    include=["object"]
+                ).columns.tolist()
 
-            if self.problem_name=="audiology":
-                    self.data.loc[
-                        (self.data["class"] == 1) | (self.data["class"] == 2), "class"
-                    ] = 0
-                    self.data.loc[self.data["class"] == 3, "class"] = 1
-                    self.data.loc[self.data["class"] == 4, "class"] = 2
-                    self.data["class"] = self.data["class"].astype(int)
-                    self.X = self.data.loc[:, self.data.columns != "class"]
-                    self.y = self.data.loc[:, self.data.columns == "class"]
-                    self.X_train,self.X_test,self.y_train,self.y_test= train_test_split(self.X, self.y, test_size=self.test_size, random_state=self.random_state)
-                    self.y_test = self.y_test .values.ravel()
-                    self.y_train = self.y_train.values.ravel()
-                    self.int_cols =  self.X_train.select_dtypes(include=['int']).columns.tolist()
+            if self.problem_name == "audiology":
+                self.data.loc[
+                    (self.data["class"] == 1) | (self.data["class"] == 2), "class"
+                ] = 0
+                self.data.loc[self.data["class"] == 3, "class"] = 1
+                self.data.loc[self.data["class"] == 4, "class"] = 2
+                self.data["class"] = self.data["class"].astype(int)
+                self.X = self.data.loc[:, self.data.columns != "class"]
+                self.y = self.data.loc[:, self.data.columns == "class"]
+                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                    self.X,
+                    self.y,
+                    test_size=self.test_size,
+                    random_state=self.random_state,
+                )
+                self.y_test = self.y_test.values.ravel()
+                self.y_train = self.y_train.values.ravel()
+                self.int_cols = self.X_train.select_dtypes(
+                    include=["int"]
+                ).columns.tolist()
 
-            if self.problem_name=="adult":
-                    self.data.loc[self.data["label"] == "<=50K", "label"] = 0
-                    self.data.loc[self.data["label"] == " <=50K", "label"] = 0
+            if self.problem_name == "adult":
+                self.data.loc[self.data["label"] == "<=50K", "label"] = 0
+                self.data.loc[self.data["label"] == " <=50K", "label"] = 0
 
-                    self.data.loc[self.data["label"] == ">50K", "label"] = 1
-                    self.data.loc[self.data["label"] == " >50K", "label"] = 1
+                self.data.loc[self.data["label"] == ">50K", "label"] = 1
+                self.data.loc[self.data["label"] == " >50K", "label"] = 1
 
-                    self.data["label"] = self.data["label"].astype(int)
-                    self.X = self.data.loc[:, self.data.columns != "label"]
-                    self.y = self.data.loc[:, self.data.columns == "label"]
-                    self.X_train,self.X_test,self.y_train,self.y_test = train_test_split(self.X, self.y,test_size=self.test_size,stratify=self.y["label"],random_state=self.random_state)
-                    self.int_cols =  self.X_train.select_dtypes(include=['int']).columns.tolist()
-                    self.float_cols =  self.X_train.select_dtypes(include=['float']).columns.tolist()
-                    self.cat_cols =  self.X_train.select_dtypes(include=['object']).columns.tolist()
+                self.data["label"] = self.data["label"].astype(int)
+                self.X = self.data.loc[:, self.data.columns != "label"]
+                self.y = self.data.loc[:, self.data.columns == "label"]
+                self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                    self.X,
+                    self.y,
+                    test_size=self.test_size,
+                    stratify=self.y["label"],
+                    random_state=self.random_state,
+                )
+                self.int_cols = self.X_train.select_dtypes(
+                    include=["int"]
+                ).columns.tolist()
+                self.float_cols = self.X_train.select_dtypes(
+                    include=["float"]
+                ).columns.tolist()
+                self.cat_cols = self.X_train.select_dtypes(
+                    include=["object"]
+                ).columns.tolist()
 
             return self
-    
+
     audiology = DataHandling(
         url="https://archive.ics.uci.edu/ml/machine-learning-databases/lymphography/lymphography.data",
         col_names=[
@@ -112,16 +149,15 @@ def datasets():
             "dislocation of",
             "exclusion of no",
             "no. of nodes in",
-
         ],
         problem_name="audiology",
         random_state=42,
         test_size=0.33,
-        )
+    )
     adult = DataHandling(
         url="https://archive.ics.uci.edu/ml/machine-learning-databases/adult/adult.data",
         col_names=[
-           "age",
+            "age",
             "workclass",
             "fnlwgt",
             "education",
@@ -140,11 +176,11 @@ def datasets():
         problem_name="adult",
         random_state=42,
         test_size=0.33,
-        )
+    )
     hardware = DataHandling(
         url="https://archive.ics.uci.edu/ml/machine-learning-databases/cpu-performance/machine.data",
         col_names=[
-           "vendor name",
+            "vendor name",
             "Model Name",
             "MYCT",
             "MMIN",
@@ -152,18 +188,17 @@ def datasets():
             "CACH",
             "CHMIN",
             "CHMAX",
-            "PRP"
+            "PRP",
         ],
         problem_name="hardware",
         random_state=42,
         test_size=0.33,
-        )
-    return [adult.x_y_split(),audiology.x_y_split(),hardware.x_y_split()]
+    )
+    return [adult.x_y_split(), audiology.x_y_split(), hardware.x_y_split()]
 
 
 @pytest.fixture()
 def setup_factories(datasets):
-
     class FeatureSelectorFactories:
         def __init__(
             self,
@@ -193,6 +228,7 @@ def setup_factories(datasets):
             with_stratified=None,
             test_size=None,
             n_jobs=None,
+            n_iter=None,
             # optuna params
             # optuna study init params
             study=None,
@@ -210,92 +246,557 @@ def setup_factories(datasets):
             scoring=None,
             confirm_variables=None,
         ):
-            self.X=X
-            self.y=y
-            self.verbose=verbose
-            self.random_state=random_state
-            self.estimator=estimator
-            self.estimator_params=estimator_params
-            self.fit_params=fit_params
-            self.method=method
-            self.n_features=n_features
-            self.threshold=threshold
-            self.list_of_obligatory_features_that_must_be_in_model=list_of_obligatory_features_that_must_be_in_model
-            self.list_of_features_to_drop_before_any_selection=list_of_features_to_drop_before_any_selection
-            self.model_output=model_output
-            self.feature_perturbation=feature_perturbation
-            self.algorithm=algorithm
-            self.shap_n_jobs=shap_n_jobs
-            self.memory_tolerance=memory_tolerance
-            self.feature_names=feature_names
-            self.approximate=approximate
-            self.shortcut=shortcut
+            self.X = X
+            self.y = y
+            self.verbose = verbose
+            self.random_state = random_state
+            self.estimator = estimator
+            self.estimator_params = estimator_params
+            self.fit_params = fit_params
+            self.method = method
+            self.n_features = n_features
+            self.threshold = threshold
+            self.list_of_obligatory_features_that_must_be_in_model = (
+                list_of_obligatory_features_that_must_be_in_model
+            )
+            self.list_of_features_to_drop_before_any_selection = (
+                list_of_features_to_drop_before_any_selection
+            )
+            self.model_output = model_output
+            self.feature_perturbation = feature_perturbation
+            self.algorithm = algorithm
+            self.shap_n_jobs = shap_n_jobs
+            self.n_iter=n_iter
+            self.memory_tolerance = memory_tolerance
+            self.feature_names = feature_names
+            self.approximate = approximate
+            self.shortcut = shortcut
             #
-            self.measure_of_accuracy=measure_of_accuracy
+            self.measure_of_accuracy = measure_of_accuracy
             # optuna params
-            self.with_stratified=with_stratified
-            self.test_size=test_size
-            self.n_jobs=n_jobs
+            self.with_stratified = with_stratified
+            self.test_size = test_size
+            self.n_jobs = n_jobs
             # optuna params
             # optuna study init params
-            self.study=study
+            self.study = study
             # optuna optimization params
-            self.study_optimize_objective=study_optimize_objective
-            self.study_optimize_objective_n_trials=study_optimize_objective_n_trials
-            self.study_optimize_objective_timeout=study_optimize_objective_timeout
-            self.study_optimize_n_jobs=study_optimize_n_jobs
-            self.study_optimize_catch=study_optimize_catch
-            self.study_optimize_callbacks=study_optimize_callbacks
-            self.study_optimize_gc_after_trial=study_optimize_gc_after_trial
-            self.study_optimize_show_progress_bar=study_optimize_show_progress_bar
-            self.cv=cv
-            self.variables=variables
-            self.scoring=scoring
-            self.confirm_variables=confirm_variables
+            self.study_optimize_objective = study_optimize_objective
+            self.study_optimize_objective_n_trials = study_optimize_objective_n_trials
+            self.study_optimize_objective_timeout = study_optimize_objective_timeout
+            self.study_optimize_n_jobs = study_optimize_n_jobs
+            self.study_optimize_catch = study_optimize_catch
+            self.study_optimize_callbacks = study_optimize_callbacks
+            self.study_optimize_gc_after_trial = study_optimize_gc_after_trial
+            self.study_optimize_show_progress_bar = study_optimize_show_progress_bar
+            self.cv = cv
+            self.variables = variables
+            self.scoring = scoring
+            self.confirm_variables = confirm_variables
 
-        def get_shap_selector(self):
-            shap = ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
-                X=self.X,
-                y=self.y,
-                verbose=self.verbose,
-                random_state=self.random_state,
-                estimator=self.estimator,
-                estimator_params=self.estimator_params,
-                fit_params=self.fit_params,
-                method=self.method,
-                n_features=self.n_features,
-                threshold=self.threshold,
-                list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
-                ).set_shap_params(
-                model_output=self.model_output,
-                feature_perturbation=self.feature_perturbation,
-                algorithm=self.algorithm,
-                shap_n_jobs=self.shap_n_jobs,
-                memory_tolerance=self.memory_tolerance,
-                feature_names=self.feature_names,
-                approximate=self.approximate,
-                shortcut=self.shortcut,
-                ).set_optuna_params(
-                measure_of_accuracy=self.measure_of_accuracy,
-                # optuna params
-                with_stratified=self.with_stratified,
-                test_size=self.test_size,
-                n_jobs=self.n_jobs,
-                # optuna params
-                # optuna study init params
-                study=self.study,
-                # optuna optimization params
-                study_optimize_objective=self.study_optimize_objective,
-                study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
-                study_optimize_objective_timeout=self.study_optimize_objective_timeout,
-                study_optimize_n_jobs=self.study_optimize_n_jobs,
-                study_optimize_catch=self.study_optimize_catch,
-                study_optimize_callbacks=self.study_optimize_callbacks,
-                study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
-                study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+        def get_shap_selector_optuna(self):
+            shap_selector_optuna = (
+                ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
                 )
-            return shap
+                .set_shap_params(
+                    model_output=self.model_output,
+                    feature_perturbation=self.feature_perturbation,
+                    algorithm=self.algorithm,
+                    shap_n_jobs=self.shap_n_jobs,
+                    memory_tolerance=self.memory_tolerance,
+                    feature_names=self.feature_names,
+                    approximate=self.approximate,
+                    shortcut=self.shortcut,
+                )
+                .set_optuna_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    with_stratified=self.with_stratified,
+                    test_size=self.test_size,
+                    n_jobs=self.n_jobs,
+                    study=self.study,
+                    study_optimize_objective=self.study_optimize_objective,
+                    study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
+                    study_optimize_objective_timeout=self.study_optimize_objective_timeout,
+                    study_optimize_n_jobs=self.study_optimize_n_jobs,
+                    study_optimize_catch=self.study_optimize_catch,
+                    study_optimize_callbacks=self.study_optimize_callbacks,
+                    study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
+                    study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+                )
+            )
+            return shap_selector_optuna
+        def get_shap_selector_grid(self):
+            shap_selector_grid = (
+                ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_shap_params(
+                    model_output=self.model_output,
+                    feature_perturbation=self.feature_perturbation,
+                    algorithm=self.algorithm,
+                    shap_n_jobs=self.shap_n_jobs,
+                    memory_tolerance=self.memory_tolerance,
+                    feature_names=self.feature_names,
+                    approximate=self.approximate,
+                    shortcut=self.shortcut,
+                )
+                .set_gridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,                
+                    )
+            )
+            return shap_selector_grid
+        def get_shap_selector_random(self):
+            shap_selector_random = (
+                ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_shap_params(
+                    model_output=self.model_output,
+                    feature_perturbation=self.feature_perturbation,
+                    algorithm=self.algorithm,
+                    shap_n_jobs=self.shap_n_jobs,
+                    memory_tolerance=self.memory_tolerance,
+                    feature_names=self.feature_names,
+                    approximate=self.approximate,
+                    shortcut=self.shortcut,
+                )
+                .set_randomsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,  
+                    n_iter=self.n_iter,              
+                    )
+            )
+            return shap_selector_random
+
+
+        def get_single_selector_optuna(self):
+            single_selector_optuna = (
+                SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_single_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_optuna_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    with_stratified=self.with_stratified,
+                    test_size=self.test_size,
+                    n_jobs=self.n_jobs,
+                    study=self.study,
+                    study_optimize_objective=self.study_optimize_objective,
+                    study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
+                    study_optimize_objective_timeout=self.study_optimize_objective_timeout,
+                    study_optimize_n_jobs=self.study_optimize_n_jobs,
+                    study_optimize_catch=self.study_optimize_catch,
+                    study_optimize_callbacks=self.study_optimize_callbacks,
+                    study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
+                    study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+                )
+            )
+            return single_selector_optuna
+        def get_single_selector_grid(self):
+            single_selector_grid = (
+                SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_single_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_gridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,                
+                    )
+            )
+            return single_selector_grid
+        def get_single_selector_random(self):
+            single_selector_random = (
+                SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_single_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_randomsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,  
+                    n_iter=self.n_iter,              
+                    )
+            )
+            return single_selector_random
+
+        def get_addition_selector_optuna(self):
+            addition_selector_optuna = (
+                RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_addition_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_optuna_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    with_stratified=self.with_stratified,
+                    test_size=self.test_size,
+                    n_jobs=self.n_jobs,
+                    study=self.study,
+                    study_optimize_objective=self.study_optimize_objective,
+                    study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
+                    study_optimize_objective_timeout=self.study_optimize_objective_timeout,
+                    study_optimize_n_jobs=self.study_optimize_n_jobs,
+                    study_optimize_catch=self.study_optimize_catch,
+                    study_optimize_callbacks=self.study_optimize_callbacks,
+                    study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
+                    study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+                )
+            )
+            return addition_selector_optuna
+        def get_addition_selector_grid(self):
+            addition_selector_grid = (
+                RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_addition_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_gridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,                
+                    )
+            )
+            return addition_selector_grid
+        
+        def get_addition_selector_random(self):
+            addition_selector_random = (
+                RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_addition_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_randomsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,  
+                    n_iter=self.n_iter,              
+                    )
+            )
+            return addition_selector_random
+
+
+        def get_elimination_selector_optuna(self):
+            elimination_selector_optuna = (
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+                .set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_recursive_elimination_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_optuna_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    with_stratified=self.with_stratified,
+                    test_size=self.test_size,
+                    n_jobs=self.n_jobs,
+                    study=self.study,
+                    study_optimize_objective=self.study_optimize_objective,
+                    study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
+                    study_optimize_objective_timeout=self.study_optimize_objective_timeout,
+                    study_optimize_n_jobs=self.study_optimize_n_jobs,
+                    study_optimize_catch=self.study_optimize_catch,
+                    study_optimize_callbacks=self.study_optimize_callbacks,
+                    study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
+                    study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+                )
+            )
+            return elimination_selector_optuna
+        def get_elimination_selector_grid(self):
+            elimination_selector_grid = (
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+                .set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_recursive_elimination_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_gridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,                
+                    )
+            )
+            return elimination_selector_grid
+        def get_elimination_selector_random(self):
+            elimination_selector_random = (
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+                .set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_recursive_elimination_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_randomsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,  
+                    n_iter=self.n_iter,              
+                    )
+            )
+            return elimination_selector_random
+
+        def get_shuffling_selector_optuna(self):
+            shuffling_selector_optuna = (
+                SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_select_by_shuffling_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_optuna_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    with_stratified=self.with_stratified,
+                    test_size=self.test_size,
+                    n_jobs=self.n_jobs,
+                    study=self.study,
+                    study_optimize_objective=self.study_optimize_objective,
+                    study_optimize_objective_n_trials=self.study_optimize_objective_n_trials,
+                    study_optimize_objective_timeout=self.study_optimize_objective_timeout,
+                    study_optimize_n_jobs=self.study_optimize_n_jobs,
+                    study_optimize_catch=self.study_optimize_catch,
+                    study_optimize_callbacks=self.study_optimize_callbacks,
+                    study_optimize_gc_after_trial=self.study_optimize_gc_after_trial,
+                    study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
+                )
+            )
+            return shuffling_selector_optuna
+        def get_shuffling_selector_grid(self):
+            shuffling_selector_grid = (
+                SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_select_by_shuffling_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_gridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,                
+                    )
+            )
+            return shuffling_selector_grid
+        
+        def get_shuffling_selector_random(self):
+            shuffling_selector_random = (
+                SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                .set_select_by_shuffling_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_randomsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,  
+                    n_iter=self.n_iter,              
+                    )
+            )
+            return shuffling_selector_random
+
+
+
 
     shap_1_hardware = FeatureSelectorFactories(
         X=datasets[2].X_train,
@@ -310,9 +811,6 @@ def setup_factories(datasets):
             "callbacks": None,
         },
         method="optuna",
-        # if n_features=None only the threshold will be considered as a cut-off of features grades.
-        # if threshold=None only n_features will be considered to select the top n features.
-        # if both of them are set to some values, the threshold has the priority for selecting features.
         n_features=5,
         threshold=None,
         list_of_obligatory_features_that_must_be_in_model=[],
@@ -349,35 +847,80 @@ def setup_factories(datasets):
         study_optimize_catch=(),
         study_optimize_callbacks=None,
         study_optimize_gc_after_trial=False,
-        study_optimize_show_progress_bar=False
+        study_optimize_show_progress_bar=False,
+    ).get_shap_selector()
+
+    shap_2_hardware = FeatureSelectorFactories(
+        X=datasets[0].X_train,
+        y=datasets[0].y_train,
+        verbose=0,
+        random_state=0,
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+        },
+        fit_params = {
+            "sample_weight": None,
+        },
+        method="randomsearch",
+        n_features=5,
+        threshold=None,
+        list_of_obligatory_features_that_must_be_in_model=[],
+        list_of_features_to_drop_before_any_selection=[],
+        model_output="raw",
+        feature_perturbation="interventional",
+        algorithm="v2",
+        shap_n_jobs=-1,
+        memory_tolerance=-1,
+        feature_names=None,
+        approximate=False,
+        shortcut=False,
+        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True, average='macro'),
+        # optuna params
+        with_stratified=None,
+        test_size=None,
+        n_jobs=-1,
+        # optuna params
+        # optuna study init params
+        verbose=0,
+        cv=KFold(3),
+        n_iter=7,
     ).get_shap_selector()
 
     return shap_1_hardware
-    
-        
 
-def test_second_func(datasets,setup_factories):
+
+def test_second_func(datasets, setup_factories):
 
     print(datasets[2].X_test.head())
 
-    pipeline =Pipeline([
+    pipeline = Pipeline(
+        [
             # int missing values imputers
-            ('intimputer', MeanMedianImputer(
-                imputation_method='median', variables=datasets[2].int_cols)),
+            (
+                "intimputer",
+                MeanMedianImputer(
+                    imputation_method="median", variables=datasets[2].int_cols
+                ),
+            ),
             # category missing values imputers
-            ('catimputer', CategoricalImputer(variables=datasets[2].cat_cols)),
+            ("catimputer", CategoricalImputer(variables=datasets[2].cat_cols)),
             #
-            ('catencoder', OrdinalEncoder()),
+            ("catencoder", OrdinalEncoder()),
             # feature selection
             ("sfsf", setup_factories),
             # add any regression model from sklearn e.g., LinearRegression
-            ('regression', LinearRegression())])
+            ("regression", LinearRegression()),
+        ]
+    )
 
-    pipeline.fit(datasets[2].X_train,datasets[2].y_train)
+    pipeline.fit(datasets[2].X_train, datasets[2].y_train)
     y_pred = pipeline.predict(datasets[2].X_test)
-    assert r2_score(datasets[2].y_test,y_pred) > 80
+    assert r2_score(datasets[2].y_test, y_pred) > 80
 
-    
+
 # https://docs.pytest.org/en/7.1.x/how-to/fixtures.html
 
 
