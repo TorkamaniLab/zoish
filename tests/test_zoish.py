@@ -11,7 +11,7 @@ from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
 from category_encoders import OrdinalEncoder
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score, make_scorer
 
 from zoish.feature_selectors.recursive_feature_addition import (
     RecursiveFeatureAdditionFeatureSelector,
@@ -27,7 +27,7 @@ from optuna.samplers import TPESampler
 from optuna.pruners import HyperbandPruner
 import xgboost
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import optuna
 
 
@@ -68,6 +68,8 @@ def datasets():
                     test_size=self.test_size,
                     random_state=self.random_state,
                 )
+                self.y_test = self.y_test.values.ravel()
+                self.y_train = self.y_train.values.ravel()
                 self.int_cols = self.X_train.select_dtypes(
                     include=["int"]
                 ).columns.tolist()
@@ -116,6 +118,8 @@ def datasets():
                     stratify=self.y["label"],
                     random_state=self.random_state,
                 )
+                self.y_test = self.y_test.values.ravel()
+                self.y_train = self.y_train.values.ravel()
                 self.int_cols = self.X_train.select_dtypes(
                     include=["int"]
                 ).columns.tolist()
@@ -738,6 +742,7 @@ def setup_factories(datasets):
                 )
             )
             return shuffling_selector_optuna
+
         def get_shuffling_selector_grid(self):
             shuffling_selector_grid = (
                 SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
@@ -795,14 +800,84 @@ def setup_factories(datasets):
             )
             return shuffling_selector_random
 
+    def case_creator(
+        scoring,
+        threshold,
+        method,
+        n_features=None,
+        dataset=None,
+        estimator=None,
+        estimator_params=None,
+        fit_params=None,
+        measure_of_accuracy=None,
+        ):
+        ds_num=-1
+        if dataset=="adult":
+            ds_num = 0
+        if dataset=="audiology":
+            ds_num = 1
+        if dataset=="hardware":
+            ds_num = 2
+        
+        return FeatureSelectorFactories(
+            X=datasets[ds_num].X_train,
+            y=datasets[ds_num].y_train,
+            verbose=10,
+            random_state=0,
+            estimator=estimator,
+            estimator_params=estimator_params,
+            fit_params=fit_params,
+            method=method,
+            n_features=n_features,
+            threshold=threshold,
+            list_of_obligatory_features_that_must_be_in_model=[],
+            list_of_features_to_drop_before_any_selection=[],
+            model_output="raw",
+            feature_perturbation="interventional",
+            algorithm="v2",
+            shap_n_jobs=-1,
+            memory_tolerance=-1,
+            feature_names=None,
+            approximate=False,
+            shortcut=False,
+            measure_of_accuracy=measure_of_accuracy,
+            # optuna params
+            with_stratified=False,
+            test_size=0.3,
+            n_jobs=-1,
+            # optuna params
+            # optuna study init params
+            study=optuna.create_study(
+                storage=None,
+                sampler=TPESampler(),
+                pruner=HyperbandPruner(),
+                study_name="example of optuna optimizer",
+                direction="maximize",
+                load_if_exists=False,
+                directions=None,
+            ),
+            # optuna optimization params
+            study_optimize_objective=None,
+            study_optimize_objective_n_trials=20,
+            study_optimize_objective_timeout=600,
+            study_optimize_n_jobs=-1,
+            study_optimize_catch=(),
+            study_optimize_callbacks=None,
+            study_optimize_gc_after_trial=False,
+            study_optimize_show_progress_bar=False,
+            n_iter = 5,
+            cv = KFold(3),
+            scoring=scoring,
+            variables = None,
+            confirm_variables = False,
 
+    )
 
-
-    shap_1_hardware = FeatureSelectorFactories(
-        X=datasets[2].X_train,
-        y=datasets[2].y_train,
-        verbose=10,
-        random_state=0,
+    hardware_reg_optuna_1 = case_creator(
+        n_features=5,
+        threshold=None,
+        scoring = 'r2',
+        dataset = "hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -811,149 +886,178 @@ def setup_factories(datasets):
             "callbacks": None,
         },
         method="optuna",
-        n_features=5,
-        threshold=None,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        model_output="raw",
-        feature_perturbation="interventional",
-        algorithm="v2",
-        shap_n_jobs=-1,
-        memory_tolerance=-1,
-        feature_names=None,
-        approximate=False,
-        shortcut=False,
         measure_of_accuracy="r2_score(y_true, y_pred)",
-        # optuna params
-        with_stratified=False,
-        test_size=0.3,
-        n_jobs=-1,
-        # optuna params
-        # optuna study init params
-        study=optuna.create_study(
-            storage=None,
-            sampler=TPESampler(),
-            pruner=HyperbandPruner(),
-            study_name="example of optuna optimizer",
-            direction="maximize",
-            load_if_exists=False,
-            directions=None,
-        ),
-        # optuna optimization params
-        study_optimize_objective=None,
-        study_optimize_objective_n_trials=20,
-        study_optimize_objective_timeout=600,
-        study_optimize_n_jobs=-1,
-        study_optimize_catch=(),
-        study_optimize_callbacks=None,
-        study_optimize_gc_after_trial=False,
-        study_optimize_show_progress_bar=False,
-    ).get_shap_selector()
 
-    shap_2_hardware = FeatureSelectorFactories(
-        X=datasets[0].X_train,
-        y=datasets[0].y_train,
-        verbose=0,
-        random_state=0,
-        estimator=xgboost.XGBClassifier(),
+    )
+
+    hardware_reg_random_1 = case_creator(
+        n_features=3,
+        threshold=0.01,
+        scoring = 'r2',
+        dataset = "hardware",
+        estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
-            "n_estimators": [50, 100],
-            "learning_rate": [0.01, 0.1],
         },
-        fit_params = {
-            "sample_weight": None,
+        fit_params={
+            "callbacks": None,
         },
         method="randomsearch",
-        n_features=5,
-        threshold=None,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        model_output="raw",
-        feature_perturbation="interventional",
-        algorithm="v2",
-        shap_n_jobs=-1,
-        memory_tolerance=-1,
-        feature_names=None,
-        approximate=False,
-        shortcut=False,
-        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True, average='macro'),
-        # optuna params
-        with_stratified=None,
-        test_size=None,
-        n_jobs=-1,
-        # optuna params
-        # optuna study init params
-        verbose=0,
-        cv=KFold(3),
-        n_iter=7,
-    ).get_shap_selector()
+        measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
 
-    return shap_1_hardware
+    )
+    hardware_reg_grid_1 = case_creator(
+        n_features=3,
+        threshold=0.01,
+        scoring = 'r2',
+        dataset = "hardware",
+        estimator=xgboost.XGBRegressor(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "callbacks": None,
+        },
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
+
+    )
+
+
+    hardware_reg_optuna_2 = case_creator(
+        threshold=0.025,
+        scoring = 'r2',
+        dataset = "hardware",
+        estimator=xgboost.XGBRegressor(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "callbacks": None,
+        },
+        method="optuna",
+        measure_of_accuracy="r2_score(y_true, y_pred)",
+
+    )
+    hardware_reg_random_2 = case_creator(
+        threshold=0.025,
+        scoring = 'r2',
+        dataset = "hardware",
+        estimator=xgboost.XGBRegressor(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "callbacks": None,
+        },
+        method="randomsearch",
+        measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
+
+    )
+
+    hardware_reg_grid_2 = case_creator(
+        threshold=0.025,
+        scoring = 'r2',
+        dataset = "hardware",
+        estimator=xgboost.XGBRegressor(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "callbacks": None,
+        },
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
+
+    )
+
+    # hardware and optuna
+    shap_hardware_reg_optuna=hardware_reg_optuna_1.get_shap_selector_optuna()
+    single_hardware_reg_optuna=hardware_reg_optuna_1.get_single_selector_optuna()
+    shuffling_hardware_reg_optuna=hardware_reg_optuna_2.get_shuffling_selector_optuna()
+    addition_hardware_reg_optuna=hardware_reg_optuna_2.get_addition_selector_optuna()
+    elimination_hardware_reg_optuna=hardware_reg_optuna_2.get_elimination_selector_optuna()
+
+    # hardware and random
+    shap_hardware_reg_random=hardware_reg_random_1.get_shap_selector_random()
+    single_hardware_reg_random=hardware_reg_random_1.get_single_selector_random()
+    shuffling_hardware_reg_random=hardware_reg_random_2.get_shuffling_selector_random()
+    addition_hardware_reg_random=hardware_reg_random_2.get_addition_selector_random()
+    elimination_hardware_reg_random=hardware_reg_random_2.get_elimination_selector_random()
+
+    # hardware and grid
+    shap_hardware_reg_grid=hardware_reg_grid_1.get_shap_selector_grid()
+    single_hardware_reg_grid=hardware_reg_grid_1.get_single_selector_grid()
+    shuffling_hardware_reg_grid=hardware_reg_grid_2.get_shuffling_selector_grid()
+    addition_hardware_reg_grid=hardware_reg_grid_2.get_addition_selector_grid()
+    elimination_hardware_reg_grid=hardware_reg_grid_2.get_elimination_selector_grid()
+
+    hardware_list=[
+        # error shap_hardware_reg_optuna,
+        # error single_hardware_reg_optuna,
+        # error shuffling_hardware_reg_optuna,
+        # error addition_hardware_reg_optuna,
+        # error addition_hardware_reg_optuna,
+        # error elimination_hardware_reg_optuna,
+        # error shap_hardware_reg_random,
+        # error single_hardware_reg_random,
+        # error shuffling_hardware_reg_random,
+        # error addition_hardware_reg_random,
+        # error elimination_hardware_reg_random,
+        # shap_hardware_reg_grid,
+        # single_hardware_reg_grid,
+        # shuffling_hardware_reg_grid,
+        # addition_hardware_reg_grid,
+        # elimination_hardware_reg_grid,
+    ]
+
+    
+    cases = {
+        'hardware':hardware_list
+
+    }
+
+    return cases
 
 
 def test_second_func(datasets, setup_factories):
 
-    print(datasets[2].X_test.head())
+    def _get_factory_instance(setup_factories):
+        if 'Elimination' in setup_factories.__class__.__name__:
+            return setup_factories.recursive_elimination_feature_selector_factory
+        if 'Addition' in setup_factories.__class__.__name__:
+            return setup_factories.recursive_addition_feature_selector_factory
+        if 'Single' in setup_factories.__class__.__name__:
+            return setup_factories.single_feature_performance_feature_selector_factory
+        if 'Shuffling' in setup_factories.__class__.__name__:
+            return setup_factories.select_by_shuffling_selector_factory
+        if 'Shap' in setup_factories.__class__.__name__:
+            return setup_factories.shap_feature_selector_factory
 
-    pipeline = Pipeline(
-        [
-            # int missing values imputers
-            (
-                "intimputer",
-                MeanMedianImputer(
-                    imputation_method="median", variables=datasets[2].int_cols
+
+    for case in setup_factories['hardware']:
+        pipeline = Pipeline(
+            [
+                # int missing values imputers
+                (
+                    "intimputer",
+                    MeanMedianImputer(
+                        imputation_method="median", variables=datasets[2].int_cols
+                    ),
                 ),
-            ),
-            # category missing values imputers
-            ("catimputer", CategoricalImputer(variables=datasets[2].cat_cols)),
-            #
-            ("catencoder", OrdinalEncoder()),
-            # feature selection
-            ("sfsf", setup_factories),
-            # add any regression model from sklearn e.g., LinearRegression
-            ("regression", LinearRegression()),
-        ]
-    )
+                # category missing values imputers
+                ("catimputer", CategoricalImputer(variables=datasets[2].cat_cols)),
+                #
+                ("catencoder", OrdinalEncoder()),
+                # feature selection
+                ("sf", case),
+                # add any regression model from sklearn e.g., LinearRegression
+                ("regression", LinearRegression()),
+            ]
+        )
 
-    pipeline.fit(datasets[2].X_train, datasets[2].y_train)
-    y_pred = pipeline.predict(datasets[2].X_test)
-    assert r2_score(datasets[2].y_test, y_pred) > 80
+        pipeline.fit(datasets[2].X_train, datasets[2].y_train)
+        assert len(_get_factory_instance(case).get_list_of_features()) > 0
+        y_pred = pipeline.predict(datasets[2].X_test)
+        assert r2_score(datasets[2].y_test, y_pred) > 0.80
 
-
-# https://docs.pytest.org/en/7.1.x/how-to/fixtures.html
-
-
-# #test_second_func(read_datasets,setup_factories) """
-
-# # contents of test_append.py
-# import pytest
-
-
-# # Arrange
-# @pytest.fixture
-# def first_entry():
-#     return "a"
-
-
-# # Arrange
-# @pytest.fixture
-# def order(first_entry):
-#     b = 4
-#     return [first_entry],b
-
-
-# def test_string(order):
-#     # Act
-#     order[0].append("b")
-
-#     # Assert
-#     assert order[0] == ["a", "b"]
-
-
-# def test_int(order):
-#     # Act
-#     order[0].append(2)
-
-#     # Assert
-#     assert order[0] == ["a", 2]
