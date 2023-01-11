@@ -73,6 +73,17 @@ class ShapPlotFeatures(PlotFeatures):
         self.type_of_plot = type_of_plot
         self.path_to_save_plot = path_to_save_plot
         self.plt = None
+        print('self.feature_selector.selected_cols')
+        print(self.feature_selector.selected_cols)
+        print(self.feature_selector.n_features)
+        print(self.feature_selector.n_features)
+        print(self.feature_selector.n_features)
+        print(self.feature_selector.n_features)
+        print('self.feature_selector.list_of_selected_features')
+        print(self.feature_selector.list_of_selected_features)
+        print('self.feature_selector.importance_df')
+        print(self.feature_selector.importance_df)
+
         self.num_feat = min(
             [
                 self.feature_selector.n_features,

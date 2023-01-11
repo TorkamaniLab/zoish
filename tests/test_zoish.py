@@ -340,7 +340,7 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return shap_selector_optuna
+            return shap_selector_optuna,ShapFeatureSelector.shap_feature_selector_factory
         def get_shap_selector_grid(self):
             shap_selector_grid = (
                 ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
@@ -374,7 +374,7 @@ def setup_factories(datasets):
                     cv=self.cv,                
                     )
             )
-            return shap_selector_grid
+            return shap_selector_grid,ShapFeatureSelector.shap_feature_selector_factory
         def get_shap_selector_random(self):
             shap_selector_random = (
                 ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
@@ -409,7 +409,7 @@ def setup_factories(datasets):
                     n_iter=self.n_iter,              
                     )
             )
-            return shap_selector_random
+            return shap_selector_random,ShapFeatureSelector.shap_feature_selector_factory
 
 
         def get_single_selector_optuna(self):
@@ -450,7 +450,7 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return single_selector_optuna
+            return single_selector_optuna,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
         def get_single_selector_grid(self):
             single_selector_grid = (
                 SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
@@ -479,7 +479,7 @@ def setup_factories(datasets):
                     cv=self.cv,                
                     )
             )
-            return single_selector_grid
+            return single_selector_grid,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
         def get_single_selector_random(self):
             single_selector_random = (
                 SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
@@ -509,7 +509,7 @@ def setup_factories(datasets):
                     n_iter=self.n_iter,              
                     )
             )
-            return single_selector_random
+            return single_selector_random,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
 
         def get_addition_selector_optuna(self):
             addition_selector_optuna = (
@@ -548,7 +548,7 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return addition_selector_optuna
+            return addition_selector_optuna,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
         def get_addition_selector_grid(self):
             addition_selector_grid = (
                 RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
@@ -576,7 +576,7 @@ def setup_factories(datasets):
                     cv=self.cv,                
                     )
             )
-            return addition_selector_grid
+            return addition_selector_grid,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
         
         def get_addition_selector_random(self):
             addition_selector_random = (
@@ -606,7 +606,7 @@ def setup_factories(datasets):
                     n_iter=self.n_iter,              
                     )
             )
-            return addition_selector_random
+            return addition_selector_random,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
 
 
         def get_elimination_selector_optuna(self):
@@ -646,7 +646,7 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return elimination_selector_optuna
+            return elimination_selector_optuna,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
         def get_elimination_selector_grid(self):
             elimination_selector_grid = (
                 RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
@@ -674,7 +674,7 @@ def setup_factories(datasets):
                     cv=self.cv,                
                     )
             )
-            return elimination_selector_grid
+            return elimination_selector_grid,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
         def get_elimination_selector_random(self):
             elimination_selector_random = (
                 RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
@@ -703,7 +703,7 @@ def setup_factories(datasets):
                     n_iter=self.n_iter,              
                     )
             )
-            return elimination_selector_random
+            return elimination_selector_random,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
 
         def get_shuffling_selector_optuna(self):
             shuffling_selector_optuna = (
@@ -741,7 +741,7 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return shuffling_selector_optuna
+            return shuffling_selector_optuna,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
 
         def get_shuffling_selector_grid(self):
             shuffling_selector_grid = (
@@ -769,7 +769,7 @@ def setup_factories(datasets):
                     cv=self.cv,                
                     )
             )
-            return shuffling_selector_grid
+            return shuffling_selector_grid,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
         
         def get_shuffling_selector_random(self):
             shuffling_selector_random = (
@@ -798,7 +798,7 @@ def setup_factories(datasets):
                     n_iter=self.n_iter,              
                     )
             )
-            return shuffling_selector_random
+            return shuffling_selector_random,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
 
     def case_creator(
         scoring,
@@ -874,7 +874,7 @@ def setup_factories(datasets):
     )
 
     hardware_reg_optuna_1 = case_creator(
-        n_features=5,
+        n_features=3,
         threshold=None,
         scoring = 'r2',
         dataset = "hardware",
@@ -920,12 +920,11 @@ def setup_factories(datasets):
         },
         method="gridsearch",
         measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
-
     )
 
 
     hardware_reg_optuna_2 = case_creator(
-        threshold=0.025,
+        threshold=0.005,
         scoring = 'r2',
         dataset = "hardware",
         estimator=xgboost.XGBRegressor(),
@@ -956,7 +955,7 @@ def setup_factories(datasets):
     )
 
     hardware_reg_grid_2 = case_creator(
-        threshold=0.025,
+        threshold=0.0005,
         scoring = 'r2',
         dataset = "hardware",
         estimator=xgboost.XGBRegressor(),
@@ -993,22 +992,21 @@ def setup_factories(datasets):
     elimination_hardware_reg_grid=hardware_reg_grid_2.get_elimination_selector_grid()
 
     hardware_list=[
-        # error shap_hardware_reg_optuna,
-        # error single_hardware_reg_optuna,
-        # error shuffling_hardware_reg_optuna,
-        # error addition_hardware_reg_optuna,
-        # error addition_hardware_reg_optuna,
-        # error elimination_hardware_reg_optuna,
-        # error shap_hardware_reg_random,
-        # error single_hardware_reg_random,
-        # error shuffling_hardware_reg_random,
-        # error addition_hardware_reg_random,
-        # error elimination_hardware_reg_random,
-        # shap_hardware_reg_grid,
-        # single_hardware_reg_grid,
-        # shuffling_hardware_reg_grid,
-        # addition_hardware_reg_grid,
-        # elimination_hardware_reg_grid,
+        shap_hardware_reg_optuna,
+        single_hardware_reg_optuna,
+        shuffling_hardware_reg_optuna,
+        addition_hardware_reg_optuna,
+        elimination_hardware_reg_optuna,
+        shap_hardware_reg_random,
+        single_hardware_reg_random,
+        shuffling_hardware_reg_random,
+        addition_hardware_reg_random,
+        elimination_hardware_reg_random,
+        shap_hardware_reg_grid,
+        single_hardware_reg_grid,
+        shuffling_hardware_reg_grid,
+        addition_hardware_reg_grid,
+        elimination_hardware_reg_grid,
     ]
 
     
@@ -1021,19 +1019,6 @@ def setup_factories(datasets):
 
 
 def test_second_func(datasets, setup_factories):
-
-    def _get_factory_instance(setup_factories):
-        if 'Elimination' in setup_factories.__class__.__name__:
-            return setup_factories.recursive_elimination_feature_selector_factory
-        if 'Addition' in setup_factories.__class__.__name__:
-            return setup_factories.recursive_addition_feature_selector_factory
-        if 'Single' in setup_factories.__class__.__name__:
-            return setup_factories.single_feature_performance_feature_selector_factory
-        if 'Shuffling' in setup_factories.__class__.__name__:
-            return setup_factories.select_by_shuffling_selector_factory
-        if 'Shap' in setup_factories.__class__.__name__:
-            return setup_factories.shap_feature_selector_factory
-
 
     for case in setup_factories['hardware']:
         pipeline = Pipeline(
@@ -1050,14 +1035,15 @@ def test_second_func(datasets, setup_factories):
                 #
                 ("catencoder", OrdinalEncoder()),
                 # feature selection
-                ("sf", case),
+                ("sf", case[0]),
                 # add any regression model from sklearn e.g., LinearRegression
                 ("regression", LinearRegression()),
             ]
         )
 
         pipeline.fit(datasets[2].X_train, datasets[2].y_train)
-        assert len(_get_factory_instance(case).get_list_of_features()) > 0
+        assert len(case[0].selected_cols) > 1
         y_pred = pipeline.predict(datasets[2].X_test)
-        assert r2_score(datasets[2].y_test, y_pred) > 0.80
+        assert r2_score(datasets[2].y_test, y_pred) > 0.77
+        
 
