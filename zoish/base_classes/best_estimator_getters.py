@@ -1,5 +1,6 @@
-from zoish import logger
 from lohrasb.best_estimator import BaseModel
+
+from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import BestEstimatorGetterStrategy
 
 

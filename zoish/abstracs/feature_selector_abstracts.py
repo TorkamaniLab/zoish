@@ -1,5 +1,6 @@
-from sklearn.base import BaseEstimator, TransformerMixin
 from abc import ABCMeta, abstractmethod
+
+from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
@@ -71,6 +72,7 @@ class PlotFeatures(metaclass=ABCMeta):
         Get info of features grades
         """
         pass
+
     @abstractmethod
     def get_list_of_features(self, *args, **kwargs):
         """

@@ -1,11 +1,12 @@
 __version__ = "1.63.0"
 
 
-from dotenv import load_dotenv
 import logging
 import logging.config
 import os
+
 import yaml
+from dotenv import load_dotenv
 
 path = "zoish/config.yaml"
 DEFAULT_LEVEL = logging.INFO
@@ -18,8 +19,10 @@ def log_setup(log_cfg_path=path):
             logging.config.dictConfig(config)
             # set up logging configuration
             return True
-    except:
-        print(f"In this module the default logging will be applied.")
+    except Exception as e:
+        print(
+            f"In this module, the default logging will be applied. The error is {e} which will be skipped!"
+        )
         return False
 
 

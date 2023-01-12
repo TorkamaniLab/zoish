@@ -1,3 +1,8 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from feature_engine.selection import RecursiveFeatureElimination
+
 from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
 from zoish.base_classes.best_estimator_getters import (
@@ -5,10 +10,6 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
 )
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from feature_engine.selection import RecursiveFeatureElimination
 
 logger.info("Recursive Feature Elimination Feature Selector has started !")
 
@@ -394,14 +395,15 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         self.selected_cols = None
         # feature object
         self.feature_object = None
-    
+
     @property
     def feature_object(self):
         return self._feature_object
+
     @feature_object.setter
     def feature_object(self, value):
         self._feature_object = value
-    
+
     @property
     def scoring(self):
         return self._scoring
@@ -744,17 +746,20 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 threshold=self.threshold,
                 variables=self.variables,
                 confirm_variables=self.confirm_variables,
-
             )
             self.feature_object.fit(X, y)
             # Get list  of each feature to drop
             feature_list_to_drop = self.feature_object.features_to_drop_
             print(feature_list_to_drop)
             # Get the performance drift of each feature
-            feature_dict_drift= self.feature_object.performance_drifts_
+            feature_dict_drift = self.feature_object.performance_drifts_
             print(feature_dict_drift)
             # Calculate the dict of features to remain (substract based on keys)
-            feature_dict = {k:v for k,v in feature_dict_drift.items() if k not in feature_list_to_drop}
+            feature_dict = {
+                k: v
+                for k, v in feature_dict_drift.items()
+                if k not in feature_list_to_drop
+            }
             col_names = feature_dict.keys()
             print(col_names)
         self.importance_df = pd.DataFrame([col_names, feature_dict.values()]).T
@@ -804,7 +809,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
 
     def get_feature_selector_instance(self):
         """Retrun an object of feature selection object"""
-        return self.feature_object 
+        return self.feature_object
 
     def transform(self, X, *args, **kwargs):
         """Transform the data, and apply the transform to data to be ready for feature selection
@@ -946,7 +951,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             self.feature_selector.estimator = estimator
             self.feature_selector.estimator_params = estimator_params
             self.feature_selector.fit_params = fit_params
-            #self.feature_selector.n_features = n_features
+            # self.feature_selector.n_features = n_features
             self.feature_selector.threshold = threshold
             self.feature_selector.list_of_obligatory_features_that_must_be_in_model = (
                 list_of_obligatory_features_that_must_be_in_model
@@ -1301,9 +1306,11 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 A path to set a place to save generated plot.
             """
 
-            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
-                feature_selector=self.feature_selector,
-                path_to_save_plot=path_to_save_plot,
+            recursive_elimination_plot_features = (
+                RecursiveFeatureEliminationPlotFeatures(
+                    feature_selector=self.feature_selector,
+                    path_to_save_plot=path_to_save_plot,
+                )
             )
             if self.feature_selector is not None:
                 recursive_elimination_plot_features.plot_features()
@@ -1317,12 +1324,16 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             list of selected features.
             """
 
-            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
-                feature_selector=self.feature_selector,
-                path_to_save_plot=None,
+            recursive_elimination_plot_features = (
+                RecursiveFeatureEliminationPlotFeatures(
+                    feature_selector=self.feature_selector,
+                    path_to_save_plot=None,
+                )
             )
             if self.feature_selector is not None:
-                print(f"{recursive_elimination_plot_features.get_info_of_features_and_grades()}")
+                print(
+                    f"{recursive_elimination_plot_features.get_info_of_features_and_grades()}"
+                )
                 print(
                     "Note: list of obligatory features that must be in model-list of \
                         features to drop before any selection also has considered !"
@@ -1335,9 +1346,11 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         ):
             """A method that uses RecursiveFeatureEliminationPlotFeatures to get a list of selected features."""
 
-            recursive_elimination_plot_features = RecursiveFeatureEliminationPlotFeatures(
-                feature_selector=self.feature_selector,
-                path_to_save_plot=None,
+            recursive_elimination_plot_features = (
+                RecursiveFeatureEliminationPlotFeatures(
+                    feature_selector=self.feature_selector,
+                    path_to_save_plot=None,
+                )
             )
             if recursive_elimination_plot_features.get_list_of_features() is not None:
                 return recursive_elimination_plot_features.get_list_of_features()

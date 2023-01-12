@@ -1,3 +1,8 @@
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from feature_engine.selection import SelectBySingleFeaturePerformance
+
 from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
 from zoish.base_classes.best_estimator_getters import (
@@ -5,10 +10,6 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
 )
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-from feature_engine.selection import SelectBySingleFeaturePerformance
 
 logger.info("Single Feature Performance Feature Selector has started !")
 
@@ -404,7 +405,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     @feature_object.setter
     def feature_object(self, value):
         self._feature_object = value
-    
+
     @property
     def scoring(self):
         return self._scoring
@@ -747,10 +748,9 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 threshold=self.threshold,
                 variables=self.variables,
                 confirm_variables=self.confirm_variables,
-
             )
-            self.feature_object .fit(X, y)
-            feature_dict = self.feature_object .feature_performance_
+            self.feature_object.fit(X, y)
+            feature_dict = self.feature_object.feature_performance_
 
         self.importance_df = pd.DataFrame([X.columns.tolist(), feature_dict.values()]).T
         self.importance_df.columns = ["column_name", "feature_importance"]
@@ -795,10 +795,10 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.selected_cols = list(set_of_selected_features)
         print(self.selected_cols)
         return self
-    
+
     def get_feature_selector_instance(self):
         """Retrun an object of feature selection object"""
-        return self.feature_object 
+        return self.feature_object
 
     def transform(self, X, *args, **kwargs):
         """Transform the data, and apply the transform to data to be ready for feature selection

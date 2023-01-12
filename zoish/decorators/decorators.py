@@ -1,5 +1,4 @@
 import functools
-from functools import partial
 
 
 def trackcalls(func):

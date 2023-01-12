@@ -1,3 +1,9 @@
+import fasttreeshap
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import shap
+
 from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
 from zoish.base_classes.best_estimator_getters import (
@@ -5,11 +11,6 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
 )
-import fasttreeshap
-import shap
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 
 class ShapPlotFeatures(PlotFeatures):
@@ -73,15 +74,15 @@ class ShapPlotFeatures(PlotFeatures):
         self.type_of_plot = type_of_plot
         self.path_to_save_plot = path_to_save_plot
         self.plt = None
-        print('self.feature_selector.selected_cols')
+        print("self.feature_selector.selected_cols")
         print(self.feature_selector.selected_cols)
         print(self.feature_selector.n_features)
         print(self.feature_selector.n_features)
         print(self.feature_selector.n_features)
         print(self.feature_selector.n_features)
-        print('self.feature_selector.list_of_selected_features')
+        print("self.feature_selector.list_of_selected_features")
         print(self.feature_selector.list_of_selected_features)
-        print('self.feature_selector.importance_df')
+        print("self.feature_selector.importance_df")
         print(self.feature_selector.importance_df)
 
         self.num_feat = min(
@@ -543,11 +544,11 @@ class ShapFeatureSelector(FeatureSelector):
         self.selected_cols = None
         # feature object
         self.feature_object = None
-    
+
     @property
     def feature_object(self):
         return self._feature_object
-    
+
     @feature_object.setter
     def feature_object(self, value):
         self._feature_object = value
@@ -933,7 +934,10 @@ class ShapFeatureSelector(FeatureSelector):
                     shortcut=self.shortcut,
                 )
             # if fasttreeshap does not work we use shap library
-            except:
+            except Exception as e:
+                logger.error(
+                    f"There is error will this message {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer! "
+                )
                 self.explainer = shap.TreeExplainer(
                     model=best_estimator,
                     shap_n_jobs=self.shap_n_jobs,
@@ -984,9 +988,10 @@ class ShapFeatureSelector(FeatureSelector):
             )
         self.selected_cols = list(set_of_selected_features)
         return self
+
     def get_feature_selector_instance(self):
         """Retrun an object of feature selection object"""
-        return self.feature_object 
+        return self.feature_object
 
     def transform(self, X, *args, **kwargs):
         """Transform the data, and apply the transform to data to be ready for feature selection
