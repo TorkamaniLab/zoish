@@ -1,0 +1,29 @@
+version: 1
+disable_existing_loggers: true
+formatters:
+  extended:
+    format: '%(asctime)-20s :: %(levelname)-8s :: [%(process)d]%(processName)s :: %(threadName)s[%(thread)d] :: %(pathname)s :: %(lineno)d :: %(message)s'
+  simple:
+    format: "%(asctime)s :: %(name)s :: %(message)s"
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+  file_handler:
+    class: logging.FileHandler
+    filename: zoish/logs/zoish.log
+    formatter: extended
+    level: INFO
+ 
+loggers:
+  dev:
+    handlers: [console, file_handler]
+  prod:
+    handlers: [file_handler]
+    propagate: False
+ 
+root:
+  level: DEBUG
+  handlers: [console]

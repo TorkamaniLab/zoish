@@ -53,10 +53,16 @@ RUN curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/
 RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv 
 RUN  grep -v "X1" data1.csv > data.csv
 
+# WORKDIR /zoish
+# RUN pip install "poetry==$POETRY_VERSION"
+# RUN poetry config virtualenvs.create false \
+#   && poetry install  --no-interaction --no-ansi
+
+# Install and setup poetry
 WORKDIR /zoish
 RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry config virtualenvs.create false \
-  && poetry install  --no-interaction --no-ansi
+RUN poetry config virtualenvs.create false 
+RUN poetry install  --no-interaction --no-ansi
 
 USER admin
 RUN chmod +x ./run.sh

@@ -19,20 +19,20 @@ import lightgbm
 import matplotlib.pyplot as plt
 
 # optuna_regression_xgb = OptunaShapFeatureSelector(
-#         # general argument setting        
+#         # general argument setting
 #         verbose=1,
 #         random_state=0,
 #         logging_basicConfig = logging.basicConfig(
 #         level=logging.DEBUG,
-#         filename=None, 
-#         filemode='w', 
+#         filename=None,
+#         filemode='w',
 #         format='%(name)s - %(levelname)s - %(message)s'
 #         ),
-#         # general argument setting        
+#         # general argument setting
 #         n_features=4,
 #         list_of_obligatory_features_that_must_be_in_model=[],
 #         list_of_features_to_drop_before_any_selection=[],
-#         # shap argument setting        
+#         # shap argument setting
 #         estimator=xgboost.XGBRegressor(),
 #         estimator_params={
 #         "max_depth": [4, 5],
@@ -40,14 +40,14 @@ import matplotlib.pyplot as plt
 #         # "gamma": [1, 9],
 #         },
 #         # shap arguments
-#         model_output="raw", 
-#         feature_perturbation="interventional", 
-#         algorithm="auto", 
-#         shap_n_jobs=-1, 
-#         memory_tolerance=-1, 
-#         feature_names=None, 
-#         approximate=False, 
-#         shortcut=False, 
+#         model_output="raw",
+#         feature_perturbation="interventional",
+#         algorithm="auto",
+#         shap_n_jobs=-1,
+#         memory_tolerance=-1,
+#         feature_names=None,
+#         approximate=False,
+#         shortcut=False,
 #         plot_shap_summary=False,
 #         save_shap_summary_plot=True,
 #         path_to_save_plot = './summary_plot.png',
@@ -68,7 +68,7 @@ import matplotlib.pyplot as plt
 #         ),
 #         # optuna optimization params
 #         study_optimize_objective = None,
-#         study_optimize_objective_n_trials=10, 
+#         study_optimize_objective_n_trials=10,
 #         study_optimize_objective_timeout=600,
 #         study_optimize_n_jobs = -1,
 #         study_optimize_catch= (),
@@ -79,16 +79,16 @@ import matplotlib.pyplot as plt
 # )
 
 # grid_classification_xgb = GridSearchCVShapFeatureSelector(
-#         # general argument setting        
+#         # general argument setting
 #         verbose=1,
 #         random_state=0,
 #         logging_basicConfig = logging.basicConfig(
 #         level=logging.DEBUG),
-#         # general argument setting        
+#         # general argument setting
 #         n_features=4,
 #         list_of_obligatory_features_that_must_be_in_model=[],
 #         list_of_features_to_drop_before_any_selection=[],
-#         # shap argument setting        
+#         # shap argument setting
 #         estimator=xgboost.XGBClassifier(),
 #         estimator_params={
 #         "max_depth": [4, 5],
@@ -96,14 +96,14 @@ import matplotlib.pyplot as plt
 #         # "gamma": [1, 9],
 #         },
 #         # shap arguments
-#         model_output="raw", 
-#         feature_perturbation="interventional", 
-#         algorithm="auto", 
-#         shap_n_jobs=-1, 
-#         memory_tolerance=-1, 
-#         feature_names=None, 
-#         approximate=False, 
-#         shortcut=False, 
+#         model_output="raw",
+#         feature_perturbation="interventional",
+#         algorithm="auto",
+#         shap_n_jobs=-1,
+#         memory_tolerance=-1,
+#         feature_names=None,
+#         approximate=False,
+#         shortcut=False,
 #         plot_shap_summary=False,
 #         save_shap_summary_plot=True,
 #         path_to_save_plot = './summary_plot.png',
@@ -116,132 +116,130 @@ import matplotlib.pyplot as plt
 
 
 random_classification_xgb = RandomizedSearchCVShapFeatureSelector(
-        # general argument setting        
-        verbose=1,
-        random_state=0,
-        logging_basicConfig = logging.basicConfig(
-        level=logging.DEBUG),
-        # general argument setting        
-        n_features=4,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        # shap argument setting        
-        estimator=xgboost.XGBClassifier(),
-        estimator_params={
+    # general argument setting
+    verbose=1,
+    random_state=0,
+    logging_basicConfig=logging.basicConfig(level=logging.DEBUG),
+    # general argument setting
+    n_features=4,
+    list_of_obligatory_features_that_must_be_in_model=[],
+    list_of_features_to_drop_before_any_selection=[],
+    # shap argument setting
+    estimator=xgboost.XGBClassifier(),
+    estimator_params={
         "max_depth": [4, 5],
         # "min_child_weight": [0.1, 0.9],
         # "gamma": [1, 9],
-        },
-        # shap arguments
-        model_output="raw", 
-        feature_perturbation="interventional", 
-        algorithm="auto", 
-        shap_n_jobs=-1, 
-        memory_tolerance=-1, 
-        feature_names=None, 
-        approximate=False, 
-        shortcut=False, 
-        plot_shap_summary=False,
-        save_shap_summary_plot=True,
-        path_to_save_plot = './summary_plot.png',
-        shap_fig = plt.figure(),
-        performance_metric = 'f1',
-        n_iter = 10,
-        cv = StratifiedKFold(n_splits=3, shuffle=True),
-        random_search_n_jobs = 1
+    },
+    # shap arguments
+    model_output="raw",
+    feature_perturbation="interventional",
+    algorithm="auto",
+    shap_n_jobs=-1,
+    memory_tolerance=-1,
+    feature_names=None,
+    approximate=False,
+    shortcut=False,
+    plot_shap_summary=False,
+    save_shap_summary_plot=True,
+    path_to_save_plot="./summary_plot.png",
+    shap_fig=plt.figure(),
+    performance_metric="f1",
+    n_iter=10,
+    cv=StratifiedKFold(n_splits=3, shuffle=True),
+    random_search_n_jobs=1,
 )
 
 
 optuna_regression_rf = OptunaShapFeatureSelector(
-        # general argument setting        
-        verbose=1,
-        random_state=0,
-        logging_basicConfig = None,
-        # general argument setting        
-        n_features=4,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        # shap argument setting        
-        estimator=RandomForestRegressor(),
-        estimator_params={
+    # general argument setting
+    verbose=1,
+    random_state=0,
+    logging_basicConfig=None,
+    # general argument setting
+    n_features=4,
+    list_of_obligatory_features_that_must_be_in_model=[],
+    list_of_features_to_drop_before_any_selection=[],
+    # shap argument setting
+    estimator=RandomForestRegressor(),
+    estimator_params={
         "max_depth": [4, 5],
         # "min_child_weight": [0.1, 0.9],
         # "gamma": [1, 9],
-        },
-        # shap arguments
-        model_output="raw", 
-        feature_perturbation="interventional", 
-        algorithm="auto", 
-        shap_n_jobs=-1, 
-        memory_tolerance=-1, 
-        feature_names=None, 
-        approximate=False, 
-        shortcut=False, 
-        plot_shap_summary=False,
-        save_shap_summary_plot=True,
-        path_to_save_plot = './summary_plot.png',
-        shap_fig = plt.figure(),
-        ## optuna params
-        test_size=0.33,
-        with_stratified = False,
-        performance_metric = 'r2',
-        # optuna study init params
-        study = optuna.create_study(
-            storage = None,
-            sampler = TPESampler(),
-            pruner= HyperbandPruner(),
-            study_name  = None,
-            direction = "maximize",
-            load_if_exists = False,
-            directions  = None,
-            )
+    },
+    # shap arguments
+    model_output="raw",
+    feature_perturbation="interventional",
+    algorithm="auto",
+    shap_n_jobs=-1,
+    memory_tolerance=-1,
+    feature_names=None,
+    approximate=False,
+    shortcut=False,
+    plot_shap_summary=False,
+    save_shap_summary_plot=True,
+    path_to_save_plot="./summary_plot.png",
+    shap_fig=plt.figure(),
+    ## optuna params
+    test_size=0.33,
+    with_stratified=False,
+    performance_metric="r2",
+    # optuna study init params
+    study=optuna.create_study(
+        storage=None,
+        sampler=TPESampler(),
+        pruner=HyperbandPruner(),
+        study_name=None,
+        direction="maximize",
+        load_if_exists=False,
+        directions=None,
+    ),
 )
 
 optuna_classification_rf = OptunaShapFeatureSelector(
-        # general argument setting        
-        verbose=1,
-        random_state=0,
-        logging_basicConfig = None,
-        # general argument setting        
-        n_features=4,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-        # shap argument setting        
-        estimator=RandomForestClassifier(),
-        estimator_params={
+    # general argument setting
+    verbose=1,
+    random_state=0,
+    logging_basicConfig=None,
+    # general argument setting
+    n_features=4,
+    list_of_obligatory_features_that_must_be_in_model=[],
+    list_of_features_to_drop_before_any_selection=[],
+    # shap argument setting
+    estimator=RandomForestClassifier(),
+    estimator_params={
         "max_depth": [4, 5],
         # "min_child_weight": [0.1, 0.9],
         # "gamma": [1, 9],
-        },
-        # shap arguments
-        model_output="raw", 
-        feature_perturbation="interventional", 
-        algorithm="auto", 
-        shap_n_jobs=-1, 
-        memory_tolerance=-1, 
-        feature_names=None, 
-        approximate=False, 
-        shortcut=False, 
-        plot_shap_summary=False,
-        save_shap_summary_plot=True,
-        path_to_save_plot = './summary_plot.png',
-        shap_fig = plt.figure(),
-        ## optuna params
-        test_size=0.33,
-        with_stratified = False,
-        performance_metric = 'f1',
-        # optuna study init params
-        study = optuna.create_study(
-            storage = None,
-            sampler = TPESampler(),
-            pruner= HyperbandPruner(),
-            study_name  = None,
-            direction = "maximize",
-            load_if_exists = False,
-            directions  = None,
-            ),
-        study_optimize_objective_n_trials=10, 
-
+    },
+    # shap arguments
+    model_output="raw",
+    feature_perturbation="interventional",
+    algorithm="auto",
+    shap_n_jobs=-1,
+    memory_tolerance=-1,
+    feature_names=None,
+    approximate=False,
+    shortcut=False,
+    plot_shap_summary=False,
+    save_shap_summary_plot=True,
+    path_to_save_plot="./summary_plot.png",
+    shap_fig=plt.figure(),
+    ## optuna params
+    test_size=0.33,
+    with_stratified=False,
+    performance_metric="f1",
+    # optuna study init params
+    study=optuna.create_study(
+        storage=None,
+        sampler=TPESampler(),
+        pruner=HyperbandPruner(),
+        study_name=None,
+        direction="maximize",
+        load_if_exists=False,
+        directions=None,
+    ),
+    study_optimize_objective_n_trials=10,
 )
 
 
@@ -401,26 +399,29 @@ def run_optuna_regression_xgb():
     cols = optuna_regression_xgb.transform(X_test)
     print(cols.columns.to_list())
 
+
 def run_grid_classification_xgb():
     grid_classification_xgb.fit_transform(X_train, y_train)
     cols = grid_classification_xgb.transform(X_test)
     print(cols.columns.to_list())
+
 
 def run_random_classification_xgb():
     random_classification_xgb.fit_transform(X_train, y_train)
     cols = random_classification_xgb.transform(X_test)
     print(cols.columns.to_list())
 
+
 def run_optuna_regression_rf():
     optuna_regression_rf.fit_transform(X_train, y_train)
     cols = optuna_regression_rf.transform(X_test)
     print(cols.columns.to_list())
 
+
 def run_optuna_classification_rf():
     optuna_classification_rf.fit_transform(X_train, y_train)
     cols = optuna_classification_rf.transform(X_test)
     print(cols.columns.to_list())
-
 
 
 # def run_randomforest_regressor():
