@@ -2,16 +2,22 @@
 
 import pytest
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
-from zoish.feature_selectors.recursive_feature_addition import RecursiveFeatureAdditionFeatureSelector
-from zoish.feature_selectors.recursive_feature_elimination import RecursiveFeatureEliminationFeatureSelector
-from zoish.feature_selectors.single_feature_selectors import SingleFeaturePerformanceFeatureSelector
+from zoish.feature_selectors.recursive_feature_addition import (
+    RecursiveFeatureAdditionFeatureSelector,
+)
+from zoish.feature_selectors.recursive_feature_elimination import (
+    RecursiveFeatureEliminationFeatureSelector,
+)
+from zoish.feature_selectors.single_feature_selectors import (
+    SingleFeaturePerformanceFeatureSelector,
+)
 from zoish.feature_selectors.select_by_shuffling import SelectByShufflingFeatureSelector
 
 from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
 from category_encoders import OrdinalEncoder
-from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import r2_score, make_scorer
+from sklearn.metrics import r2_score, make_scorer, roc_auc_score, f1_score
 
 from zoish.feature_selectors.recursive_feature_addition import (
     RecursiveFeatureAdditionFeatureSelector,
@@ -26,6 +32,7 @@ from zoish.feature_selectors.single_feature_selectors import (
 from optuna.samplers import TPESampler
 from optuna.pruners import HyperbandPruner
 import xgboost
+import lightgbm
 import pandas as pd
 from sklearn.model_selection import train_test_split, KFold
 import optuna
@@ -248,7 +255,7 @@ def setup_factories(datasets):
             cv=None,
             variables=None,
             scoring=None,
-            confirm_variables=None,
+            confirm_variables=False,
         ):
             self.X = X
             self.y = y
@@ -270,7 +277,7 @@ def setup_factories(datasets):
             self.feature_perturbation = feature_perturbation
             self.algorithm = algorithm
             self.shap_n_jobs = shap_n_jobs
-            self.n_iter=n_iter
+            self.n_iter = n_iter
             self.memory_tolerance = memory_tolerance
             self.feature_names = feature_names
             self.approximate = approximate
@@ -340,7 +347,10 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return shap_selector_optuna,ShapFeatureSelector.shap_feature_selector_factory
+            return (
+                shap_selector_optuna
+            )
+
         def get_shap_selector_grid(self):
             shap_selector_grid = (
                 ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
@@ -371,10 +381,11 @@ def setup_factories(datasets):
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,                
-                    )
+                    cv=self.cv,
+                )
             )
-            return shap_selector_grid,ShapFeatureSelector.shap_feature_selector_factory
+            return shap_selector_grid
+
         def get_shap_selector_random(self):
             shap_selector_random = (
                 ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
@@ -405,12 +416,13 @@ def setup_factories(datasets):
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,  
-                    n_iter=self.n_iter,              
-                    )
+                    cv=self.cv,
+                    n_iter=self.n_iter,
+                )
             )
-            return shap_selector_random,ShapFeatureSelector.shap_feature_selector_factory
-
+            return (
+                shap_selector_random
+            )
 
         def get_single_selector_optuna(self):
             single_selector_optuna = (
@@ -450,7 +462,10 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return single_selector_optuna,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
+            return (
+                single_selector_optuna
+            )
+
         def get_single_selector_grid(self):
             single_selector_grid = (
                 SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
@@ -472,14 +487,18 @@ def setup_factories(datasets):
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_gridsearchcv_params(
+                )
+                .set_gridsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,                
-                    )
+                    cv=self.cv,
+                )
             )
-            return single_selector_grid,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
+            return (
+                single_selector_grid
+            )
+
         def get_single_selector_random(self):
             single_selector_random = (
                 SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
@@ -501,15 +520,18 @@ def setup_factories(datasets):
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_randomsearchcv_params(
+                )
+                .set_randomsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,  
-                    n_iter=self.n_iter,              
-                    )
+                    cv=self.cv,
+                    n_iter=self.n_iter,
+                )
             )
-            return single_selector_random,SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory
+            return (
+                single_selector_random
+            )
 
         def get_addition_selector_optuna(self):
             addition_selector_optuna = (
@@ -548,7 +570,10 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return addition_selector_optuna,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
+            return (
+                addition_selector_optuna
+            )
+
         def get_addition_selector_grid(self):
             addition_selector_grid = (
                 RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
@@ -569,15 +594,18 @@ def setup_factories(datasets):
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_gridsearchcv_params(
+                )
+                .set_gridsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,                
-                    )
+                    cv=self.cv,
+                )
             )
-            return addition_selector_grid,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
-        
+            return (
+                addition_selector_grid
+            )
+
         def get_addition_selector_random(self):
             addition_selector_random = (
                 RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
@@ -598,21 +626,22 @@ def setup_factories(datasets):
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_randomsearchcv_params(
+                )
+                .set_randomsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,  
-                    n_iter=self.n_iter,              
-                    )
+                    cv=self.cv,
+                    n_iter=self.n_iter,
+                )
             )
-            return addition_selector_random,RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory
-
+            return (
+                addition_selector_random
+            )
 
         def get_elimination_selector_optuna(self):
             elimination_selector_optuna = (
-                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
-                .set_model_params(
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory.set_model_params(
                     X=self.X,
                     y=self.y,
                     verbose=self.verbose,
@@ -623,7 +652,8 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_recursive_elimination_feature_params(
                     cv=self.cv,
                     variables=self.variables,
@@ -646,11 +676,13 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return elimination_selector_optuna,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+            return (
+                elimination_selector_optuna
+            )
+
         def get_elimination_selector_grid(self):
             elimination_selector_grid = (
-                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
-                .set_model_params(
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory.set_model_params(
                     X=self.X,
                     y=self.y,
                     verbose=self.verbose,
@@ -661,24 +693,28 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_recursive_elimination_feature_params(
                     cv=self.cv,
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_gridsearchcv_params(
+                )
+                .set_gridsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,                
-                    )
+                    cv=self.cv,
+                )
             )
-            return elimination_selector_grid,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+            return (
+                elimination_selector_grid
+            )
+
         def get_elimination_selector_random(self):
             elimination_selector_random = (
-                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
-                .set_model_params(
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory.set_model_params(
                     X=self.X,
                     y=self.y,
                     verbose=self.verbose,
@@ -689,21 +725,25 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_recursive_elimination_feature_params(
                     cv=self.cv,
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_randomsearchcv_params(
+                )
+                .set_randomsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,  
-                    n_iter=self.n_iter,              
-                    )
+                    cv=self.cv,
+                    n_iter=self.n_iter,
+                )
             )
-            return elimination_selector_random,RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory
+            return (
+                elimination_selector_random
+            )
 
         def get_shuffling_selector_optuna(self):
             shuffling_selector_optuna = (
@@ -718,7 +758,8 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_select_by_shuffling_params(
                     cv=self.cv,
                     variables=self.variables,
@@ -741,7 +782,9 @@ def setup_factories(datasets):
                     study_optimize_show_progress_bar=self.study_optimize_show_progress_bar,
                 )
             )
-            return shuffling_selector_optuna,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
+            return (
+                shuffling_selector_optuna
+            )
 
         def get_shuffling_selector_grid(self):
             shuffling_selector_grid = (
@@ -756,21 +799,25 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_select_by_shuffling_params(
                     cv=self.cv,
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_gridsearchcv_params(
+                )
+                .set_gridsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,                
-                    )
+                    cv=self.cv,
+                )
             )
-            return shuffling_selector_grid,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
-        
+            return (
+                shuffling_selector_grid
+            )
+
         def get_shuffling_selector_random(self):
             shuffling_selector_random = (
                 SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
@@ -784,21 +831,25 @@ def setup_factories(datasets):
                     method=self.method,
                     threshold=self.threshold,
                     list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
-                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,)
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
                 .set_select_by_shuffling_params(
                     cv=self.cv,
                     variables=self.variables,
                     scoring=self.scoring,
                     confirm_variables=self.confirm_variables,
-                ).set_randomsearchcv_params(
+                )
+                .set_randomsearchcv_params(
                     measure_of_accuracy=self.measure_of_accuracy,
                     verbose=self.verbose,
                     n_jobs=self.n_jobs,
-                    cv=self.cv,  
-                    n_iter=self.n_iter,              
-                    )
+                    cv=self.cv,
+                    n_iter=self.n_iter,
+                )
             )
-            return shuffling_selector_random,SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory
+            return (
+                shuffling_selector_random
+            )
 
     def case_creator(
         scoring,
@@ -810,15 +861,15 @@ def setup_factories(datasets):
         estimator_params=None,
         fit_params=None,
         measure_of_accuracy=None,
-        ):
-        ds_num=-1
-        if dataset=="adult":
+    ):
+        ds_num = -1
+        if dataset == "adult":
             ds_num = 0
-        if dataset=="audiology":
+        if dataset == "audiology":
             ds_num = 1
-        if dataset=="hardware":
+        if dataset == "hardware":
             ds_num = 2
-        
+
         return FeatureSelectorFactories(
             X=datasets[ds_num].X_train,
             y=datasets[ds_num].y_train,
@@ -865,19 +916,18 @@ def setup_factories(datasets):
             study_optimize_callbacks=None,
             study_optimize_gc_after_trial=False,
             study_optimize_show_progress_bar=False,
-            n_iter = 5,
-            cv = KFold(3),
+            n_iter=5,
+            cv=KFold(3),
             scoring=scoring,
-            variables = None,
-            confirm_variables = False,
-
-    )
+            variables=None,
+            confirm_variables=False,
+        )
 
     hardware_reg_optuna_1 = case_creator(
         n_features=3,
         threshold=None,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -887,14 +937,13 @@ def setup_factories(datasets):
         },
         method="optuna",
         measure_of_accuracy="r2_score(y_true, y_pred)",
-
     )
 
     hardware_reg_random_1 = case_creator(
         n_features=3,
         threshold=0.01,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -904,13 +953,12 @@ def setup_factories(datasets):
         },
         method="randomsearch",
         measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
-
     )
     hardware_reg_grid_1 = case_creator(
         n_features=3,
         threshold=0.01,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -922,11 +970,10 @@ def setup_factories(datasets):
         measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
     )
 
-
     hardware_reg_optuna_2 = case_creator(
         threshold=0.005,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -936,12 +983,11 @@ def setup_factories(datasets):
         },
         method="optuna",
         measure_of_accuracy="r2_score(y_true, y_pred)",
-
     )
     hardware_reg_random_2 = case_creator(
         threshold=0.025,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -951,13 +997,12 @@ def setup_factories(datasets):
         },
         method="randomsearch",
         measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
-
     )
 
     hardware_reg_grid_2 = case_creator(
         threshold=0.0005,
-        scoring = 'r2',
-        dataset = "hardware",
+        scoring="r2",
+        dataset="hardware",
         estimator=xgboost.XGBRegressor(),
         estimator_params={
             "max_depth": [4, 5],
@@ -967,31 +1012,38 @@ def setup_factories(datasets):
         },
         method="gridsearch",
         measure_of_accuracy=make_scorer(r2_score, greater_is_better=True),
-
     )
 
     # hardware and optuna
-    shap_hardware_reg_optuna=hardware_reg_optuna_1.get_shap_selector_optuna()
-    single_hardware_reg_optuna=hardware_reg_optuna_1.get_single_selector_optuna()
-    shuffling_hardware_reg_optuna=hardware_reg_optuna_2.get_shuffling_selector_optuna()
-    addition_hardware_reg_optuna=hardware_reg_optuna_2.get_addition_selector_optuna()
-    elimination_hardware_reg_optuna=hardware_reg_optuna_2.get_elimination_selector_optuna()
+    shap_hardware_reg_optuna = hardware_reg_optuna_1.get_shap_selector_optuna()
+    single_hardware_reg_optuna = hardware_reg_optuna_1.get_single_selector_optuna()
+    shuffling_hardware_reg_optuna = (
+        hardware_reg_optuna_2.get_shuffling_selector_optuna()
+    )
+    addition_hardware_reg_optuna = hardware_reg_optuna_2.get_addition_selector_optuna()
+    elimination_hardware_reg_optuna = (
+        hardware_reg_optuna_2.get_elimination_selector_optuna()
+    )
 
     # hardware and random
-    shap_hardware_reg_random=hardware_reg_random_1.get_shap_selector_random()
-    single_hardware_reg_random=hardware_reg_random_1.get_single_selector_random()
-    shuffling_hardware_reg_random=hardware_reg_random_2.get_shuffling_selector_random()
-    addition_hardware_reg_random=hardware_reg_random_2.get_addition_selector_random()
-    elimination_hardware_reg_random=hardware_reg_random_2.get_elimination_selector_random()
+    shap_hardware_reg_random = hardware_reg_random_1.get_shap_selector_random()
+    single_hardware_reg_random = hardware_reg_random_1.get_single_selector_random()
+    shuffling_hardware_reg_random = (
+        hardware_reg_random_2.get_shuffling_selector_random()
+    )
+    addition_hardware_reg_random = hardware_reg_random_2.get_addition_selector_random()
+    elimination_hardware_reg_random = (
+        hardware_reg_random_2.get_elimination_selector_random()
+    )
 
     # hardware and grid
-    shap_hardware_reg_grid=hardware_reg_grid_1.get_shap_selector_grid()
-    single_hardware_reg_grid=hardware_reg_grid_1.get_single_selector_grid()
-    shuffling_hardware_reg_grid=hardware_reg_grid_2.get_shuffling_selector_grid()
-    addition_hardware_reg_grid=hardware_reg_grid_2.get_addition_selector_grid()
-    elimination_hardware_reg_grid=hardware_reg_grid_2.get_elimination_selector_grid()
+    shap_hardware_reg_grid = hardware_reg_grid_1.get_shap_selector_grid()
+    single_hardware_reg_grid = hardware_reg_grid_1.get_single_selector_grid()
+    shuffling_hardware_reg_grid = hardware_reg_grid_2.get_shuffling_selector_grid()
+    addition_hardware_reg_grid = hardware_reg_grid_2.get_addition_selector_grid()
+    elimination_hardware_reg_grid = hardware_reg_grid_2.get_elimination_selector_grid()
 
-    hardware_list=[
+    hardware_list = [
         shap_hardware_reg_optuna,
         single_hardware_reg_optuna,
         shuffling_hardware_reg_optuna,
@@ -1009,18 +1061,303 @@ def setup_factories(datasets):
         elimination_hardware_reg_grid,
     ]
 
-    
-    cases = {
-        'hardware':hardware_list
+    adult_cls_optuna_1 = case_creator(
+        n_features=5,
+        threshold=None,
+        scoring="roc_auc",
+        dataset="adult",
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+        },
+        fit_params={
+            "sample_weight": None,
+        },
+        method="optuna",
+        measure_of_accuracy="f1_score(y_true, y_pred)",
+    )
 
+    adult_cls_random_1 = case_creator(
+        n_features=3,
+        threshold=0.21,
+        scoring="f1",
+        dataset="adult",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 10],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="randomsearch",
+        measure_of_accuracy=make_scorer(
+            f1_score, greater_is_better=True, average="macro"
+        ),
+    )
+    adult_cls_grid_1 = case_creator(
+        n_features=3,
+        threshold=0.2,
+        scoring="f1",
+        dataset="adult",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(roc_auc_score, greater_is_better=True),
+    )
+
+    adult_cls_optuna_2 = case_creator(
+        threshold=0.005,
+        scoring="roc_auc",
+        dataset="adult",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="optuna",
+        measure_of_accuracy="f1_score(y_true, y_pred)",
+    )
+
+    adult_cls_random_2 = case_creator(
+        threshold=0.025,
+        scoring="roc_auc",
+        dataset="adult",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [100, 1000],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="randomsearch",
+        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True),
+    )
+
+    adult_cls_grid_2 = case_creator(
+        threshold=0.0005,
+        scoring="roc_auc",
+        dataset="adult",
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+        },
+        fit_params={
+            "sample_weight": None,
+        },
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True),
+    )
+
+    # adult and optuna
+    shap_adult_cls_optuna = adult_cls_optuna_1.get_shap_selector_optuna()
+    single_adult_cls_optuna = adult_cls_optuna_1.get_single_selector_optuna()
+    shuffling_adult_cls_optuna = adult_cls_optuna_2.get_shuffling_selector_optuna()
+    addition_adult_cls_optuna = adult_cls_optuna_2.get_addition_selector_optuna()
+    elimination_adult_cls_optuna = adult_cls_optuna_2.get_elimination_selector_optuna()
+
+    # adult and random
+    shap_adult_cls_random = adult_cls_random_1.get_shap_selector_random()
+    single_adult_cls_random = adult_cls_random_1.get_single_selector_random()
+    shuffling_adult_cls_random = adult_cls_random_2.get_shuffling_selector_random()
+    addition_adult_cls_random = adult_cls_random_2.get_addition_selector_random()
+    elimination_adult_cls_random = adult_cls_random_2.get_elimination_selector_random()
+
+    # adult and grid
+    shap_adult_cls_grid = adult_cls_grid_1.get_shap_selector_grid()
+    single_adult_cls_grid = adult_cls_grid_1.get_single_selector_grid()
+    shuffling_adult_cls_grid = adult_cls_grid_2.get_shuffling_selector_grid()
+    addition_adult_cls_grid = adult_cls_grid_2.get_addition_selector_grid()
+    elimination_adult_cls_grid = adult_cls_grid_2.get_elimination_selector_grid()
+
+    adult_list = [
+        shap_adult_cls_optuna,
+        single_adult_cls_optuna,
+        shuffling_adult_cls_optuna,
+        addition_adult_cls_optuna,
+        elimination_adult_cls_optuna,
+        shap_adult_cls_random,
+        single_adult_cls_random,
+        shuffling_adult_cls_random,
+        addition_adult_cls_random,
+        elimination_adult_cls_random,
+        shap_adult_cls_grid,
+        single_adult_cls_grid,
+        shuffling_adult_cls_grid,
+        addition_adult_cls_grid,
+        elimination_adult_cls_grid,
+    ]
+
+    audiology_cls_optuna_1 = case_creator(
+        n_features=5,
+        threshold=None,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [50, 100],
+            "learning_rate": [0.01, 0.1],
+        },
+        fit_params={
+            "sample_weight": None,
+        },
+        method="optuna",
+        measure_of_accuracy="f1_score(y_true, y_pred,average='macro')",
+    )
+
+    audiology_cls_random_1 = case_creator(
+        n_features=3,
+        threshold=0.1,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="randomsearch",
+        measure_of_accuracy=make_scorer(
+            f1_score, greater_is_better=True, average="macro"
+        ),
+    )
+    audiology_cls_grid_1 = case_creator(
+        n_features=3,
+        threshold=0.2,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(
+            roc_auc_score, greater_is_better=True, average="macro"
+        ),
+    )
+
+    audiology_cls_optuna_2 = case_creator(
+        threshold=0.001,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "sample_weight": None,
+        },
+        method="optuna",
+        measure_of_accuracy="f1_score(y_true, y_pred,average='macro')",
+    )
+
+    audiology_cls_random_2 = case_creator(
+        threshold=0.015,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=lightgbm.LGBMClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+            "n_estimators": [100, 1000],
+        },
+        fit_params={"sample_weight": None, "init_score": None},
+        method="randomsearch",
+        measure_of_accuracy=make_scorer(
+            f1_score, greater_is_better=True, average="macro"
+        ),
+    )
+
+    audiology_cls_grid_2 = case_creator(
+        threshold=0.02,
+        scoring="roc_auc_ovr",
+        dataset="audiology",
+        estimator=xgboost.XGBClassifier(),
+        estimator_params={
+            "max_depth": [4, 5],
+        },
+        fit_params={
+            "sample_weight": None,
+        },
+        method="gridsearch",
+        measure_of_accuracy=make_scorer(
+            f1_score, greater_is_better=True, average="macro"
+        ),
+    )
+
+    # audiology and optuna
+    shap_audiology_cls_optuna = audiology_cls_optuna_1.get_shap_selector_optuna()
+    single_audiology_cls_optuna = audiology_cls_optuna_1.get_single_selector_optuna()
+    shuffling_audiology_cls_optuna = (
+        audiology_cls_optuna_2.get_shuffling_selector_optuna()
+    )
+    addition_audiology_cls_optuna = (
+        audiology_cls_optuna_2.get_addition_selector_optuna()
+    )
+    elimination_audiology_cls_optuna = (
+        audiology_cls_optuna_2.get_elimination_selector_optuna()
+    )
+
+    # audiology and random
+    shap_audiology_cls_random = audiology_cls_random_1.get_shap_selector_random()
+    single_audiology_cls_random = audiology_cls_random_1.get_single_selector_random()
+    shuffling_audiology_cls_random = (
+        audiology_cls_random_2.get_shuffling_selector_random()
+    )
+    addition_audiology_cls_random = (
+        audiology_cls_random_2.get_addition_selector_random()
+    )
+    elimination_audiology_cls_random = (
+        audiology_cls_random_2.get_elimination_selector_random()
+    )
+
+    # audiology and grid
+    shap_audiology_cls_grid = audiology_cls_grid_1.get_shap_selector_grid()
+    single_audiology_cls_grid = audiology_cls_grid_1.get_single_selector_grid()
+    shuffling_audiology_cls_grid = audiology_cls_grid_2.get_shuffling_selector_grid()
+    addition_audiology_cls_grid = audiology_cls_grid_2.get_addition_selector_grid()
+    elimination_audiology_cls_grid = (
+        audiology_cls_grid_2.get_elimination_selector_grid()
+    )
+
+    audiology_list = [
+        shap_audiology_cls_optuna,
+        single_audiology_cls_optuna,
+        shuffling_audiology_cls_optuna,
+        addition_audiology_cls_optuna,
+        elimination_audiology_cls_optuna,
+        shap_audiology_cls_random,
+        single_audiology_cls_random,
+        shuffling_audiology_cls_random,
+        addition_audiology_cls_random,
+        elimination_audiology_cls_random,
+        shap_audiology_cls_grid,
+        single_audiology_cls_grid,
+        shuffling_audiology_cls_grid,
+        addition_audiology_cls_grid,
+        elimination_audiology_cls_grid,
+    ]
+
+    cases = {
+        "hardware": hardware_list,
+        "adult": adult_list,
+        "audiology": audiology_list,
     }
 
     return cases
 
 
-def test_second_func(datasets, setup_factories):
+def test_hardware(datasets, setup_factories):
 
     for case in setup_factories['hardware']:
+        print("####################")
+        print("####################")
+        print("####################")
+        print("test is related to hardware this index:")
+        print(setup_factories['hardware'].index(case))
         pipeline = Pipeline(
             [
                 # int missing values imputers
@@ -1035,15 +1372,73 @@ def test_second_func(datasets, setup_factories):
                 #
                 ("catencoder", OrdinalEncoder()),
                 # feature selection
-                ("sf", case[0]),
+                ("fs", case),
                 # add any regression model from sklearn e.g., LinearRegression
                 ("regression", LinearRegression()),
             ]
         )
 
         pipeline.fit(datasets[2].X_train, datasets[2].y_train)
-        assert len(case[0].selected_cols) > 1
+        assert len(case.selected_cols) > 1
         y_pred = pipeline.predict(datasets[2].X_test)
         assert r2_score(datasets[2].y_test, y_pred) > 0.77
-        
 
+def test_adult(datasets, setup_factories):
+
+    for case in setup_factories['adult']:
+        print("####################")
+        print("####################")
+        print("####################")
+        print("test is related to adult and with this index:")
+        print(setup_factories['adult'].index(case))
+
+        pipeline = Pipeline(
+            [
+                # int missing values imputers
+                (
+                    "intimputer",
+                    MeanMedianImputer(
+                        imputation_method="median", variables=datasets[0].int_cols
+                    ),
+                ),
+                # category missing values imputers
+                ("catimputer", CategoricalImputer(variables=datasets[0].cat_cols)),
+                #
+                ("catencoder", OrdinalEncoder()),
+                # feature selection
+                ("fs", case),
+                # add any regression model from sklearn e.g., LinearRegression
+                ("logestic", LogisticRegression()),
+            ]
+        )
+
+        pipeline.fit(datasets[0].X_train, datasets[0].y_train)
+        assert len(case.selected_cols) > 1
+        y_pred = pipeline.predict(datasets[0].X_test)
+        assert f1_score(datasets[0].y_test, y_pred) > 0.30
+
+def test_audiology(datasets, setup_factories):
+    for case in setup_factories["audiology"]:
+        print("####################")
+        print("####################")
+        print("####################")
+        print("test is related to audiology and with this index:")
+        print(setup_factories['audiology'].index(case))
+        pipeline = Pipeline(
+            [
+                # int missing values imputers
+                (
+                    "intimputer",
+                    MeanMedianImputer(
+                        imputation_method="median", variables=datasets[1].int_cols
+                    ),
+                ),
+                ("sf", case),
+                # classification model
+                ("logistic", LogisticRegression(solver="liblinear", max_iter=100)),
+            ]
+        )
+        pipeline.fit(datasets[1].X_train, datasets[1].y_train)
+        assert len(case.selected_cols) > 1
+        y_pred = pipeline.predict(datasets[1].X_test)
+        assert f1_score(datasets[1].y_test, y_pred,average='macro') > 0.15
