@@ -70,7 +70,7 @@ class RecursiveFeatureEliminationPlotFeatures(PlotFeatures):
         """
         return a info of features and grades.
         """
-        print(
+        logger.info(
             f"list of selected features+list of obligatory features that must be in \
                 model-list of features to drop before any selection   \
             {self.feature_selector.selected_cols}"
@@ -1001,10 +1001,8 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             self.feature_object.fit(X, y)
             # Get list  of each feature to drop
             feature_list_to_drop = self.feature_object.features_to_drop_
-            print(feature_list_to_drop)
             # Get the performance drift of each feature
             feature_dict_drift = self.feature_object.performance_drifts_
-            print(feature_dict_drift)
             # Calculate the dict of features to remain (substract based on keys)
             feature_dict = {
                 k: v
@@ -1012,9 +1010,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 if k not in feature_list_to_drop
             }
             col_names = feature_dict.keys()
-            print(col_names)
         self.importance_df = pd.DataFrame([col_names, feature_dict.values()]).T
-        print(self.importance_df)
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
         # for multi-class  values are show in a list
@@ -1037,7 +1033,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
         set_of_selected_features = set(self.selected_cols)
 
         if len(self.list_of_obligatory_features_that_must_be_in_model) > 0:
-            print(
+            logger.info(
                 f"this list of features also will be selected! \
                     {self.list_of_obligatory_features_that_must_be_in_model}"
             )
@@ -1046,7 +1042,7 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             )
 
         if len(self.list_of_features_to_drop_before_any_selection) > 0:
-            print(
+            logger.info(
                 f"this list of features  will be dropped! \
                     {self.list_of_features_to_drop_before_any_selection}"
             )
@@ -1055,7 +1051,6 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
             )
 
         self.selected_cols = list(set_of_selected_features)
-        print(self.selected_cols)
         return self
 
     def get_feature_selector_instance(self):
@@ -1876,10 +1871,10 @@ class RecursiveFeatureEliminationFeatureSelector(FeatureSelector):
                 )
             )
             if self.feature_selector is not None:
-                print(
+                logger.info(
                     f"{recursive_elimination_plot_features.get_info_of_features_and_grades()}"
                 )
-                print(
+                logger.info(
                     "Note: list of obligatory features that must be in model-list of \
                         features to drop before any selection also has considered !"
                 )

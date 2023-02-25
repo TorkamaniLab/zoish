@@ -71,7 +71,7 @@ class RecursiveFeatureAdditionPlotFeatures(PlotFeatures):
         """
         return a info of features and grades.
         """
-        print(
+        logger.info(
             f"list of selected features+list of obligatory features that must be in \
                 model-list of features to drop before any selection   \
             {self.feature_selector.selected_cols}"
@@ -1024,7 +1024,6 @@ error_score : 'raise' or int or float
             }
             col_names = feature_dict.keys()
         self.importance_df = pd.DataFrame([col_names, feature_dict.values()]).T
-        print(self.importance_df)
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
         # for multi-class  values are show in a list
@@ -1047,7 +1046,7 @@ error_score : 'raise' or int or float
         set_of_selected_features = set(self.selected_cols)
 
         if len(self.list_of_obligatory_features_that_must_be_in_model) > 0:
-            print(
+            logger.info(
                 f"this list of features also will be selected! \
                     {self.list_of_obligatory_features_that_must_be_in_model}"
             )
@@ -1056,7 +1055,7 @@ error_score : 'raise' or int or float
             )
 
         if len(self.list_of_features_to_drop_before_any_selection) > 0:
-            print(
+            logger.info(
                 f"this list of features  will be dropped! \
                     {self.list_of_features_to_drop_before_any_selection}"
             )
@@ -1065,7 +1064,6 @@ error_score : 'raise' or int or float
             )
 
         self.selected_cols = list(set_of_selected_features)
-        print(self.selected_cols)
         return self
 
     def get_feature_selector_instance(self):
@@ -1885,10 +1883,10 @@ error_score : 'raise' or int or float
                 path_to_save_plot=None,
             )
             if self.feature_selector is not None:
-                print(
+                logger.info(
                     f"{recursive_addition_plot_features.get_info_of_features_and_grades()}"
                 )
-                print(
+                logger.info(
                     "Note: list of obligatory features that must be in model-list of \
                         features to drop before any selection also has considered !"
                 )
