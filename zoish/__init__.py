@@ -1,22 +1,20 @@
 __version__ = "2.1.0"
 
+
 import logging
 import logging.config
 import os
-from pathlib import Path, PurePath
-from .project_conf import ROOT_PROJECT
 
 import yaml
 from dotenv import load_dotenv
 
-PATH_TO_LOG_CONF = ROOT_PROJECT / "zoish" / "config.yaml"
-# DEFAULT_LEVEL in production env
-DEFAULT_LEVEL = logging.ERROR
+path = "zoish/config.yaml"
+DEFAULT_LEVEL = logging.INFO
 
 
-def log_setup(log_cfg_path=PATH_TO_LOG_CONF):
+def log_setup(log_cfg_path=path):
     try:
-        with open(PATH_TO_LOG_CONF, "r") as f:
+        with open(path, "r") as f:
             config = yaml.safe_load(f.read())
             logging.config.dictConfig(config)
             # set up logging configuration
