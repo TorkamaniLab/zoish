@@ -9,6 +9,8 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByGridSearch,
     BestEstimatorFindByOptuna,
     BestEstimatorFindByRandomSearch,
+    BestEstimatorFindByTuneGridSearch,
+    BestEstimatorFindByTuneSearch,
 )
 
 logger.info("Single Feature Performance Feature Selector has started !")
@@ -166,52 +168,52 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         For example, it is a good idea to exclude ``id`` and ``targets`` or ``class labels. ``
         from feature space before selection starts.
     measure_of_accuracy : str
-                Measurement of performance for classification and
-                regression estimator during hyperparameter optimization while
-                estimating best estimator.
-                Classification-supported measurements are :
-                "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
-                "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
-                "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
-                "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
-                "zero_one_loss"
-                # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
-                 "precision_recall_curve"
-                "precision_recall_fscore_support".
-                Regression Classification-supported measurements are:
-                "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
-                "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
-                "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
-                "tn", "tp", "tn_score" ,"tp_score".
-                Examples of use:
-                "f1_plus_tn(y_true, y_pred)"
-                "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
-                "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
-                make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
-                and so on. It will be used by the lohrasb package. Check this:
-                https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
-                and
-                https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
-            verbose: int
-                Controls the verbosity across all objects: the higher, the more messages.
-            n_jobs: int
-                The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
-                ``-1`` means using all processors. (default -1)
-            cv: int
-                cross-validation generator or an iterable.
-                Determines the cross-validation splitting strategy. Possible inputs
-                for cv are: None, to use the default 5-fold cross-validation,
-                int, to specify the number of folds in a (Stratified)KFold,
-                CV splitter, An iterable yielding (train, test) splits
-                as arrays of indices. For int/None inputs, if the estimator
-                is a classifier, and y is either binary or multiclass,
-                StratifiedKFold is used. In all other cases, Fold is used.
-                These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when the
-                hyper_parameter_optimization_method
-                is grid or random.
+        Measurement of performance for classification and
+        regression estimator during hyperparameter optimization while
+        estimating best estimator.
+        Classification-supported measurements are :
+        "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
+        "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
+        "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
+        "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
+        "zero_one_loss"
+        # custom
+        "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+            "precision_recall_curve"
+        "precision_recall_fscore_support".
+        Regression Classification-supported measurements are:
+        "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
+        "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
+        "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
+        "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+        "tn", "tp", "tn_score" ,"tp_score".
+        Examples of use:
+        "f1_plus_tn(y_true, y_pred)"
+        "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
+        "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
+        make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
+        and so on. It will be used by the lohrasb package. Check this:
+        https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
+        and
+        https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
+    verbose: int
+        Controls the verbosity across all objects: the higher, the more messages.
+    n_jobs: int
+        The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
+        ``-1`` means using all processors. (default -1)
+    cv: int
+        cross-validation generator or an iterable.
+        Determines the cross-validation splitting strategy. Possible inputs
+        for cv are: None, to use the default 5-fold cross-validation,
+        int, to specify the number of folds in a (Stratified)KFold,
+        CV splitter, An iterable yielding (train, test) splits
+        as arrays of indices. For int/None inputs, if the estimator
+        is a classifier, and y is either binary or multiclass,
+        StratifiedKFold is used. In all other cases, Fold is used.
+        These splitters are instantiated with shuffle=False, so the splits
+        will be the same across calls. It is only used when the
+        hyper_parameter_optimization_method
+        is grid or random.
 
     n_jobs: int
         The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
@@ -259,6 +261,63 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         flag to obj:`True`.
     study_optimize_show_progress_bar: bool
         Flag to show progress bars or not. To disable the progress bar.
+    error_score : 'raise' or int or float
+        Value to assign to the score if an error occurs in estimator fitting. If set to ‘raise’,
+        the error is raised. If a numeric value is given, FitFailedWarning is raised. This parameter
+        does not affect the refit step, which will always raise the error. Defaults to np.nan.
+    return_train_score :bool
+        If False, the cv_results_ attribute will not include training scores. Defaults to False.
+        Computing training scores is used to get insights on how different parameter settings
+        impact the overfitting/underfitting trade-off. However computing the scores on the training
+        set can be computationally expensive and is not strictly required to select the parameters
+        that yield the best generalization performance.
+    local_dir : str
+        A string that defines where checkpoints will be stored. Defaults to “~/ray_results”.
+    name : str
+        Name of experiment (for Ray Tune)
+    max_iters : int
+        Indicates the maximum number of epochs to run for each hyperparameter configuration sampled.
+        This parameter is used for early stopping. Defaults to 1. Depending on the classifier
+        type provided, a resource parameter (resource_param = max_iter or n_estimators)
+        will be detected. The value of resource_param will be treated as a “max resource value”,
+        and all classifiers will be initialized with max resource value // max_iters, where max_iters
+        is this defined parameter. On each epoch, resource_param (max_iter or n_estimators) is
+        incremented by max resource value // max_iters.
+    search_optimization: "hyperopt" (search_optimization ("random" or "bayesian" or "bohb" or
+    “optuna” or ray.tune.search.Searcher instance): Randomized search is invoked with
+    search_optimization set to "random" and behaves like scikit-learn’s RandomizedSearchCV.
+        Bayesian search can be invoked with several values of search_optimization.
+        "bayesian" via https://scikit-optimize.github.io/stable/
+        "bohb" via http://github.com/automl/HpBandSter
+        Tree-Parzen Estimators search is invoked with search_optimization set to "hyperopt"
+        via HyperOpt: http://hyperopt.github.io/hyperopt
+        All types of search aside from Randomized search require parent libraries to be installed.
+        Alternatively, instead of a string, a Ray Tune Searcher instance can be used, which
+        will be passed to tune.run().
+    use_gpu : bool
+        Indicates whether to use gpu for fitting. Defaults to False. If True, training will start
+        processes with the proper CUDA VISIBLE DEVICE settings set. If a Ray cluster has been initialized,
+        all available GPUs will be used.
+    loggers : list
+        A list of the names of the Tune loggers as strings to be used to log results. Possible
+        values are “tensorboard”, “csv”, “mlflow”, and “json”
+    pipeline_auto_early_stop : bool
+        Only relevant if estimator is Pipeline object and early_stopping is enabled/True. If
+        True, early stopping will be performed on the last stage of the pipeline (which must
+        support early stopping). If False, early stopping will be determined by
+        ‘Pipeline.warm_start’ or ‘Pipeline.partial_fit’ capabilities, which are by default
+        not supported by standard SKlearn. Defaults to True.
+    stopper : ray.tune.stopper.Stopper
+        Stopper objects passed to tune.run().
+    time_budget_s : |float|datetime.timedelta
+        Global time budget in seconds after which all trials are stopped. Can also be a
+        datetime.timedelta object.
+    mode : str
+        One of {min, max}. Determines whether objective is minimizing or maximizing the
+        metric attribute. Defaults to “max”.
+    search_kwargs : dict
+        Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
+    
     n_iter : int
          Only it means full in Random Search. It is several parameter
          settings that are sampled. n_iter trades off runtime vs. quality of the solution.
@@ -345,7 +404,24 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         study_optimize_show_progress_bar=None,
         n_iter=None,
         method=None,
+        # tune search and tune grid search
+        early_stopping=None,
         scoring=None,
+        n_trials=None,
+        refit=None,
+        error_score=None,
+        return_train_score=None,
+        local_dir=None,
+        name=None,
+        max_iters=None,
+        search_optimization=None,
+        use_gpu=None,
+        loggers=None,
+        pipeline_auto_early_stop=None,
+        stopper=None,
+        time_budget_s=None,
+        mode=None,
+        search_kwargs=None,
     ):
         self.X = X
         self.y = y
@@ -387,7 +463,24 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.confirm_variables = confirm_variables
         self.feature_names = feature_names
         self.scoring = scoring
-
+        # tune search and tune grid search
+        self.early_stopping= early_stopping
+        self.scoring= scoring
+        self.n_trials= n_trials
+        self.refit= refit
+        self.error_score= error_score
+        self.return_train_score= return_train_score
+        self.local_dir= local_dir
+        self.name= name
+        self.max_iters= max_iters
+        self.search_optimization= search_optimization
+        self.use_gpu= use_gpu
+        self.loggers= loggers
+        self.pipeline_auto_early_stop= pipeline_auto_early_stop
+        self.stopper= stopper
+        self.time_budget_s= time_budget_s
+        self.mode= mode
+        self.search_kwargs= search_kwargs
         # independent params
         self.list_of_selected_features = None
         self.bst = None
@@ -461,7 +554,121 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     @random_state.setter
     def random_state(self, value):
         self._random_state = value
+    
+    # tune search and tune grid search
+    @property
+    def early_stopping(self):
+        return self._early_stopping
 
+    @early_stopping.setter
+    def early_stopping(self, value):
+        self._early_stopping = value
+
+    @property
+    def scoring(self):
+        return self._scoring
+
+    @scoring.setter
+    def scoring(self, value):
+        self._scoring = value
+
+    @property
+    def refit(self):
+        return self._refit
+
+    @refit.setter
+    def refit(self, value):
+        self._refit = value
+
+    @property
+    def error_score(self):
+        return self._error_score
+
+    @error_score.setter
+    def error_score(self, value):
+        self._error_score = value
+
+    @property
+    def return_train_score(self):
+        return self._return_train_score
+
+    @return_train_score.setter
+    def return_train_score(self, value):
+        self._return_train_score = value
+
+    @property
+    def local_dir(self):
+        return self._local_dir
+
+    @local_dir.setter
+    def local_dir(self, value):
+        self._local_dir = value
+
+    @property
+    def name(self):
+        return self._name
+
+    @name.setter
+    def name(self, value):
+        self._name = value
+
+    @property
+    def max_iters(self):
+        return self._max_iters
+
+    @max_iters.setter
+    def max_iters(self, value):
+        self._max_iters = value
+
+    @property
+    def use_gpu(self):
+        return self._use_gpu
+
+    @use_gpu.setter
+    def use_gpu(self, value):
+        self._use_gpu = value
+
+    @property
+    def loggers(self):
+        return self._loggers
+
+    @loggers.setter
+    def loggers(self, value):
+        self._loggers = value
+
+    @property
+    def pipeline_auto_early_stop(self):
+        return self._pipeline_auto_early_stop
+
+    @pipeline_auto_early_stop.setter
+    def pipeline_auto_early_stop(self, value):
+        self._pipeline_auto_early_stop = value
+
+    @property
+    def stopper(self):
+        return self._stopper
+
+    @stopper.setter
+    def stopper(self, value):
+        self._stopper = value
+
+    @property
+    def time_budget_s(self):
+        return self._time_budget_s
+
+    @time_budget_s.setter
+    def time_budget_s(self, value):
+        self._time_budget_s = value
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value):
+        self._mode = value
+    
+    ##
     @property
     def estimator(self):
         return self._estimator
@@ -715,6 +922,62 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 n_jobs=self.n_jobs,
                 cv=self.cv,
                 n_iter=self.n_iter,
+            )
+        if self.method == "tunegridsearch":
+            self.bst = BestEstimatorFindByTuneGridSearch(
+                X=self.X,
+                y=self.y,
+                estimator=self.estimator,
+                estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
+                measure_of_accuracy=self.measure_of_accuracy,
+                verbose=self.verbose,
+                n_jobs=self.n_jobs,
+                cv=self.cv,
+                early_stopping=self.early_stopping,
+                scoring=self.scoring,
+                refit=self.refit,
+                error_score=self.error_score,
+                return_train_score=self.return_train_score,
+                local_dir=self.local_dir,
+                name=self.name,
+                max_iters=self.max_iters,
+                use_gpu=self.use_gpu,
+                loggers=self.loggers,
+                pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                stopper=self.stopper,
+                time_budget_s=self.time_budget_s,
+                mode=self.mode,
+            )
+        if self.method == "tunesearch":
+            self.bst = BestEstimatorFindByTuneSearch(
+                    X=self.X,
+                    y=self.y,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    measure_of_accuracy = self.measure_of_accuracy,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    random_state=self.random_state,
+                    verbose=self.verbose,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
             )
 
         return self.bst
@@ -1280,6 +1543,298 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
+        def set_tunegridsearchcv_params(
+            self,
+            measure_of_accuracy,
+            verbose,
+            early_stopping,
+            scoring,
+            n_jobs,
+            cv,
+            refit,
+            error_score,
+            return_train_score,
+            local_dir,
+            name,
+            max_iters,
+            use_gpu,
+            loggers,
+            pipeline_auto_early_stop,
+            stopper,
+            time_budget_s,
+            mode,
+            ):
+
+            """A method to set TuneGridSearchCV parameters.
+        
+            Parameters
+            ----------
+            
+            measure_of_accuracy : object of type make_scorer
+                see documentation in
+                https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
+            early_stopping: (bool, str or TrialScheduler, optional)
+                Option to stop fitting to a hyperparameter configuration if it performs poorly. Possible inputs are:
+                If True, defaults to ASHAScheduler. A string corresponding to the name of a Tune Trial Scheduler (i.e.,
+                “ASHAScheduler”). To specify parameters of the scheduler, pass in a scheduler object instead of a string.
+                Scheduler for executing fit with early stopping. Only a subset of schedulers are currently supported.
+                The scheduler will only be used if the estimator supports partial fitting If None or False,
+                early stopping will not be used.
+            scoring : str, list/tuple, dict, or None)
+                A single string or a callable to evaluate the predictions on the test set.
+                See https://scikit-learn.org/stable/modules/model_evaluation.html #scoring-parameter
+                for all options. For evaluating multiple metrics, either give a list/tuple of (unique)
+                strings or a dict with names as keys and callables as values. If None, the estimator’s
+                score method is used. Defaults to None.
+            n_jobs : int
+                Number of jobs to run in parallel. None or -1 means using all processors. Defaults to None.
+                If set to 1, jobs will be run using Ray’s ‘local mode’. This can lead to significant speedups
+                if the model takes < 10 seconds to fit due to removing inter-process communication overheads.
+            cv : int, cross-validation generator or iterable :
+                Determines the cross-validation splitting strategy. Possible inputs for cv are:
+                None, to use the default 5-fold cross validation, integer, to specify the number
+                of folds in a (Stratified)KFold, An iterable yielding (train, test) splits as arrays
+                of indices. For integer/None inputs, if the estimator is a classifier and y is either
+                binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
+                Defaults to None.
+            refit : bool or str
+                Refit an estimator using the best found parameters on the whole dataset.
+                For multiple metric evaluation, this needs to be a string denoting the scorer
+                that would be used to find the best parameters for refitting the estimator at the end.
+                The refitted estimator is made available at the best_estimator_ attribute and permits using predict
+                directly on this GridSearchCV instance. Also for multiple metric evaluation,
+                the attributes best_index_, best_score_ and best_params_ will only be available if
+                refit is set and all of them will be determined w.r.t this specific scorer.
+                If refit not needed, set to False. See scoring parameter to know more about multiple
+                metric evaluation. Defaults to True.
+            verbose : int
+                Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
+                Defaults to 0.
+            error_score : 'raise' or int or float
+                Value to assign to the score if an error occurs in estimator fitting. If set to ‘raise’,
+                the error is raised. If a numeric value is given, FitFailedWarning is raised. This parameter
+                does not affect the refit step, which will always raise the error. Defaults to np.nan.
+            return_train_score :bool
+                If False, the cv_results_ attribute will not include training scores. Defaults to False.
+                Computing training scores is used to get insights on how different parameter settings
+                impact the overfitting/underfitting trade-off. However computing the scores on the training
+                set can be computationally expensive and is not strictly required to select the parameters
+                that yield the best generalization performance.
+            local_dir : str
+                A string that defines where checkpoints will be stored. Defaults to “~/ray_results”.
+            name : str
+                Name of experiment (for Ray Tune)
+            max_iters : int
+                Indicates the maximum number of epochs to run for each hyperparameter configuration sampled.
+                This parameter is used for early stopping. Defaults to 1. Depending on the classifier
+                type provided, a resource parameter (resource_param = max_iter or n_estimators)
+                will be detected. The value of resource_param will be treated as a “max resource value”,
+                and all classifiers will be initialized with max resource value // max_iters, where max_iters
+                is this defined parameter. On each epoch, resource_param (max_iter or n_estimators) is
+                incremented by max resource value // max_iters.
+            use_gpu : bool
+                Indicates whether to use gpu for fitting. Defaults to False. If True, training will start
+                processes with the proper CUDA VISIBLE DEVICE settings set. If a Ray cluster has been initialized,
+                all available GPUs will be used.
+            loggers : list
+                A list of the names of the Tune loggers as strings to be used to log results. Possible
+                values are “tensorboard”, “csv”, “mlflow”, and “json”
+            pipeline_auto_early_stop : bool
+                Only relevant if estimator is Pipeline object and early_stopping is enabled/True. If
+                True, early stopping will be performed on the last stage of the pipeline (which must
+                support early stopping). If False, early stopping will be determined by
+                ‘Pipeline.warm_start’ or ‘Pipeline.partial_fit’ capabilities, which are by default
+                not supported by standard SKlearn. Defaults to True.
+            stopper : ray.tune.stopper.Stopper
+                Stopper objects passed to tune.run().
+            time_budget_s : |float|datetime.timedelta
+                Global time budget in seconds after which all trials are stopped. Can also be a
+                datetime.timedelta object.
+            mode : str
+                One of {min, max}. Determines whether objective is minimizing or maximizing the
+                metric attribute. Defaults to “max”.
+
+            """
+            
+            self.feature_selector.measure_of_accuracy = measure_of_accuracy
+            self.feature_selector.verbose = verbose
+            self.feature_selector.early_stopping = early_stopping
+            self.feature_selector.scoring = scoring
+            self.feature_selector.n_jobs = n_jobs
+            self.feature_selector.cv = cv
+            self.feature_selector.refit = refit
+            self.feature_selector.error_score = error_score
+            self.feature_selector.return_train_score=return_train_score
+            self.feature_selector.local_dir = local_dir
+            self.feature_selector.name = name
+            self.feature_selector.max_iters = max_iters
+            self.feature_selector.use_gpu = use_gpu
+            self.feature_selector.loggers = loggers
+            self.feature_selector.pipeline_auto_early_stop = pipeline_auto_early_stop
+            self.feature_selector.stopper = stopper
+            self.feature_selector.time_budget_s = time_budget_s
+            self.feature_selector.mode = mode
+
+
+            return self.feature_selector
+    
+        def set_tunesearchcv_params(
+            self,
+            measure_of_accuracy,
+            verbose,
+            early_stopping,
+            scoring,
+            n_jobs,
+            cv,
+            n_trials,
+            refit,
+            error_score,
+            return_train_score,
+            local_dir,
+            name,
+            max_iters,
+            search_optimization,
+            use_gpu,
+            loggers,
+            pipeline_auto_early_stop,
+            stopper,
+            time_budget_s,
+            mode,
+            search_kwargs,
+            ):
+
+            """A method to set TuneSearchCV parameters.
+        
+            Parameters
+            ----------
+            measure_of_accuracy : object of type make_scorer
+                see documentation in
+                https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
+            early_stopping: (bool, str or TrialScheduler, optional)
+                Option to stop fitting to a hyperparameter configuration if it performs poorly. Possible inputs are:
+                If True, defaults to ASHAScheduler. A string corresponding to the name of a Tune Trial Scheduler (i.e.,
+                “ASHAScheduler”). To specify parameters of the scheduler, pass in a scheduler object instead of a string.
+                Scheduler for executing fit with early stopping. Only a subset of schedulers are currently supported.
+                The scheduler will only be used if the estimator supports partial fitting If None or False,
+                early stopping will not be used.
+            scoring : str, list/tuple, dict, or None)
+                A single string or a callable to evaluate the predictions on the test set.
+                See https://scikit-learn.org/stable/modules/model_evaluation.html #scoring-parameter
+                for all options. For evaluating multiple metrics, either give a list/tuple of (unique)
+                strings or a dict with names as keys and callables as values. If None, the estimator’s
+                score method is used. Defaults to None.
+            n_jobs : int
+                Number of jobs to run in parallel. None or -1 means using all processors. Defaults to None.
+                If set to 1, jobs will be run using Ray’s ‘local mode’. This can lead to significant speedups
+                if the model takes < 10 seconds to fit due to removing inter-process communication overheads.
+            cv : int, cross-validation generator or iterable :
+                Determines the cross-validation splitting strategy. Possible inputs for cv are:
+                None, to use the default 5-fold cross validation, integer, to specify the number
+                of folds in a (Stratified)KFold, An iterable yielding (train, test) splits as arrays
+                of indices. For integer/None inputs, if the estimator is a classifier and y is either
+                binary or multiclass, StratifiedKFold is used. In all other cases, KFold is used.
+                Defaults to None.
+            n_trials : int
+                Number of parameter settings that are sampled. n_trials trades off runtime vs
+                quality of the solution. Defaults to 10.
+            refit : bool or str
+                Refit an estimator using the best found parameters on the whole dataset.
+                For multiple metric evaluation, this needs to be a string denoting the scorer
+                that would be used to find the best parameters for refitting the estimator at the end.
+                The refitted estimator is made available at the best_estimator_ attribute and permits using predict
+                directly on this GridSearchCV instance. Also for multiple metric evaluation,
+                the attributes best_index_, best_score_ and best_params_ will only be available if
+                refit is set and all of them will be determined w.r.t this specific scorer.
+                If refit not needed, set to False. See scoring parameter to know more about multiple
+                metric evaluation. Defaults to True.
+            
+            verbose : int
+                Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
+                Defaults to 0.
+            error_score : 'raise' or int or float
+                Value to assign to the score if an error occurs in estimator fitting. If set to ‘raise’,
+                the error is raised. If a numeric value is given, FitFailedWarning is raised. This parameter
+                does not affect the refit step, which will always raise the error. Defaults to np.nan.
+            return_train_score :bool
+                If False, the cv_results_ attribute will not include training scores. Defaults to False.
+                Computing training scores is used to get insights on how different parameter settings
+                impact the overfitting/underfitting trade-off. However computing the scores on the training
+                set can be computationally expensive and is not strictly required to select the parameters
+                that yield the best generalization performance.
+            local_dir : str
+                A string that defines where checkpoints will be stored. Defaults to “~/ray_results”.
+            name : str
+                Name of experiment (for Ray Tune)
+            max_iters : int
+                Indicates the maximum number of epochs to run for each hyperparameter configuration sampled.
+                This parameter is used for early stopping. Defaults to 1. Depending on the classifier
+                type provided, a resource parameter (resource_param = max_iter or n_estimators)
+                will be detected. The value of resource_param will be treated as a “max resource value”,
+                and all classifiers will be initialized with max resource value // max_iters, where max_iters
+                is this defined parameter. On each epoch, resource_param (max_iter or n_estimators) is
+                incremented by max resource value // max_iters.
+            search_optimization: "hyperopt" (search_optimization ("random" or "bayesian" or "bohb" or
+            “optuna” or ray.tune.search.Searcher instance): Randomized search is invoked with
+            search_optimization set to "random" and behaves like scikit-learn’s RandomizedSearchCV.
+                Bayesian search can be invoked with several values of search_optimization.
+                "bayesian" via https://scikit-optimize.github.io/stable/
+                "bohb" via http://github.com/automl/HpBandSter
+                Tree-Parzen Estimators search is invoked with search_optimization set to "hyperopt"
+                via HyperOpt: http://hyperopt.github.io/hyperopt
+                All types of search aside from Randomized search require parent libraries to be installed.
+                Alternatively, instead of a string, a Ray Tune Searcher instance can be used, which
+                will be passed to tune.run().
+            use_gpu : bool
+                Indicates whether to use gpu for fitting. Defaults to False. If True, training will start
+                processes with the proper CUDA VISIBLE DEVICE settings set. If a Ray cluster has been initialized,
+                all available GPUs will be used.
+            loggers : list
+                A list of the names of the Tune loggers as strings to be used to log results. Possible
+                values are “tensorboard”, “csv”, “mlflow”, and “json”
+            pipeline_auto_early_stop : bool
+                Only relevant if estimator is Pipeline object and early_stopping is enabled/True. If
+                True, early stopping will be performed on the last stage of the pipeline (which must
+                support early stopping). If False, early stopping will be determined by
+                ‘Pipeline.warm_start’ or ‘Pipeline.partial_fit’ capabilities, which are by default
+                not supported by standard SKlearn. Defaults to True.
+            stopper : ray.tune.stopper.Stopper
+                Stopper objects passed to tune.run().
+            time_budget_s : |float|datetime.timedelta
+                Global time budget in seconds after which all trials are stopped. Can also be a
+                datetime.timedelta object.
+            mode : str
+                One of {min, max}. Determines whether objective is minimizing or maximizing the
+                metric attribute. Defaults to “max”.
+            search_kwargs : dict
+                Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
+
+            """
+
+            self.feature_selector.measure_of_accuracy = measure_of_accuracy
+            self.feature_selector.verbose = verbose
+            self.feature_selector.early_stopping = early_stopping
+            self.feature_selector.scoring = scoring
+            self.feature_selector.n_jobs = n_jobs
+            self.feature_selector.cv = cv
+            self.feature_selector.n_trials = n_trials
+            self.feature_selector.refit = refit
+            self.feature_selector.error_score = error_score
+            self.feature_selector.return_train_score = return_train_score
+            self.feature_selector.local_dir = local_dir
+            self.feature_selector.name = name
+            self.feature_selector.max_iters = max_iters
+            self.feature_selector.search_optimization = search_optimization
+            self.feature_selector.use_gpu = use_gpu
+            self.feature_selector.loggers = loggers
+            self.feature_selector.pipeline_auto_early_stop = pipeline_auto_early_stop
+            self.feature_selector.stopper = stopper
+            self.feature_selector.time_budget_s = time_budget_s
+            self.feature_selector.mode = mode
+            self.feature_selector.search_kwargs = search_kwargs
+
+            return self.feature_selector
+
+        
         def get_feature_selector_instance(self):
             """Retrun an object of feature selection object"""
             return self.feature_selector.get_feature_selector_instance()

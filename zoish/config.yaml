@@ -13,7 +13,7 @@ handlers:
     stream: ext://sys.stdout
   file_handler:
     class: logging.FileHandler
-    filename: zoish/logs/zoish.log
+    filename: zoish.log
     formatter: extended
     level: INFO
  
