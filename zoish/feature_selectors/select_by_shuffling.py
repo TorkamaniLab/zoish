@@ -751,10 +751,8 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             self.feature_object.fit(X, y)
             # Get list  of each feature to drop
             feature_list_to_drop = self.feature_object.features_to_drop_
-            print(feature_list_to_drop)
             # Get the performance drift of each feature
             feature_dict_drift = self.feature_object.performance_drifts_
-            print(feature_dict_drift)
             # Calculate the dict of features to remain (substract based on keys)
             feature_dict = {
                 k: v
@@ -762,9 +760,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
                 if k not in feature_list_to_drop
             }
             col_names = feature_dict.keys()
-            print(col_names)
         self.importance_df = pd.DataFrame([col_names, feature_dict.values()]).T
-        print(self.importance_df)
         self.importance_df.columns = ["column_name", "feature_importance"]
         # check if instance of importance_df is a list
         # for multi-class  values are show in a list
@@ -1326,10 +1322,10 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
                 path_to_save_plot=None,
             )
             if self.feature_selector is not None:
-                print(
+                logger.info(
                     f"{select_by_shuffling_plot_features.get_info_of_features_and_grades()}"
                 )
-                print(
+                logger.info(
                     "Note: list of obligatory features that must be in model-list of \
                         features to drop before any selection also has considered !"
                 )

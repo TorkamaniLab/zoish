@@ -12,6 +12,7 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByRandomSearch,
 )
 
+logger.info("Select By Shap Feature Selector has started !")
 
 class ShapPlotFeatures(PlotFeatures):
     """Class for creating plots for Shap feature selector.
