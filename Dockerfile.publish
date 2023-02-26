@@ -12,7 +12,7 @@ ENV username = $username
 ENV password = $password
 ENV gitusername = $gitusername
 ENV gitpassword = $gitpassword
-ENV POETRY_VERSION=1.2.1
+ENV POETRY_VERSION=1.3.2
 
 # Install and setup poetry
 WORKDIR /zoish
