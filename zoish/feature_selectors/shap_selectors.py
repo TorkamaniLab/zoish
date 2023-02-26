@@ -16,6 +16,7 @@ from zoish.base_classes.best_estimator_getters import (
 
 logger.info("Single Shap Feature Selector has started !")
 
+
 class ShapPlotFeatures(PlotFeatures):
     """Class for creating plots for Shap feature selector.
     Parameters
@@ -396,7 +397,7 @@ class ShapFeatureSelector(FeatureSelector):
         metric attribute. Defaults to “max”.
     search_kwargs : dict
         Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
-    
+
     model_output : str
         "raw", "probability", "log_loss", or model method name
         What output of the model should be explained? If "raw" then we explain the raw output of the
@@ -545,8 +546,7 @@ class ShapFeatureSelector(FeatureSelector):
         time_budget_s=None,
         mode=None,
         search_kwargs=None,
-        ):
-
+    ):
         self.X = X
         self.y = y
         self.verbose = verbose
@@ -580,23 +580,23 @@ class ShapFeatureSelector(FeatureSelector):
         self.n_iter = n_iter
         self.cv = cv
         # tune search and tune grid search
-        self.early_stopping= early_stopping
-        self.scoring= scoring
-        self.n_trials= n_trials
-        self.refit= refit
-        self.error_score= error_score
-        self.return_train_score= return_train_score
-        self.local_dir= local_dir
-        self.name= name
-        self.max_iters= max_iters
-        self.search_optimization= search_optimization
-        self.use_gpu= use_gpu
-        self.loggers= loggers
-        self.pipeline_auto_early_stop= pipeline_auto_early_stop
-        self.stopper= stopper
-        self.time_budget_s= time_budget_s
-        self.mode= mode
-        self.search_kwargs= search_kwargs
+        self.early_stopping = early_stopping
+        self.scoring = scoring
+        self.n_trials = n_trials
+        self.refit = refit
+        self.error_score = error_score
+        self.return_train_score = return_train_score
+        self.local_dir = local_dir
+        self.name = name
+        self.max_iters = max_iters
+        self.search_optimization = search_optimization
+        self.use_gpu = use_gpu
+        self.loggers = loggers
+        self.pipeline_auto_early_stop = pipeline_auto_early_stop
+        self.stopper = stopper
+        self.time_budget_s = time_budget_s
+        self.mode = mode
+        self.search_kwargs = search_kwargs
         # shap arguments
         self.model_output = model_output
         self.feature_perturbation = feature_perturbation
@@ -618,6 +618,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.selected_cols = None
         # feature object
         self.feature_object = None
+
     @property
     def feature_object(self):
         return self._feature_object
@@ -657,7 +658,7 @@ class ShapFeatureSelector(FeatureSelector):
     @random_state.setter
     def random_state(self, value):
         self._random_state = value
-    
+
     # tune search and tune grid search
     @property
     def early_stopping(self):
@@ -770,7 +771,7 @@ class ShapFeatureSelector(FeatureSelector):
     @mode.setter
     def mode(self, value):
         self._mode = value
-    
+
     ##
 
     @property
@@ -1111,33 +1112,33 @@ class ShapFeatureSelector(FeatureSelector):
             )
         if self.method == "tunesearch":
             self.bst = BestEstimatorFindByTuneSearch(
-                    X=self.X,
-                    y=self.y,
-                    estimator=self.estimator,
-                    estimator_params=self.estimator_params,
-                    fit_params=self.fit_params,
-                    measure_of_accuracy = self.measure_of_accuracy,
-                    early_stopping=self.early_stopping,
-                    scoring=self.scoring,
-                    n_jobs=self.n_jobs,
-                    cv=self.cv,
-                    n_trials=self.n_trials,
-                    refit=self.refit,
-                    random_state=self.random_state,
-                    verbose=self.verbose,
-                    error_score=self.error_score,
-                    return_train_score=self.return_train_score,
-                    local_dir=self.local_dir,
-                    name=self.name,
-                    max_iters=self.max_iters,
-                    search_optimization=self.search_optimization,
-                    use_gpu=self.use_gpu,
-                    loggers=self.loggers,
-                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
-                    stopper=self.stopper,
-                    time_budget_s=self.time_budget_s,
-                    mode=self.mode,
-                    search_kwargs=self.search_kwargs,
+                X=self.X,
+                y=self.y,
+                estimator=self.estimator,
+                estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
+                measure_of_accuracy=self.measure_of_accuracy,
+                early_stopping=self.early_stopping,
+                scoring=self.scoring,
+                n_jobs=self.n_jobs,
+                cv=self.cv,
+                n_trials=self.n_trials,
+                refit=self.refit,
+                random_state=self.random_state,
+                verbose=self.verbose,
+                error_score=self.error_score,
+                return_train_score=self.return_train_score,
+                local_dir=self.local_dir,
+                name=self.name,
+                max_iters=self.max_iters,
+                search_optimization=self.search_optimization,
+                use_gpu=self.use_gpu,
+                loggers=self.loggers,
+                pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                stopper=self.stopper,
+                time_budget_s=self.time_budget_s,
+                mode=self.mode,
+                search_kwargs=self.search_kwargs,
             )
         return self.bst
 
@@ -1324,7 +1325,6 @@ class ShapFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
         ):
-
             """A method to set model parameters.
 
             Parameters
@@ -1689,6 +1689,7 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_selector.verbose = verbose
             self.feature_selector.cv = cv
             return self.feature_selector
+
         def set_randomsearchcv_params(
             self,
             measure_of_accuracy,
@@ -1779,13 +1780,12 @@ class ShapFeatureSelector(FeatureSelector):
             stopper,
             time_budget_s,
             mode,
-            ):
-
+        ):
             """A method to set TuneGridSearchCV parameters.
-        
+
             Parameters
             ----------
-            
+
             measure_of_accuracy : object of type make_scorer
                 see documentation in
                 https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
@@ -1871,7 +1871,7 @@ class ShapFeatureSelector(FeatureSelector):
                 metric attribute. Defaults to “max”.
 
             """
-            
+
             self.feature_selector.measure_of_accuracy = measure_of_accuracy
             self.feature_selector.verbose = verbose
             self.feature_selector.early_stopping = early_stopping
@@ -1880,7 +1880,7 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_selector.cv = cv
             self.feature_selector.refit = refit
             self.feature_selector.error_score = error_score
-            self.feature_selector.return_train_score=return_train_score
+            self.feature_selector.return_train_score = return_train_score
             self.feature_selector.local_dir = local_dir
             self.feature_selector.name = name
             self.feature_selector.max_iters = max_iters
@@ -1891,9 +1891,8 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_selector.time_budget_s = time_budget_s
             self.feature_selector.mode = mode
 
-
             return self.feature_selector
-    
+
         def set_tunesearchcv_params(
             self,
             measure_of_accuracy,
@@ -1917,10 +1916,9 @@ class ShapFeatureSelector(FeatureSelector):
             time_budget_s,
             mode,
             search_kwargs,
-            ):
-
+        ):
             """A method to set TuneSearchCV parameters.
-        
+
             Parameters
             ----------
             measure_of_accuracy : object of type make_scorer
@@ -1963,7 +1961,7 @@ class ShapFeatureSelector(FeatureSelector):
                 refit is set and all of them will be determined w.r.t this specific scorer.
                 If refit not needed, set to False. See scoring parameter to know more about multiple
                 metric evaluation. Defaults to True.
-            
+
             verbose : int
                 Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
                 Defaults to 0.
@@ -2050,7 +2048,6 @@ class ShapFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
-        
         def get_feature_selector_instance(self):
             """Retrun an object of feature selection object"""
             return self.feature_selector.get_feature_selector_instance()
@@ -2060,7 +2057,6 @@ class ShapFeatureSelector(FeatureSelector):
             path_to_save_plot,
             type_of_plot="summary_plot",
         ):
-
             """A method that uses ShapPlotFeatures to plot different Shap plots.
             Parameters
             ----------

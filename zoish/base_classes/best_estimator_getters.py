@@ -518,7 +518,6 @@ class BestEstimatorFindByGridSearch(BestEstimatorGetterStrategy):
         self._bst = value
 
     def best_estimator_getter(self):
-
         """
         Return the Best Estimator instance based on GridSearchCV.
 
@@ -681,7 +680,6 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
         n_iter,
         cv,
     ):
-
         self.X = X
         self.y = y
         self.estimator = estimator
@@ -782,7 +780,6 @@ class BestEstimatorFindByRandomSearch(BestEstimatorGetterStrategy):
         self._bst = value
 
     def best_estimator_getter(self):
-
         """
         Return a Best Estimator instance based on Random Search.
 
@@ -952,7 +949,6 @@ class BestEstimatorFindByTuneGridSearch(BestEstimatorGetterStrategy):
         to create a new instance of this class.
         """
 
-        
         self.X = X
         self.y = y
         self.estimator = estimator
@@ -1161,7 +1157,6 @@ class BestEstimatorFindByTuneGridSearch(BestEstimatorGetterStrategy):
     def mode(self, value):
         self._mode = value
 
-
     @property
     def bst(self):
         return self._bst
@@ -1171,7 +1166,6 @@ class BestEstimatorFindByTuneGridSearch(BestEstimatorGetterStrategy):
         self._bst = value
 
     def best_estimator_getter(self):
-
         """
         Return a Best Estimator instance based on tune grid search.
 
@@ -1625,7 +1619,6 @@ class BestEstimatorFindByTuneSearch(BestEstimatorGetterStrategy):
         self._bst = value
 
     def best_estimator_getter(self):
-
         """
         Return a Best Estimator instance based on tune search.
 
@@ -1637,7 +1630,7 @@ class BestEstimatorFindByTuneSearch(BestEstimatorGetterStrategy):
             estimator=self.estimator,
             estimator_params=self.estimator_params,
             fit_params=self.fit_params,
-            measure_of_accuracy = self.measure_of_accuracy,
+            measure_of_accuracy=self.measure_of_accuracy,
             early_stopping=self.early_stopping,
             scoring=self.scoring,
             n_jobs=self.n_jobs,

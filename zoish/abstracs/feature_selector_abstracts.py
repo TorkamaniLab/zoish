@@ -7,7 +7,6 @@ class FeatureSelector(BaseEstimator, TransformerMixin):
     """Base class for creating feature selector."""
 
     def __init__(self, *args, **kwargs):
-
         """
         Class initalizer
         """
@@ -42,7 +41,6 @@ class BestEstimatorGetterStrategy(metaclass=ABCMeta):
     """Base class for creating feature selector."""
 
     def __init__(self, *args, **kwargs):
-
         """
         Class initalizer
         """
@@ -60,7 +58,6 @@ class PlotFeatures(metaclass=ABCMeta):
     """Base class for creating plots for feature selector."""
 
     def __init__(self, *args, **kwargs):
-
         """
         Class initalizer
         """

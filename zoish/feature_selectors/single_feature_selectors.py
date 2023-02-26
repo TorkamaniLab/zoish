@@ -317,7 +317,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         metric attribute. Defaults to “max”.
     search_kwargs : dict
         Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
-    
+
     n_iter : int
          Only it means full in Random Search. It is several parameter
          settings that are sampled. n_iter trades off runtime vs. quality of the solution.
@@ -464,23 +464,23 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
         self.feature_names = feature_names
         self.scoring = scoring
         # tune search and tune grid search
-        self.early_stopping= early_stopping
-        self.scoring= scoring
-        self.n_trials= n_trials
-        self.refit= refit
-        self.error_score= error_score
-        self.return_train_score= return_train_score
-        self.local_dir= local_dir
-        self.name= name
-        self.max_iters= max_iters
-        self.search_optimization= search_optimization
-        self.use_gpu= use_gpu
-        self.loggers= loggers
-        self.pipeline_auto_early_stop= pipeline_auto_early_stop
-        self.stopper= stopper
-        self.time_budget_s= time_budget_s
-        self.mode= mode
-        self.search_kwargs= search_kwargs
+        self.early_stopping = early_stopping
+        self.scoring = scoring
+        self.n_trials = n_trials
+        self.refit = refit
+        self.error_score = error_score
+        self.return_train_score = return_train_score
+        self.local_dir = local_dir
+        self.name = name
+        self.max_iters = max_iters
+        self.search_optimization = search_optimization
+        self.use_gpu = use_gpu
+        self.loggers = loggers
+        self.pipeline_auto_early_stop = pipeline_auto_early_stop
+        self.stopper = stopper
+        self.time_budget_s = time_budget_s
+        self.mode = mode
+        self.search_kwargs = search_kwargs
         # independent params
         self.list_of_selected_features = None
         self.bst = None
@@ -554,7 +554,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     @random_state.setter
     def random_state(self, value):
         self._random_state = value
-    
+
     # tune search and tune grid search
     @property
     def early_stopping(self):
@@ -667,7 +667,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
     @mode.setter
     def mode(self, value):
         self._mode = value
-    
+
     ##
     @property
     def estimator(self):
@@ -951,33 +951,33 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             )
         if self.method == "tunesearch":
             self.bst = BestEstimatorFindByTuneSearch(
-                    X=self.X,
-                    y=self.y,
-                    estimator=self.estimator,
-                    estimator_params=self.estimator_params,
-                    fit_params=self.fit_params,
-                    measure_of_accuracy = self.measure_of_accuracy,
-                    early_stopping=self.early_stopping,
-                    scoring=self.scoring,
-                    n_jobs=self.n_jobs,
-                    cv=self.cv,
-                    n_trials=self.n_trials,
-                    refit=self.refit,
-                    random_state=self.random_state,
-                    verbose=self.verbose,
-                    error_score=self.error_score,
-                    return_train_score=self.return_train_score,
-                    local_dir=self.local_dir,
-                    name=self.name,
-                    max_iters=self.max_iters,
-                    search_optimization=self.search_optimization,
-                    use_gpu=self.use_gpu,
-                    loggers=self.loggers,
-                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
-                    stopper=self.stopper,
-                    time_budget_s=self.time_budget_s,
-                    mode=self.mode,
-                    search_kwargs=self.search_kwargs,
+                X=self.X,
+                y=self.y,
+                estimator=self.estimator,
+                estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
+                measure_of_accuracy=self.measure_of_accuracy,
+                early_stopping=self.early_stopping,
+                scoring=self.scoring,
+                n_jobs=self.n_jobs,
+                cv=self.cv,
+                n_trials=self.n_trials,
+                refit=self.refit,
+                random_state=self.random_state,
+                verbose=self.verbose,
+                error_score=self.error_score,
+                return_train_score=self.return_train_score,
+                local_dir=self.local_dir,
+                name=self.name,
+                max_iters=self.max_iters,
+                search_optimization=self.search_optimization,
+                use_gpu=self.use_gpu,
+                loggers=self.loggers,
+                pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                stopper=self.stopper,
+                time_budget_s=self.time_budget_s,
+                mode=self.mode,
+                search_kwargs=self.search_kwargs,
             )
 
         return self.bst
@@ -1147,7 +1147,6 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
         ):
-
             """A method to set model parameters.
 
             Parameters
@@ -1563,13 +1562,12 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             stopper,
             time_budget_s,
             mode,
-            ):
-
+        ):
             """A method to set TuneGridSearchCV parameters.
-        
+
             Parameters
             ----------
-            
+
             measure_of_accuracy : object of type make_scorer
                 see documentation in
                 https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
@@ -1655,7 +1653,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 metric attribute. Defaults to “max”.
 
             """
-            
+
             self.feature_selector.measure_of_accuracy = measure_of_accuracy
             self.feature_selector.verbose = verbose
             self.feature_selector.early_stopping = early_stopping
@@ -1664,7 +1662,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             self.feature_selector.cv = cv
             self.feature_selector.refit = refit
             self.feature_selector.error_score = error_score
-            self.feature_selector.return_train_score=return_train_score
+            self.feature_selector.return_train_score = return_train_score
             self.feature_selector.local_dir = local_dir
             self.feature_selector.name = name
             self.feature_selector.max_iters = max_iters
@@ -1675,9 +1673,8 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             self.feature_selector.time_budget_s = time_budget_s
             self.feature_selector.mode = mode
 
-
             return self.feature_selector
-    
+
         def set_tunesearchcv_params(
             self,
             measure_of_accuracy,
@@ -1701,10 +1698,9 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             time_budget_s,
             mode,
             search_kwargs,
-            ):
-
+        ):
             """A method to set TuneSearchCV parameters.
-        
+
             Parameters
             ----------
             measure_of_accuracy : object of type make_scorer
@@ -1747,7 +1743,7 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
                 refit is set and all of them will be determined w.r.t this specific scorer.
                 If refit not needed, set to False. See scoring parameter to know more about multiple
                 metric evaluation. Defaults to True.
-            
+
             verbose : int
                 Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
                 Defaults to 0.
@@ -1834,7 +1830,6 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
-        
         def get_feature_selector_instance(self):
             """Retrun an object of feature selection object"""
             return self.feature_selector.get_feature_selector_instance()
@@ -1843,7 +1838,6 @@ class SingleFeaturePerformanceFeatureSelector(FeatureSelector):
             self,
             path_to_save_plot,
         ):
-
             """A method that uses SingleFeaturePerformancePlotFeatures to
             plot feature importance.
 

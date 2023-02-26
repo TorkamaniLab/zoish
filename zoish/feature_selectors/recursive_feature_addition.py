@@ -11,7 +11,6 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByRandomSearch,
     BestEstimatorFindByTuneGridSearch,
     BestEstimatorFindByTuneSearch,
-
 )
 
 logger.info("Recursive Feature Addition Feature Selector has started !")
@@ -167,52 +166,52 @@ class RecursiveFeatureAdditionFeatureSelector(FeatureSelector):
         For example, it is a good idea to exclude ``id`` and ``targets`` or ``class labels. ``
         from feature space before selection starts.
     measure_of_accuracy : str
-                Measurement of performance for classification and
-                regression estimator during hyperparameter optimization while
-                estimating best estimator.
-                Classification-supported measurements are :
-                "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
-                "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
-                "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
-                "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
-                "zero_one_loss"
-                # custom
-                "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
-                 "precision_recall_curve"
-                "precision_recall_fscore_support".
-                Regression Classification-supported measurements are:
-                "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
-                "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
-                "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
-                "tn", "tp", "tn_score" ,"tp_score".
-                Examples of use:
-                "f1_plus_tn(y_true, y_pred)"
-                "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
-                "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
-                make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
-                and so on. It will be used by the lohrasb package. Check this:
-                https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
-                and
-                https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
-            verbose: int
-                Controls the verbosity across all objects: the higher, the more messages.
-            n_jobs: int
-                The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
-                ``-1`` means using all processors. (default -1)
-            cv: int
-                cross-validation generator or an iterable.
-                Determines the cross-validation splitting strategy. Possible inputs
-                for cv are: None, to use the default 5-fold cross-validation,
-                int, to specify the number of folds in a (Stratified)KFold,
-                CV splitter, An iterable yielding (train, test) splits
-                as arrays of indices. For int/None inputs, if the estimator
-                is a classifier, and y is either binary or multiclass,
-                StratifiedKFold is used. In all other cases, Fold is used.
-                These splitters are instantiated with shuffle=False, so the splits
-                will be the same across calls. It is only used when the
-                hyper_parameter_optimization_method
-                is grid or random.
+        Measurement of performance for classification and
+        regression estimator during hyperparameter optimization while
+        estimating best estimator.
+        Classification-supported measurements are :
+        "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
+        "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
+        "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
+        "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
+        "zero_one_loss"
+        # custom
+        "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1",
+            "precision_recall_curve"
+        "precision_recall_fscore_support".
+        Regression Classification-supported measurements are:
+        "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
+        "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
+        "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
+        "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+        "tn", "tp", "tn_score" ,"tp_score".
+        Examples of use:
+        "f1_plus_tn(y_true, y_pred)"
+        "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
+        "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
+        make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
+        and so on. It will be used by the lohrasb package. Check this:
+        https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
+        and
+        https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
+    verbose: int
+        Controls the verbosity across all objects: the higher, the more messages.
+    n_jobs: int
+        The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
+        ``-1`` means using all processors. (default -1)
+    cv: int
+        cross-validation generator or an iterable.
+        Determines the cross-validation splitting strategy. Possible inputs
+        for cv are: None, to use the default 5-fold cross-validation,
+        int, to specify the number of folds in a (Stratified)KFold,
+        CV splitter, An iterable yielding (train, test) splits
+        as arrays of indices. For int/None inputs, if the estimator
+        is a classifier, and y is either binary or multiclass,
+        StratifiedKFold is used. In all other cases, Fold is used.
+        These splitters are instantiated with shuffle=False, so the splits
+        will be the same across calls. It is only used when the
+        hyper_parameter_optimization_method
+        is grid or random.
 
     n_jobs: int
         The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
@@ -263,19 +262,7 @@ class RecursiveFeatureAdditionFeatureSelector(FeatureSelector):
     n_iter : int
          Only it means full in Random Search. It is several parameter
          settings that are sampled. n_iter trades off runtime vs. quality of the solution.
-    cv: int
-        cross-validation generator or an iterable.
-        Determines the cross-validation splitting strategy. Possible inputs
-        for cv are: None, to use the default 5-fold cross-validation,
-        int, to specify the number of folds in a (Stratified)KFold,
-        CV splitter, An iterable yielding (train, test) splits
-        as arrays of indices. For int/None inputs, if the estimator
-        is a classifier, and y is either binary or multiclass,
-        StratifiedKFold is used. In all other cases, Fold is used.
-        These splitters are instantiated with shuffle=False, so the splits
-        will be the same across calls. It is only used when hyper_parameter_optimization_method
-        is grid or random.
-error_score : 'raise' or int or float
+    error_score : 'raise' or int or float
         Value to assign to the score if an error occurs in estimator fitting. If set to ‘raise’,
         the error is raised. If a numeric value is given, FitFailedWarning is raised. This parameter
         does not affect the refit step, which will always raise the error. Defaults to np.nan.
@@ -461,23 +448,23 @@ error_score : 'raise' or int or float
         self.feature_names = feature_names
         self.scoring = scoring
         # tune search and tune grid search
-        self.early_stopping= early_stopping
-        self.scoring= scoring
-        self.n_trials= n_trials
-        self.refit= refit
-        self.error_score= error_score
-        self.return_train_score= return_train_score
-        self.local_dir= local_dir
-        self.name= name
-        self.max_iters= max_iters
-        self.search_optimization= search_optimization
-        self.use_gpu= use_gpu
-        self.loggers= loggers
-        self.pipeline_auto_early_stop= pipeline_auto_early_stop
-        self.stopper= stopper
-        self.time_budget_s= time_budget_s
-        self.mode= mode
-        self.search_kwargs= search_kwargs
+        self.early_stopping = early_stopping
+        self.scoring = scoring
+        self.n_trials = n_trials
+        self.refit = refit
+        self.error_score = error_score
+        self.return_train_score = return_train_score
+        self.local_dir = local_dir
+        self.name = name
+        self.max_iters = max_iters
+        self.search_optimization = search_optimization
+        self.use_gpu = use_gpu
+        self.loggers = loggers
+        self.pipeline_auto_early_stop = pipeline_auto_early_stop
+        self.stopper = stopper
+        self.time_budget_s = time_budget_s
+        self.mode = mode
+        self.search_kwargs = search_kwargs
         # independent params
         self.list_of_selected_features = None
         self.bst = None
@@ -552,7 +539,7 @@ error_score : 'raise' or int or float
     def random_state(self, value):
         self._random_state = value
 
-# tune search and tune grid search
+    # tune search and tune grid search
     @property
     def early_stopping(self):
         return self._early_stopping
@@ -664,7 +651,7 @@ error_score : 'raise' or int or float
     @mode.setter
     def mode(self, value):
         self._mode = value
-    
+
     ##
 
     @property
@@ -950,33 +937,33 @@ error_score : 'raise' or int or float
             )
         if self.method == "tunesearch":
             self.bst = BestEstimatorFindByTuneSearch(
-                    X=self.X,
-                    y=self.y,
-                    estimator=self.estimator,
-                    estimator_params=self.estimator_params,
-                    fit_params=self.fit_params,
-                    measure_of_accuracy = self.measure_of_accuracy,
-                    early_stopping=self.early_stopping,
-                    scoring=self.scoring,
-                    n_jobs=self.n_jobs,
-                    cv=self.cv,
-                    n_trials=self.n_trials,
-                    refit=self.refit,
-                    random_state=self.random_state,
-                    verbose=self.verbose,
-                    error_score=self.error_score,
-                    return_train_score=self.return_train_score,
-                    local_dir=self.local_dir,
-                    name=self.name,
-                    max_iters=self.max_iters,
-                    search_optimization=self.search_optimization,
-                    use_gpu=self.use_gpu,
-                    loggers=self.loggers,
-                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
-                    stopper=self.stopper,
-                    time_budget_s=self.time_budget_s,
-                    mode=self.mode,
-                    search_kwargs=self.search_kwargs,
+                X=self.X,
+                y=self.y,
+                estimator=self.estimator,
+                estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
+                measure_of_accuracy=self.measure_of_accuracy,
+                early_stopping=self.early_stopping,
+                scoring=self.scoring,
+                n_jobs=self.n_jobs,
+                cv=self.cv,
+                n_trials=self.n_trials,
+                refit=self.refit,
+                random_state=self.random_state,
+                verbose=self.verbose,
+                error_score=self.error_score,
+                return_train_score=self.return_train_score,
+                local_dir=self.local_dir,
+                name=self.name,
+                max_iters=self.max_iters,
+                search_optimization=self.search_optimization,
+                use_gpu=self.use_gpu,
+                loggers=self.loggers,
+                pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                stopper=self.stopper,
+                time_budget_s=self.time_budget_s,
+                mode=self.mode,
+                search_kwargs=self.search_kwargs,
             )
 
         return self.bst
@@ -1158,7 +1145,6 @@ error_score : 'raise' or int or float
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
         ):
-
             """A method to set model parameters.
 
             Parameters
@@ -1551,7 +1537,6 @@ error_score : 'raise' or int or float
 
             return self.feature_selector
 
-
         def set_tunegridsearchcv_params(
             self,
             measure_of_accuracy,
@@ -1572,13 +1557,12 @@ error_score : 'raise' or int or float
             stopper,
             time_budget_s,
             mode,
-            ):
-
+        ):
             """A method to set TuneGridSearchCV parameters.
-        
+
             Parameters
             ----------
-            
+
             measure_of_accuracy : object of type make_scorer
                 see documentation in
                 https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
@@ -1664,7 +1648,7 @@ error_score : 'raise' or int or float
                 metric attribute. Defaults to “max”.
 
             """
-            
+
             self.feature_selector.measure_of_accuracy = measure_of_accuracy
             self.feature_selector.verbose = verbose
             self.feature_selector.early_stopping = early_stopping
@@ -1673,7 +1657,7 @@ error_score : 'raise' or int or float
             self.feature_selector.cv = cv
             self.feature_selector.refit = refit
             self.feature_selector.error_score = error_score
-            self.feature_selector.return_train_score=return_train_score
+            self.feature_selector.return_train_score = return_train_score
             self.feature_selector.local_dir = local_dir
             self.feature_selector.name = name
             self.feature_selector.max_iters = max_iters
@@ -1684,9 +1668,8 @@ error_score : 'raise' or int or float
             self.feature_selector.time_budget_s = time_budget_s
             self.feature_selector.mode = mode
 
-
             return self.feature_selector
-    
+
         def set_tunesearchcv_params(
             self,
             measure_of_accuracy,
@@ -1710,10 +1693,9 @@ error_score : 'raise' or int or float
             time_budget_s,
             mode,
             search_kwargs,
-            ):
-
+        ):
             """A method to set TuneSearchCV parameters.
-        
+
             Parameters
             ----------
             measure_of_accuracy : object of type make_scorer
@@ -1756,7 +1738,7 @@ error_score : 'raise' or int or float
                 refit is set and all of them will be determined w.r.t this specific scorer.
                 If refit not needed, set to False. See scoring parameter to know more about multiple
                 metric evaluation. Defaults to True.
-            
+
             verbose : int
                 Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
                 Defaults to 0.
@@ -1843,7 +1825,6 @@ error_score : 'raise' or int or float
 
             return self.feature_selector
 
-
         def get_feature_selector_instance(self):
             """Retrun an object of feature selection object"""
             return self.feature_selector.get_feature_selector_instance()
@@ -1852,7 +1833,6 @@ error_score : 'raise' or int or float
             self,
             path_to_save_plot,
         ):
-
             """A method that uses RecursiveFeatureAdditionPlotFeatures to
             plot feature importance.
 

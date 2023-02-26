@@ -34,7 +34,7 @@ import xgboost
 import lightgbm
 import pandas as pd
 from sklearn.model_selection import train_test_split, KFold
-from sklearn.ensemble import AdaBoostClassifier,ExtraTreesClassifier
+from sklearn.ensemble import AdaBoostClassifier,ExtraTreesClassifier,RandomForestClassifier
 import optuna
 
 
@@ -316,50 +316,50 @@ def setup_factories(datasets):
             For example, it is a good idea to exclude ``id`` and ``targets`` or ``class labels. ``
             from feature space before selection starts.
         measure_of_accuracy : str
-                    Measurement of performance for classification and
-                    regression estimator during hyperparameter optimization while
-                    estimating best estimator.
-                    Classification-supported measurements are :
-                    "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
-                    "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
-                    "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
-                    "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
-                    "zero_one_loss"
-                    # custom
-                    "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
-                    "precision_recall_fscore_support".
-                    Regression Classification-supported measurements are:
-                    "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
-                    "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
-                    "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
-                    "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
-                    "tn", "tp", "tn_score" ,"tp_score".
-                    Examples of use:
-                    "f1_plus_tn(y_true, y_pred)"
-                    "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
-                    "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
-                    make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
-                    and so on. It will be used by the lohrasb package. Check this:
-                    https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
-                    and
-                    https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
-                verbose: int
-                    Controls the verbosity across all objects: the higher, the more messages.
-                n_jobs: int
-                    The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
-                    ``-1`` means using all processors. (default -1)
-                cv: int
-                    cross-validation generator or an iterable.
-                    Determines the cross-validation splitting strategy. Possible inputs
-                    for cv are: None, to use the default 5-fold cross-validation,
-                    int, to specify the number of folds in a (Stratified)KFold,
-                    CV splitter, An iterable yielding (train, test) splits
-                    as arrays of indices. For int/None inputs, if the estimator
-                    is a classifier, and y is either binary or multiclass,
-                    StratifiedKFold is used. In all other cases, Fold is used.
-                    These splitters are instantiated with shuffle=False, so the splits
-                    will be the same across calls. It is only used when the hyper_parameter_optimization_method
-                    is grid or random.
+            Measurement of performance for classification and
+            regression estimator during hyperparameter optimization while
+            estimating best estimator.
+            Classification-supported measurements are :
+            "accuracy_score", "auc", "precision_recall_curve","balanced_accuracy_score",
+            "cohen_kappa_score","dcg_score","det_curve", "f1_score", "fbeta_score",
+            "hamming_loss","fbeta_score", "jaccard_score", "matthews_corrcoef","ndcg_score",
+            "precision_score", "recall_score", "roc_auc_score", "roc_curve", "top_k_accuracy_score",
+            "zero_one_loss"
+            # custom
+            "f1_plus_tp", "f1_plus_tn", "specificity", "roc_plus_f1", "auc_plus_f1", "precision_recall_curve"
+            "precision_recall_fscore_support".
+            Regression Classification-supported measurements are:
+            "explained_variance_score", "max_error","mean_absolute_error","mean_squared_log_error",
+            "mean_absolute_percentage_error","mean_squared_log_error","median_absolute_error",
+            "mean_absolute_percentage_error","r2_score","mean_poisson_deviance","mean_gamma_deviance",
+            "mean_tweedie_deviance","d2_tweedie_score","mean_pinball_loss","d2_pinball_score", "d2_absolute_error_score",
+            "tn", "tp", "tn_score" ,"tp_score".
+            Examples of use:
+            "f1_plus_tn(y_true, y_pred)"
+            "f1_score(y_true, y_pred, average='weighted')" (for Optuna)
+            "mean_poisson_deviance(y_true, y_pred)" (for Optuna)
+            make_scorer(f1_score, greater_is_better=True) for GridSearchCV or RandomizedSearchCV
+            and so on. It will be used by the lohrasb package. Check this:
+            https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb
+            and
+            https://github.com/drhosseinjavedani/lohrasb/tree/main/lohrasb/examples
+        verbose: int
+            Controls the verbosity across all objects: the higher, the more messages.
+        n_jobs: int
+            The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
+            ``-1`` means using all processors. (default -1)
+        cv: int
+            cross-validation generator or an iterable.
+            Determines the cross-validation splitting strategy. Possible inputs
+            for cv are: None, to use the default 5-fold cross-validation,
+            int, to specify the number of folds in a (Stratified)KFold,
+            CV splitter, An iterable yielding (train, test) splits
+            as arrays of indices. For int/None inputs, if the estimator
+            is a classifier, and y is either binary or multiclass,
+            StratifiedKFold is used. In all other cases, Fold is used.
+            These splitters are instantiated with shuffle=False, so the splits
+            will be the same across calls. It is only used when the hyper_parameter_optimization_method
+            is grid or random.
 
         n_jobs: int
             The number of jobs to run in parallel for Grid Search, Random Search, and Optional.
@@ -479,18 +479,78 @@ def setup_factories(datasets):
         n_iter : int
                 Only it means full in Random Search. It is several parameter
                 settings that are sampled. n_iter trades off runtime vs. quality of the solution.
-        cv: int
-            cross-validation generator or an iterable.
-            Determines the cross-validation splitting strategy. Possible inputs
-            for cv are: None, to use the default 5-fold cross-validation,
-            int, to specify the number of folds in a (Stratified)KFold,
-            CV splitter, An iterable yielding (train, test) splits
-            as arrays of indices. For int/None inputs, if the estimator
-            is a classifier, and y is either binary or multiclass,
-            StratifiedKFold is used. In all other cases, Fold is used.
-            These splitters are instantiated with shuffle=False, so the splits
-            will be the same across calls. It is only used when hyper_parameter_optimization_method
-            is grid or random.
+        error_score : 'raise' or int or float
+            Value to assign to the score if an error occurs in estimator fitting. If set to ‘raise’,
+            the error is raised. If a numeric value is given, FitFailedWarning is raised. This parameter
+            does not affect the refit step, which will always raise the error. Defaults to np.nan.
+        return_train_score :bool
+            If False, the cv_results_ attribute will not include training scores. Defaults to False.
+            Computing training scores is used to get insights on how different parameter settings
+            impact the overfitting/underfitting trade-off. However computing the scores on the training
+            set can be computationally expensive and is not strictly required to select the parameters
+            that yield the best generalization performance.
+        local_dir : str
+            A string that defines where checkpoints will be stored. Defaults to “~/ray_results”.
+        name : str
+            Name of experiment (for Ray Tune)
+        max_iters : int
+            Indicates the maximum number of epochs to run for each hyperparameter configuration sampled.
+            This parameter is used for early stopping. Defaults to 1. Depending on the classifier
+            type provided, a resource parameter (resource_param = max_iter or n_estimators)
+            will be detected. The value of resource_param will be treated as a “max resource value”,
+            and all classifiers will be initialized with max resource value // max_iters, where max_iters
+            is this defined parameter. On each epoch, resource_param (max_iter or n_estimators) is
+            incremented by max resource value // max_iters.
+        search_optimization: "hyperopt" (search_optimization ("random" or "bayesian" or "bohb" or
+        “optuna” or ray.tune.search.Searcher instance): Randomized search is invoked with
+        search_optimization set to "random" and behaves like scikit-learn’s RandomizedSearchCV.
+            Bayesian search can be invoked with several values of search_optimization.
+            "bayesian" via https://scikit-optimize.github.io/stable/
+            "bohb" via http://github.com/automl/HpBandSter
+            Tree-Parzen Estimators search is invoked with search_optimization set to "hyperopt"
+            via HyperOpt: http://hyperopt.github.io/hyperopt
+            All types of search aside from Randomized search require parent libraries to be installed.
+            Alternatively, instead of a string, a Ray Tune Searcher instance can be used, which
+            will be passed to tune.run().
+        use_gpu : bool
+            Indicates whether to use gpu for fitting. Defaults to False. If True, training will start
+            processes with the proper CUDA VISIBLE DEVICE settings set. If a Ray cluster has been initialized,
+            all available GPUs will be used.
+        loggers : list
+            A list of the names of the Tune loggers as strings to be used to log results. Possible
+            values are “tensorboard”, “csv”, “mlflow”, and “json”
+        pipeline_auto_early_stop : bool
+            Only relevant if estimator is Pipeline object and early_stopping is enabled/True. If
+            True, early stopping will be performed on the last stage of the pipeline (which must
+            support early stopping). If False, early stopping will be determined by
+            ‘Pipeline.warm_start’ or ‘Pipeline.partial_fit’ capabilities, which are by default
+            not supported by standard SKlearn. Defaults to True.
+        stopper : ray.tune.stopper.Stopper
+            Stopper objects passed to tune.run().
+        time_budget_s : |float|datetime.timedelta
+            Global time budget in seconds after which all trials are stopped. Can also be a
+            datetime.timedelta object.
+        mode : str
+            One of {min, max}. Determines whether objective is minimizing or maximizing the
+            metric attribute. Defaults to “max”.
+        search_kwargs : dict
+            Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
+        method: str
+            ``optuna`` : If this argument set to ``optuna`` class will use Optuna optimizer.
+            check this: ``https://optuna.org/``
+            ``randomsearchcv`` : If this argument set to ``RandomizedSearchCV``
+            class will use Optuna optimizer.
+            check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html``
+            ``gridsearchcv`` : If this argument set to ``GridSearchCV``
+            class will use Optuna optimizer.
+            check this: ``https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html``
+
+        scoring: str, default=’roc_auc’
+            Metric to evaluate the performance of the estimator.
+            Comes from sklearn.metrics. See the model evaluation documentation for more
+                options: https://scikit-learn.org/stable/modules/model_evaluation.html
+
+       
         Methods
         -------
         get_shap_selector_optuna():
@@ -499,33 +559,60 @@ def setup_factories(datasets):
             Return shap_feature_selector_factory using gridsearch.
         get_shap_selector_random():
             Return shap_feature_selector_factory using randomsearch.
+        get_shap_selector_tunegridsearch():
+            Return shap_feature_selector_factory using tunegridsearch.
+        get_shap_selector_tunesearch():
+            Return shap_feature_selector_factory using tunesearch.
+
         get_single_selector_optuna():
             Return single_feature_performance_feature_selector_factory using optuna.
         get_single_selector_grid():
             Return single_feature_performance_feature_selector_factory using gridsearch.
         get_single_selector_random():
             Return single_feature_performance_feature_selector_factory using randomsearch.
+        get_single_selector_tunegridsearch():
+            Return single_feature_performance_feature_selector_factory using tunegridsearch.
+        get_single_selector_tunesearch():
+            Return single_feature_performance_feature_selector_factory using tunesearch.
+        
         get_addition_selector_optuna():
             Return recursive_addition_feature_selector_factory using optuna.
         get_addition_selector_grid():
             Return recursive_addition_feature_selector_factory using gridsearch.
         get_addition_selector_random():
             Return recursive_addition_feature_selector_factory using randomsearch.
+        get_addition_selector_tunegridsearch():
+            Return recursive_addition_feature_selector_factory using tunegridsearch.
+        get_addition_selector_tunesearch():
+            Return recursive_addition_feature_selector_factory using tunesearch.
+
+        
         get_elimination_selector_optuna():
             Return recursive_elimination_feature_selector_factory using optuna.
         get_elimination_selector_grid():
             Return recursive_elimination_feature_selector_factory using gridsearch.
         get_elimination_selector_random():
             Return recursive_elimination_feature_selector_factory using randomsearch.
+        get_elimination_selector_tunegridsearch():
+            Return recursive_elimination_feature_selector_factory using tunegridsearch.
+        get_elimination_selector_tunesearch():
+            Return recursive_elimination_feature_selector_factory using tunesearch.
+
+        
         get_shuffling_selector_optuna():
             Return select_by_shuffling_selector_factory using optuna.
         get_shuffling_selector_grid():
             Return select_by_shuffling_selector_factory using gridsearch.
         get_shuffling_selector_random():
             Return select_by_shuffling_selector_factory using randomsearch.
+        get_shuffling_selector_tunegridsearch():
+            Return select_by_shuffling_selector_factory using tunegridsearch.
+        get_shuffling_selector_tunesearch():
+            Return select_by_shuffling_selector_factory using tunesearch.
+
         """
         def __init__(
-            self,
+           self,
             X=None,
             y=None,
             verbose=None,
@@ -569,6 +656,23 @@ def setup_factories(datasets):
             variables=None,
             scoring=None,
             confirm_variables=False,
+            # tune search and tune grid search
+            early_stopping=None,
+            n_trials=None,
+            refit=None,
+            error_score=None,
+            return_train_score=None,
+            local_dir=None,
+            name=None,
+            max_iters=None,
+            search_optimization=None,
+            use_gpu=None,
+            loggers=None,
+            pipeline_auto_early_stop=None,
+            stopper=None,
+            time_budget_s=None,
+            mode=None,
+            search_kwargs=None,
         ):
             self.X = X
             self.y = y
@@ -617,6 +721,24 @@ def setup_factories(datasets):
             self.variables = variables
             self.scoring = scoring
             self.confirm_variables = confirm_variables
+            # tune search and tune grid search
+            self.early_stopping= early_stopping
+            self.scoring= scoring
+            self.n_trials= n_trials
+            self.refit= refit
+            self.error_score= error_score
+            self.return_train_score= return_train_score
+            self.local_dir= local_dir
+            self.name= name
+            self.max_iters= max_iters
+            self.search_optimization= search_optimization
+            self.use_gpu= use_gpu
+            self.loggers= loggers
+            self.pipeline_auto_early_stop= pipeline_auto_early_stop
+            self.stopper= stopper
+            self.time_budget_s= time_budget_s
+            self.mode= mode
+            self.search_kwargs= search_kwargs
 
         def get_shap_selector_optuna(self):
             """Return shap_feature_selector_factory using optuna.
@@ -738,7 +860,111 @@ def setup_factories(datasets):
                 )
             )
             return shap_selector_random
-
+        
+        def get_shap_selector_tunegridsearch(self):
+            """Return shap_feature_selector_factory using shap_selector_tunegridsearch.
+            """
+            shap_selector_tunegridsearch = (
+                ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_shap_params(
+                    model_output=self.model_output,
+                    feature_perturbation=self.feature_perturbation,
+                    algorithm=self.algorithm,
+                    shap_n_jobs=self.shap_n_jobs,
+                    memory_tolerance=self.memory_tolerance,
+                    feature_names=self.feature_names,
+                    approximate=self.approximate,
+                    shortcut=self.shortcut,
+                )
+                .set_tunegridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs, 
+                    cv=self.cv ,
+                    refit=self.refit,
+                    error_score=self.error_score, 
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,        
+                 )
+            )
+            return shap_selector_tunegridsearch
+        
+        def get_shap_selector_tunesearch(self):
+            """Return shap_feature_selector_factory using shap_selector_tunesearch.
+            """
+            shap_selector_tunesearch = (
+                ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_shap_params(
+                    model_output=self.model_output,
+                    feature_perturbation=self.feature_perturbation,
+                    algorithm=self.algorithm,
+                    shap_n_jobs=self.shap_n_jobs,
+                    memory_tolerance=self.memory_tolerance,
+                    feature_names=self.feature_names,
+                    approximate=self.approximate,
+                    shortcut=self.shortcut,
+                )
+                .set_tunesearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
+                    )
+            )
+            return shap_selector_tunesearch
         def get_single_selector_optuna(self):
             """Return single_feature_performance_feature_selector_factory using optuna.
             """
@@ -847,6 +1073,103 @@ def setup_factories(datasets):
                 )
             )
             return single_selector_random
+        
+        def get_single_selector_tunegridsearch(self):
+            """Return shap_feature_selector_factory using single_selector_tunegridsearch.
+            """
+            single_selector_tunegridsearch = (
+                SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_single_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunegridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs, 
+                    cv=self.cv ,
+                    refit=self.refit,
+                    error_score=self.error_score, 
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,        
+                 )
+            )
+            return single_selector_tunegridsearch
+        
+        def get_single_selector_tunesearch(self):
+            """Return shap_feature_selector_factory using single_selector_tunesearch.
+            """
+            single_selector_tunesearch = (
+                SingleFeaturePerformanceFeatureSelector.single_feature_performance_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    n_features=self.n_features,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_single_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunesearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
+                    )
+            )
+            return single_selector_tunesearch
 
         def get_addition_selector_optuna(self):
             """Return recursive_addition_feature_selector_factory using optuna.
@@ -920,6 +1243,101 @@ def setup_factories(datasets):
                 )
             )
             return addition_selector_grid
+        
+        def get_addition_selector_tunegridsearch(self):
+            """Return shap_feature_selector_factory using single_addition_tunegridsearch.
+            """
+            addition_selector_tunegridsearch = (
+                RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_addition_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunegridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs, 
+                    cv=self.cv ,
+                    refit=self.refit,
+                    error_score=self.error_score, 
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,        
+                 )
+            )
+            return addition_selector_tunegridsearch
+        
+        def get_addition_selector_tunesearch(self):
+            """Return shap_feature_selector_factory using addition_selector_tunesearch.
+            """
+            addition_selector_tunesearch = (
+                RecursiveFeatureAdditionFeatureSelector.recursive_addition_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_addition_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunesearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
+                    )
+            )
+            return addition_selector_tunesearch
 
         def get_addition_selector_random(self):
             """Return recursive_addition_feature_selector_factory using randomsearch.
@@ -994,7 +1412,102 @@ def setup_factories(datasets):
                 )
             )
             return elimination_selector_optuna
-
+        
+        def get_elimination_selector_tunegridsearch(self):
+            """Return shap_feature_selector_factory using elimination_selector_tunegridsearch.
+            """
+            elimination_selector_tunegridsearch = (
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_elimination_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunegridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs, 
+                    cv=self.cv ,
+                    refit=self.refit,
+                    error_score=self.error_score, 
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,        
+                 )
+            )
+            return elimination_selector_tunegridsearch
+        
+        def get_elimination_selector_tunesearch(self):
+            """Return shap_feature_selector_factory using elimination_selector_tunesearch.
+            """
+            elimination_selector_tunesearch = (
+                RecursiveFeatureEliminationFeatureSelector.recursive_elimination_feature_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_recursive_elimination_feature_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunesearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
+                    )
+            )
+            return elimination_selector_tunesearch
+        
         def get_elimination_selector_grid(self):
             """Return recursive_elimination_feature_selector_factory using gridsearch.
             """
@@ -1059,6 +1572,7 @@ def setup_factories(datasets):
                 )
             )
             return elimination_selector_random
+
 
         def get_shuffling_selector_optuna(self):
             """Return select_by_shuffling_selector_factory using optuna.
@@ -1166,6 +1680,99 @@ def setup_factories(datasets):
             )
             return shuffling_selector_random
 
+
+        def get_shuffling_selector_tunegridsearch(self):
+            """Return shap_feature_selector_factory using shuffling_selector_tunegridsearch.
+            """
+            shuffling_selector_tunegridsearch = (
+                SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                )
+                .set_select_by_shuffling_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                )
+                .set_tunegridsearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs, 
+                    cv=self.cv ,
+                    refit=self.refit,
+                    error_score=self.error_score, 
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,        
+                 )
+            )
+            return shuffling_selector_tunegridsearch
+        
+        def get_shuffling_selector_tunesearch(self):
+            """Return shap_feature_selector_factory using shuffling_selector_tunesearch.
+            """
+            shuffling_selector_tunesearch=(SelectByShufflingFeatureSelector.select_by_shuffling_selector_factory.set_model_params(
+                    X=self.X,
+                    y=self.y,
+                    verbose=self.verbose,
+                    random_state=self.random_state,
+                    estimator=self.estimator,
+                    estimator_params=self.estimator_params,
+                    fit_params=self.fit_params,
+                    method=self.method,
+                    threshold=self.threshold,
+                    list_of_obligatory_features_that_must_be_in_model=self.list_of_obligatory_features_that_must_be_in_model,
+                    list_of_features_to_drop_before_any_selection=self.list_of_features_to_drop_before_any_selection,
+                ).set_select_by_shuffling_params(
+                    cv=self.cv,
+                    variables=self.variables,
+                    scoring=self.scoring,
+                    confirm_variables=self.confirm_variables,
+                ).set_tunesearchcv_params(
+                    measure_of_accuracy=self.measure_of_accuracy,
+                    verbose=self.verbose,
+                    early_stopping=self.early_stopping,
+                    scoring=self.scoring,
+                    n_jobs=self.n_jobs,
+                    cv=self.cv,
+                    n_trials=self.n_trials,
+                    refit=self.refit,
+                    error_score=self.error_score,
+                    return_train_score=self.return_train_score,
+                    local_dir=self.local_dir,
+                    name=self.name,
+                    max_iters=self.max_iters,
+                    search_optimization=self.search_optimization,
+                    use_gpu=self.use_gpu,
+                    loggers=self.loggers,
+                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                    stopper=self.stopper,
+                    time_budget_s=self.time_budget_s,
+                    mode=self.mode,
+                    search_kwargs=self.search_kwargs,
+                    )
+            )
+            return shuffling_selector_tunesearch
+
     def case_creator(
         scoring,
         threshold,
@@ -1259,7 +1866,7 @@ def setup_factories(datasets):
         return FeatureSelectorFactories(
             X=datasets[ds_num].X_train,
             y=datasets[ds_num].y_train,
-            verbose=10,
+            verbose=1,
             random_state=0,
             estimator=estimator,
             estimator_params=estimator_params,
@@ -1307,193 +1914,115 @@ def setup_factories(datasets):
             scoring=scoring,
             variables=None,
             confirm_variables=False,
+            # tunesearch and tunegridsearch
+            early_stopping=None,
+            n_trials=10,
+            refit=True,
+            error_score='raise',
+            return_train_score=False,
+            local_dir='~/ray_results',
+            name=None,
+            max_iters=1,
+            search_optimization='optuna',
+            use_gpu=False,
+            loggers=None,
+            pipeline_auto_early_stop=True,
+            stopper=None,
+            time_budget_s=None,
+            mode=None,
+            search_kwargs=None,
         )
 
 
-    # a test case of type adult classification optimization by optuna
-    adult_cls_optuna_1 = case_creator(
-        n_features=5,
-        threshold=None,
-        scoring="roc_auc",
-        dataset="adult",
-        estimator=xgboost.XGBClassifier(),
+    # a test case of type audiology classification optimization by tunesearch
+    audiology_cls_tunesearch_1 = case_creator(
+        threshold=0.0005,
+        scoring=None,
+        dataset="audiology",
+        estimator=RandomForestClassifier(),
         estimator_params={
             "max_depth": [4, 5],
             "n_estimators": [50, 100],
-            "learning_rate": [0.01, 0.1],
         },
         fit_params={
             "sample_weight": None,
         },
-        method="optuna",
-        measure_of_accuracy="f1_score(y_true, y_pred)",
-    )
-
-    # a test case of type adult classification optimization by random search
-    adult_cls_random_1 = case_creator(
-        n_features=3,
-        threshold=0.21,
-        scoring="f1",
-        dataset="adult",
-        estimator=xgboost.XGBClassifier(),
-        estimator_params={
-            "max_depth": [4, 10],
-        },
-        fit_params={"sample_weight": None},
-        method="randomsearch",
+        method="tunesearch",
         measure_of_accuracy=make_scorer(
             f1_score, greater_is_better=True, average="macro"
         ),
     )
 
-    # a test case of type adult classification optimization by grid search
-    adult_cls_grid_1 = case_creator(
-        n_features=3,
-        threshold=0.2,
-        scoring="f1",
-        dataset="adult",
-        estimator=lightgbm.LGBMClassifier(),
-        estimator_params={
-            "max_depth": [4, 5],
-        },
-        fit_params={"sample_weight": None, "init_score": None},
-        method="gridsearch",
-        measure_of_accuracy=make_scorer(roc_auc_score, greater_is_better=True),
-    )
 
-    # a test case of type adult classification optimization by optuna
-    adult_cls_optuna_2 = case_creator(
-        threshold=0.005,
-        scoring="f1",
-        dataset="adult",
+    # a test case of type audiology classification optimization by tunesearch
+    audiology_cls_tunesearch_2 = case_creator(
+        threshold=0.0005,
+        scoring='f1_macro',
+        dataset="audiology",
         estimator=AdaBoostClassifier(),
         estimator_params={
             "n_estimators": [100,200],
         },
         fit_params={"sample_weight": None},
-        method="optuna",
-        measure_of_accuracy="f1_score(y_true, y_pred)",
+        method="tunesearch",
+        measure_of_accuracy=None,
     )
 
-    # a test case of type adult classification optimization by random search
-    adult_cls_random_2 = case_creator(
-        threshold=0.025,
-        scoring="roc_auc",
-        dataset="adult",
-        estimator=ExtraTreesClassifier(),
-        estimator_params={
-            "min_samples_split": [2, 3],
-            "n_estimators": [100, 1000],
-        },
-        fit_params={"sample_weight": None},
-        method="randomsearch",
-        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True),
-    )
 
-    # a test case of type adult classification optimization by grid search
-    adult_cls_grid_2 = case_creator(
-        threshold=0.0005,
-        scoring="roc_auc",
-        dataset="adult",
-        estimator=xgboost.XGBClassifier(),
-        estimator_params={
-            "max_depth": [4, 5],
-            "n_estimators": [50, 100],
-            "learning_rate": [0.01, 0.1],
-        },
-        fit_params={
-            "sample_weight": None,
-        },
-        method="gridsearch",
-        measure_of_accuracy=make_scorer(f1_score, greater_is_better=True),
-    )
-
-    # adult and optuna
-    shap_adult_cls_optuna = adult_cls_optuna_1.get_shap_selector_optuna()
-    single_adult_cls_optuna = adult_cls_optuna_1.get_single_selector_optuna()
-    shuffling_adult_cls_optuna = adult_cls_optuna_2.get_shuffling_selector_optuna()
-    addition_adult_cls_optuna = adult_cls_optuna_2.get_addition_selector_optuna()
-    elimination_adult_cls_optuna = adult_cls_optuna_2.get_elimination_selector_optuna()
-
-    # adult and random
-    shap_adult_cls_random = adult_cls_random_1.get_shap_selector_random()
-    single_adult_cls_random = adult_cls_random_1.get_single_selector_random()
-    shuffling_adult_cls_random = adult_cls_random_2.get_shuffling_selector_random()
-    addition_adult_cls_random = adult_cls_random_2.get_addition_selector_random()
-    elimination_adult_cls_random = adult_cls_random_2.get_elimination_selector_random()
-
-    # adult and grid
-    shap_adult_cls_grid = adult_cls_grid_1.get_shap_selector_grid()
-    single_adult_cls_grid = adult_cls_grid_1.get_single_selector_grid()
-    shuffling_adult_cls_grid = adult_cls_grid_2.get_shuffling_selector_grid()
-    addition_adult_cls_grid = adult_cls_grid_2.get_addition_selector_grid()
-    elimination_adult_cls_grid = adult_cls_grid_2.get_elimination_selector_grid()
-
-    # A list of all cases for problem type adult
-    adult_list = [
-        shap_adult_cls_optuna,
-        single_adult_cls_optuna,
-        shuffling_adult_cls_optuna,
-        addition_adult_cls_optuna,
-        elimination_adult_cls_optuna,
-        shap_adult_cls_random,
-        single_adult_cls_random,
-        shuffling_adult_cls_random,
-        addition_adult_cls_random,
-        elimination_adult_cls_random,
-        shap_adult_cls_grid,
-        single_adult_cls_grid,
-        shuffling_adult_cls_grid,
-        addition_adult_cls_grid,
-        elimination_adult_cls_grid,
+    # adult and tunesearch
+    shap_audiology_cls_tunesearch = audiology_cls_tunesearch_1.get_shap_selector_tunesearch()
+    single_audiology_cls_tunesearch = audiology_cls_tunesearch_1.get_single_selector_tunesearch()
+    shuffling_audiology_cls_tunesearch = audiology_cls_tunesearch_2.get_shuffling_selector_tunesearch()
+    addition_audiology_cls_tunesearch = audiology_cls_tunesearch_2.get_addition_selector_tunesearch()
+    elimination_audiology_cls_tunesearch = audiology_cls_tunesearch_2.get_elimination_selector_tunesearch()
+    # A list of all cases for problem type audiology
+    audiology_list = [
+        
+        shap_audiology_cls_tunesearch,
+        single_audiology_cls_tunesearch,
+        shuffling_audiology_cls_tunesearch,
+        addition_audiology_cls_tunesearch,
+        elimination_audiology_cls_tunesearch,
     ]
-
 
     # a dictionary of cases of all three problems
     cases = {
-        "adult": adult_list,
+        "audiology": audiology_list,
     }
 
     return cases
 
 
-def test_adult(datasets, setup_factories):
+def test_audiology(datasets, setup_factories):
     """
-    A test function for all cases of adult.
+    A test function for all cases of audiology.
     """
-    for case in setup_factories["adult"]:
+    for case in setup_factories["audiology"]:
         print("####################")
         print("####################")
         print("####################")
-        print("test is related to adult and with this index:")
-        print(setup_factories["adult"].index(case))
-
+        print("test is related to audiology and with this index:")
+        print(setup_factories["audiology"].index(case))
         pipeline = Pipeline(
             [
                 # int missing values imputers
                 (
                     "intimputer",
                     MeanMedianImputer(
-                        imputation_method="median", variables=datasets[0].int_cols
+                        imputation_method="median", variables=datasets[1].int_cols
                     ),
                 ),
-                # category missing values imputers
-                ("catimputer", CategoricalImputer(variables=datasets[0].cat_cols)),
-                #
-                ("catencoder", OrdinalEncoder()),
-                # feature selection
-                ("fs", case),
-                # add any regression model from sklearn e.g., LinearRegression
-                ("logestic", LogisticRegression()),
+                ("sf", case),
+                # classification model
+                ("logistic", LogisticRegression(solver="liblinear", max_iter=100)),
             ]
         )
-
+        
         # fit pipeline
-        pipeline.fit(datasets[0].X_train, datasets[0].y_train)
+        pipeline.fit(datasets[1].X_train, datasets[1].y_train)
         # test to see if the number of selected features is more than 1
-        assert len(case.selected_cols) > 1
+        assert len(case.selected_cols) >= 1
         # predict
-        y_pred = pipeline.predict(datasets[0].X_test)
+        y_pred = pipeline.predict(datasets[1].X_test)
         # check to see performance works
-        assert f1_score(datasets[0].y_test, y_pred) > 0.30
-
+        assert f1_score(datasets[1].y_test, y_pred, average="macro") > 0.15

@@ -318,7 +318,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
         metric attribute. Defaults to “max”.
     search_kwargs : dict
         Additional arguments to pass to the SearchAlgorithms (tune.suggest) objects.
-    
+
     cv: int
         cross-validation generator or an iterable.
         Determines the cross-validation splitting strategy. Possible inputs
@@ -461,23 +461,23 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
         self.confirm_variables = confirm_variables
         self.feature_names = feature_names
         # tune search and tune grid search
-        self.early_stopping= early_stopping
-        self.scoring= scoring
-        self.n_trials= n_trials
-        self.refit= refit
-        self.error_score= error_score
-        self.return_train_score= return_train_score
-        self.local_dir= local_dir
-        self.name= name
-        self.max_iters= max_iters
-        self.search_optimization= search_optimization
-        self.use_gpu= use_gpu
-        self.loggers= loggers
-        self.pipeline_auto_early_stop= pipeline_auto_early_stop
-        self.stopper= stopper
-        self.time_budget_s= time_budget_s
-        self.mode= mode
-        self.search_kwargs= search_kwargs
+        self.early_stopping = early_stopping
+        self.scoring = scoring
+        self.n_trials = n_trials
+        self.refit = refit
+        self.error_score = error_score
+        self.return_train_score = return_train_score
+        self.local_dir = local_dir
+        self.name = name
+        self.max_iters = max_iters
+        self.search_optimization = search_optimization
+        self.use_gpu = use_gpu
+        self.loggers = loggers
+        self.pipeline_auto_early_stop = pipeline_auto_early_stop
+        self.stopper = stopper
+        self.time_budget_s = time_budget_s
+        self.mode = mode
+        self.search_kwargs = search_kwargs
         # independent params
         self.list_of_selected_features = None
         self.bst = None
@@ -551,7 +551,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
     @random_state.setter
     def random_state(self, value):
         self._random_state = value
-    
+
     # tune search and tune grid search
     @property
     def early_stopping(self):
@@ -664,7 +664,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
     @mode.setter
     def mode(self, value):
         self._mode = value
-    
+
     ##
 
     @property
@@ -949,36 +949,35 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             )
         if self.method == "tunesearch":
             self.bst = BestEstimatorFindByTuneSearch(
-                    X=self.X,
-                    y=self.y,
-                    estimator=self.estimator,
-                    estimator_params=self.estimator_params,
-                    fit_params=self.fit_params,
-                    measure_of_accuracy = self.measure_of_accuracy,
-                    early_stopping=self.early_stopping,
-                    scoring=self.scoring,
-                    n_jobs=self.n_jobs,
-                    cv=self.cv,
-                    n_trials=self.n_trials,
-                    refit=self.refit,
-                    random_state=self.random_state,
-                    verbose=self.verbose,
-                    error_score=self.error_score,
-                    return_train_score=self.return_train_score,
-                    local_dir=self.local_dir,
-                    name=self.name,
-                    max_iters=self.max_iters,
-                    search_optimization=self.search_optimization,
-                    use_gpu=self.use_gpu,
-                    loggers=self.loggers,
-                    pipeline_auto_early_stop=self.pipeline_auto_early_stop,
-                    stopper=self.stopper,
-                    time_budget_s=self.time_budget_s,
-                    mode=self.mode,
-                    search_kwargs=self.search_kwargs,
+                X=self.X,
+                y=self.y,
+                estimator=self.estimator,
+                estimator_params=self.estimator_params,
+                fit_params=self.fit_params,
+                measure_of_accuracy=self.measure_of_accuracy,
+                early_stopping=self.early_stopping,
+                scoring=self.scoring,
+                n_jobs=self.n_jobs,
+                cv=self.cv,
+                n_trials=self.n_trials,
+                refit=self.refit,
+                random_state=self.random_state,
+                verbose=self.verbose,
+                error_score=self.error_score,
+                return_train_score=self.return_train_score,
+                local_dir=self.local_dir,
+                name=self.name,
+                max_iters=self.max_iters,
+                search_optimization=self.search_optimization,
+                use_gpu=self.use_gpu,
+                loggers=self.loggers,
+                pipeline_auto_early_stop=self.pipeline_auto_early_stop,
+                stopper=self.stopper,
+                time_budget_s=self.time_budget_s,
+                mode=self.mode,
+                search_kwargs=self.search_kwargs,
             )
         return self.bst
-
 
     def fit(self, X, y, *args, **kwargs):
         """Fit the feature selection estimator by best params extracted
@@ -1154,7 +1153,6 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             list_of_obligatory_features_that_must_be_in_model,
             list_of_features_to_drop_before_any_selection,
         ):
-
             """A method to set model parameters.
 
             Parameters
@@ -1566,13 +1564,12 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             stopper,
             time_budget_s,
             mode,
-            ):
-
+        ):
             """A method to set TuneGridSearchCV parameters.
-        
+
             Parameters
             ----------
-            
+
             measure_of_accuracy : object of type make_scorer
                 see documentation in
                 https://scikit-learn.org/stable/modules/generated/sklearn.metrics.make_scorer.html
@@ -1658,7 +1655,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
                 metric attribute. Defaults to “max”.
 
             """
-            
+
             self.feature_selector.measure_of_accuracy = measure_of_accuracy
             self.feature_selector.verbose = verbose
             self.feature_selector.early_stopping = early_stopping
@@ -1667,7 +1664,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             self.feature_selector.cv = cv
             self.feature_selector.refit = refit
             self.feature_selector.error_score = error_score
-            self.feature_selector.return_train_score=return_train_score
+            self.feature_selector.return_train_score = return_train_score
             self.feature_selector.local_dir = local_dir
             self.feature_selector.name = name
             self.feature_selector.max_iters = max_iters
@@ -1678,9 +1675,8 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             self.feature_selector.time_budget_s = time_budget_s
             self.feature_selector.mode = mode
 
-
             return self.feature_selector
-    
+
         def set_tunesearchcv_params(
             self,
             measure_of_accuracy,
@@ -1704,10 +1700,9 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             time_budget_s,
             mode,
             search_kwargs,
-            ):
-
+        ):
             """A method to set TuneSearchCV parameters.
-        
+
             Parameters
             ----------
             measure_of_accuracy : object of type make_scorer
@@ -1750,7 +1745,7 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
                 refit is set and all of them will be determined w.r.t this specific scorer.
                 If refit not needed, set to False. See scoring parameter to know more about multiple
                 metric evaluation. Defaults to True.
-            
+
             verbose : int
                 Controls the verbosity: 0 = silent, 1 = only status updates, 2 = status and trial results.
                 Defaults to 0.
@@ -1837,7 +1832,6 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
 
             return self.feature_selector
 
-       
         def get_feature_selector_instance(self):
             """Retrun an object of feature selection object"""
             return self.feature_selector.get_feature_selector_instance()
@@ -1846,7 +1840,6 @@ class SelectByShufflingFeatureSelector(FeatureSelector):
             self,
             path_to_save_plot,
         ):
-
             """A method that uses SelectByShufflingPlotFeatures to
             plot feature importance.
 

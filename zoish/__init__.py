@@ -1,13 +1,13 @@
-__version__ = "2.1.0"
+__version__ = "3.0.1"
 
 import logging
 import logging.config
 import os
-from pathlib import Path, PurePath
-from .project_conf import ROOT_PROJECT
 
 import yaml
 from dotenv import load_dotenv
+
+from .project_conf import ROOT_PROJECT
 
 PATH_TO_LOG_CONF = ROOT_PROJECT / "zoish" / "config.yaml"
 # DEFAULT_LEVEL in production env
