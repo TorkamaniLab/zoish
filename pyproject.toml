@@ -39,6 +39,7 @@ xgbse = "^0.2.3"
 pycox = "^0.2.3"
 lohrasb = "^3.1.0"
 python-dotenv = "^0.21.0"
+prompt-toolkit = "^3.0.37"
 
 
 [tool.poetry.dev-dependencies]
