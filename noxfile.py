@@ -79,7 +79,7 @@ def release(session):
         "remote",
         "set-url",
         "origin",
-        f"https://{username}:{gitpassword}@github.com/drhosseinjavedani/zoish.git",
+        f"https://{username}:{gitpassword}@github.com/TorkamaniLab/zoish.git",
         external=True,
     )
     session.run("git", "branch", "temp-branch", external=True)
