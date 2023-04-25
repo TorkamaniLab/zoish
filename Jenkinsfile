@@ -64,7 +64,7 @@ pipeline {
                               usernameVariable: 'username',
                               passwordVariable: 'password',
                               ),
-                              usernamePassword(credentialsId: 'git-login-info-token	',
+                              usernamePassword(credentialsId: 'zoish-git-login-with-token	',
                               usernameVariable: 'gitusername',
                               passwordVariable: 'gitpassword',
                               )
