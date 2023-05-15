@@ -1,3 +1,3 @@
 from zoish import __version__
 def test_version():
-    assert __version__ == "3.4.0"
+    assert __version__ == "3.5.0"
