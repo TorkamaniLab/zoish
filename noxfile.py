@@ -7,7 +7,7 @@ def tests(session):
     session.run("poetry", "shell")
     session.run("poetry", "install")
     #TODO pytest run locally - uncomment to do it again
-    # session.run("pytest")
+    session.run("pytest")
 
 
 @nox.session

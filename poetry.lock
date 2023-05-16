@@ -1913,17 +1913,6 @@ files = [
 imbalanced-learn = "*"
 
 [[package]]
-name = "importlib"
-version = "1.0.4"
-description = "Backport of importlib.import_module() from Python 2.7"
-category = "main"
-optional = false
-python-versions = "*"
-files = [
-    {file = "importlib-1.0.4.zip", hash = "sha256:b6ee7066fea66e35f8d0acee24d98006de1a0a8a94a8ce6efe73a9a23c8d9826"},
-]
-
-[[package]]
 name = "importlib-metadata"
 version = "6.0.0"
 description = "Read metadata from Python packages"
@@ -2753,14 +2742,14 @@ files = [
 
 [[package]]
 name = "lohrasb"
-version = "3.5.0"
+version = "3.6.0"
 description = "A scalable estimator optimization tool compatible with scikit-learn APIs"
 category = "main"
 optional = false
 python-versions = ">=3.8,<3.11"
 files = [
-    {file = "lohrasb-3.5.0-py3-none-any.whl", hash = "sha256:ea43e7145ee037dd19696ca7e3216a51f469caad16000dab8c329d3455f72e86"},
-    {file = "lohrasb-3.5.0.tar.gz", hash = "sha256:5687404931453f34ba30708cf996f0d1e77f19b0d0084a9fb96b0aca3591374b"},
+    {file = "lohrasb-3.6.0-py3-none-any.whl", hash = "sha256:8d7d51f0eda2f56aefce86e687b67c21b530694845b17a7666bc01f2614d8864"},
+    {file = "lohrasb-3.6.0.tar.gz", hash = "sha256:3033e44badc7f6ea2fb5fe721ae18b90fd07d371594ccc4d8d8b71f026e14762"},
 ]
 
 [package.dependencies]
@@ -2768,7 +2757,6 @@ category-encoders = ">=2.5.0,<3.0.0"
 feature-engine = ">=1.4.1,<2.0.0"
 hyperopt = ">=0.2.7,<0.3.0"
 imblearn = ">=0.0,<0.1"
-importlib = ">=1.0.4,<2.0.0"
 interpret = ">=0.3.0,<0.4.0"
 lightgbm = ">=3.3.2,<4.0.0"
 nox = ">=2022.1.7,<2023.0.0"
