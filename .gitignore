@@ -65,3 +65,7 @@ coverage.xml
 .vscode/
 catboost_info/
 .DS_Store
+
+# Extra
+
+commands.txt
