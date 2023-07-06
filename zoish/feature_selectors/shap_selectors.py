@@ -14,7 +14,7 @@ from zoish.base_classes.best_estimator_getters import (
     BestEstimatorFindByTuneSearch,
 )
 
-logger.info("Single Shap Feature Selector has started !")
+logger.info("Shap Feature Selector has started !")
 
 
 class ShapPlotFeatures(PlotFeatures):
