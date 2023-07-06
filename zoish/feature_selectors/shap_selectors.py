@@ -1180,7 +1180,7 @@ class ShapFeatureSelector(FeatureSelector):
             # if fasttreeshap does not work we use shap library
             except Exception as e:
                 logger.error(
-                    f"There is error will this message {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer! "
+                    f"There is error with this message {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer! "
                 )
                 self.explainer = shap.TreeExplainer(
                     model=best_estimator,
