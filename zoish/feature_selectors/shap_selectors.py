@@ -1,4 +1,6 @@
 import fasttreeshap
+import warnings
+
 from sklearn.base import BaseEstimator, TransformerMixin
 import logging
 import matplotlib.pyplot as plt
@@ -160,6 +162,11 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
                     set(obligatory_feature_idx)
                 )
             )
+            
+        # If no features are selected, select the most important one
+        if not self.selected_feature_idx:
+            warnings.warn("No features were selected during fit. The most important one will be selected.")
+            self.selected_feature_idx = [self.importance_order[0]]
 
         return self
 
@@ -174,16 +181,35 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
             X = np.delete(X, idx_to_drop, axis=1)
 
         return X[:, self.selected_feature_idx]
+
+    def predict(self, X):
+        X_transformed = self.transform(X)
+        return self.model.predict(X_transformed)
+
+    def score(self, X, y):
+        X_transformed = self.transform(X)
+        return self.model.score(X_transformed, y)
+
+    def predict_proba(self, X):
+        X_transformed = self.transform(X)
+        # Ensure the model actually has a predict_proba method
+        if hasattr(self.model, 'predict_proba'):
+            return self.model.predict_proba(X_transformed)
+        else:
+            raise RuntimeError("Underlying model does not have a predict_proba method.")
+
 class ShapFeatureSelectorFactory:
     """
     Class factory for ShapFeatureSelector. Generates instances of ShapFeatureSelector and ShapPlotFeatures classes.
     """
-    def __init__(self, *args, **kwargs):
+    def __init__(self, model, *args, **kwargs):
         """
         Initialize an instance of ShapFeatureSelectorFactory.
+        :param model: Trained model to be used for feature selection
         :param args: Arguments to pass to the ShapFeatureSelector instance
         :param kwargs: Keyword arguments to pass to the ShapFeatureSelector instance
         """
+        self.model = model
         self.feature_selector = None
         self.feature_selector_args = args
         self.feature_selector_kwargs = kwargs
@@ -195,8 +221,8 @@ class ShapFeatureSelectorFactory:
         :return: An instance of the ShapFeatureSelector
         """
         if not self.feature_selector:
-            self.feature_selector = ShapFeatureSelector(*self.feature_selector_args, **self.feature_selector_kwargs)
-            
+            self.feature_selector = ShapFeatureSelector(self.model, *self.feature_selector_args, **self.feature_selector_kwargs)
+
         return self.feature_selector
 
     def set_plot_features_params(self, **kwargs):
@@ -235,5 +261,4 @@ class ShapFeatureSelectorFactory:
         plotter = ShapPlotFeatures(feature_selector=selector_instance, **self.plot_features_kwargs)
         return plotter.get_list_of_features()
 
-# Initialize a ShapFeatureSelectorFactory instance
-shap_feature_selector_factory = ShapFeatureSelectorFactory(method=None)
+shap_feature_selector_factory = ShapFeatureSelectorFactory(model=None)

@@ -5,31 +5,25 @@ from sklearn.pipeline import Pipeline
 from sklearn.metrics import f1_score
 from xgboost import XGBClassifier
 from zoish.feature_selectors.shap_selectors import *
+X, y = make_classification(n_samples=1000, n_features=20, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+model = XGBClassifier(use_label_encoder=False, eval_metric="logloss")
+model.fit(X_train, y_train)
+selector = ShapFeatureSelector(model=model, num_features=10)
+selector.fit(X_train, y_train)
 
-# Create a binary classification problem
-X, y = make_classification(n_samples=1000, n_features=20, n_informative=10, n_redundant=10, random_state=0)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+# Transform the training data
+X_train_transformed = selector.transform(X_train)
 
-# Create the pipeline
-model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-model.fit(X_train,y_train)
-selector = ShapFeatureSelector(model, num_features=10)
+# Re-train your model on the transformed data
+model.fit(X_train_transformed, y_train)
 
-pipe = Pipeline([
-    ('scaler', StandardScaler()),
-    ('selector', selector),
-    ('classifier', XGBClassifier(use_label_encoder=False, eval_metric='logloss'))
-])
-
-# Fit and predict
-pipe.fit(X_train, y_train)
-y_pred = pipe.predict(X_test)
-
-# Evaluate the performance
-score = f1_score(y_test, y_pred)
-print(f'F1 score: {score}')
+# Now you can make predictions using transformed data
+X_test_transformed = selector.transform(X_test)
+y_pred = model.predict(X_test_transformed)
+print(f"Model score: {selector.score(X_test, y_test)}")
 
 # Plot the feature importance
-factory = ShapFeatureSelectorFactory()
+factory = ShapFeatureSelectorFactory(model)
 factory.set_plot_features_params(path_to_save_plot='./shap_plot.png')
 factory.plot_features_all()
