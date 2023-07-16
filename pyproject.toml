@@ -38,7 +38,6 @@ lightgbm = "^3.3.2"
 category-encoders = "^2.5.0"
 xgbse = "^0.2.3"
 pycox = "^0.2.3"
-lohrasb = "^3.1.0"
 python-dotenv = "^0.21.0"
 prompt-toolkit = "^3.0.37"
 

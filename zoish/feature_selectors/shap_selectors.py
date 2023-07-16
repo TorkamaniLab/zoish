@@ -138,59 +138,270 @@ class ShapPlotFeatures(PlotFeatures):
         elif self.type_of_plot == "decision_plot":
             self.decision_plot()
          
+# class ShapFeatureSelector(BaseEstimator, TransformerMixin):
+#     """
+#     A feature selection transformer that uses SHAP (SHapley Additive exPlanations) values to determine feature importance.
+
+#     Parameters
+#     ----------
+#     model: object
+#         The underlying model that will be used for feature importance. The model must have a `fit` and `predict` method.
+        
+#     num_features: int, optional
+#         The maximum number of features to select based on importance. 
+#         If not provided, all features that meet the threshold will be used.
+        
+#     threshold: float, optional
+#         The minimum importance a feature must have to be included.
+#         If not provided, all features are included or num_features will be used.
+        
+#     list_of_features_to_drop_before_any_selection: list, optional
+#         A list of feature names to be dropped before feature selection process. 
+#         If not provided, no features are dropped.
+        
+#     list_of_obligatory_features_that_must_be_in_model: list, optional
+#         A list of features that must be included regardless of their importance.
+#         If not provided, only the importance determines inclusion.
+        
+#     kwargs: dict
+#         Additional arguments for the SHAP TreeExplainer or FastTreeShap Explainer.
+
+#     Attributes
+#     ----------
+#     importance_df: pandas DataFrame
+#         Dataframe with the calculated importances of the features.
+
+#     Methods
+#     -------
+#     fit(X, y=None)
+#         Fit the model and calculates the SHAP values for feature importance.
+        
+#     transform(X, y=None)
+#         Reduces X to its most important features.
+        
+#     predict(X)
+#         Performs prediction using the underlying model with the selected important features.
+        
+#     score(X, y)
+#         Uses the underlying model to calculate score.
+        
+#     predict_proba(X)
+#         Returns probability estimates for the test data X using the underlying model. 
+#         The model must implement predict_proba method.
+
+#     """
+
+#     def __init__(
+#         self,
+#         model,
+#         num_features=None,
+#         threshold=None,
+#         list_of_features_to_drop_before_any_selection=None,
+#         list_of_obligatory_features_that_must_be_in_model=None,
+#         **kwargs,
+#     ):
+#         self.shap_values = None
+#         self.X = None
+#         self.y = None
+#         self._importance_df = None
+#         self.list_of_selected_features = None
+#         self.model = model
+#         self.num_features = num_features
+#         self.threshold = threshold
+#         self.list_of_features_to_drop_before_any_selection = (
+#             list_of_features_to_drop_before_any_selection
+#             if list_of_features_to_drop_before_any_selection is not None
+#             else []
+#         )
+#         self.list_of_obligatory_features_that_must_be_in_model = (
+#             list_of_obligatory_features_that_must_be_in_model
+#             if list_of_obligatory_features_that_must_be_in_model is not None
+#             else []
+#         )
+#         self.kwargs = kwargs
+#         self.shap_tree_explainer_kwargs = kwargs.get("shap_tree_explainer_kwargs", {})
+#         self.fasttreeshap_explainer_kwargs = kwargs.get(
+#             "fasttreeshap_explainer_kwargs", {}
+#         )
+
+#     @property
+#     def importance_df(self):
+#         return self._importance_df
+
+#     @importance_df.setter
+#     def importance_df(self, value):
+#         if not isinstance(value, pd.DataFrame):
+#             raise ValueError('importance_df must be a pandas DataFrame')
+#         self._importance_df = value
+
+#     def fit(self, X, y=None):
+#         # Initialize logger
+#         logger = logging.getLogger(__name__)
+
+#         # If X is a DataFrame, we save the column names and convert to ndarray for compatibility
+#         if isinstance(X, pd.DataFrame):
+#             self.feature_names = X.columns.tolist()
+#             X = X.values
+#         else:
+#             self.feature_names = [f"Feature {i}" for i in range(X.shape[1])]
+
+#         # Drop features if list_of_features_to_drop_before_any_selection is not empty
+#         if self.list_of_features_to_drop_before_any_selection:
+#             idx_to_drop = [
+#                 i
+#                 for i, f in enumerate(self.feature_names)
+#                 if f in self.list_of_features_to_drop_before_any_selection
+#             ]
+#             X = np.delete(X, idx_to_drop, axis=1)
+#             self.feature_names = [
+#                 f for i, f in enumerate(self.feature_names) if i not in idx_to_drop
+#             ]
+
+#         # Try initializing fasttreeshap TreeExplainer first
+#         try:
+#             self.explainer = fasttreeshap.TreeExplainer(
+#                 self.model, **self.fasttreeshap_explainer_kwargs
+#             )
+#         # If fasttreeshap does not work, we use the shap library
+#         except Exception as e:
+#             logger.error(
+#                 f"There is an error with this message: {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer!"
+#             )
+#             self.explainer = shap.TreeExplainer(
+#                 self.model, **self.shap_tree_explainer_kwargs
+#             )
+#         self.shap_values = self.explainer.shap_values(X)
+
+#         # If shap_values is a list, average over all outputs (classes)
+#         if isinstance(self.shap_values, list):
+#             self.shap_values = np.mean(self.shap_values, axis=0)
+
+#         self.feature_importances_ = np.mean(np.abs(self.shap_values), axis=0)
+#         self.importance_order = np.argsort(self.feature_importances_)[::-1]
+
+#         # Extract indices of obligatory features
+#         obligatory_feature_idx = [
+#             i
+#             for i, f in enumerate(self.feature_names)
+#             if f in self.list_of_obligatory_features_that_must_be_in_model
+#         ]
+#         print(f"type of obligatory_feature_idx: {type(obligatory_feature_idx)}, content: {obligatory_feature_idx}")  # Added
+
+#         # If num_features is None, use threshold to select features
+#         if self.num_features is None:
+#             if self.threshold is not None:
+#                 self.selected_feature_idx = np.where(
+#                     self.feature_importances_ >= self.threshold
+#                 )[0]
+#                 # ensure obligatory features are included
+#                 self.selected_feature_idx = list(
+#                     set(self.selected_feature_idx).union(set(obligatory_feature_idx))
+#                 )
+#         else:
+#             # If num_features is not None, use num_features
+#             print(f"type of self.importance_order[: self.num_features]: {type(self.importance_order[: self.num_features])}, content: {self.importance_order[: self.num_features]}")  # Added
+#             self.selected_feature_idx = list(
+#                 set(self.importance_order[: self.num_features]).union(
+#                     set(obligatory_feature_idx)
+#                 )
+#             )
+
+#         # If no features are selected, select the most important one
+#         if not self.selected_feature_idx:
+#             warnings.warn("No features were selected during fit. The most important one will be selected.")
+#             self.selected_feature_idx = [self.importance_order[0]]
+#         if self.importance_order is None:
+#             raise NotImplementedError
+#         else:
+#             print(self.importance_order)
+#             self.importance_df = pd.DataFrame(self.importance_order, columns=['Importance'])
+#         self.X = X
+#         self.y = y
+#         return self
+
+#     def transform(self, X, y=None):
+#         """
+#         Reduces X to its most important features.
+
+#         Parameters
+#         ----------
+#         X: array-like or DataFrame
+#             Features for the model. The data is converted to an ndarray for compatibility.
+        
+#         y: array-like, optional
+#             Target values. Not used, present for API consistency by convention.
+
+#         Returns
+#         -------
+#         X: array-like or DataFrame
+#             The transformed dataset with only the important features.
+#         """
+#         if isinstance(X, pd.DataFrame):
+#             X = X.values
+#         return X[:, self.selected_feature_idx]
+
+#     def predict(self, X):
+#         """
+#         Performs prediction using the underlying model with the selected important features.
+
+#         Parameters
+#         ----------
+#         X: array-like or DataFrame
+#             Features for the model. The data is converted to an ndarray for compatibility.
+
+#         Returns
+#         -------
+#         array, shape = [n_samples]
+#             Predicted target values per element in X.
+#         """
+#         return self.model.predict(self.transform(X))
+
+#     def score(self, X, y):
+#         """
+#         Uses the underlying model to calculate score.
+
+#         Parameters
+#         ----------
+#         X: array-like or DataFrame
+#             Features for the model. The data is converted to an ndarray for compatibility.
+        
+#         y: array-like
+#             True labels for X.
+
+#         Returns
+#         -------
+#         float
+#             Returns the mean accuracy on the given test data and labels.
+#         """
+#         return self.model.score(self.transform(X), y)
+
+#     def predict_proba(self, X):
+#         """
+#         Returns probability estimates for the test data X using the underlying model. 
+#         The model must implement predict_proba method.
+
+#         Parameters
+#         ----------
+#         X: array-like or DataFrame
+#             Features for the model. The data is converted to an ndarray for compatibility.
+
+#         Returns
+#         -------
+#         array, shape = [n_samples, n_classes]
+#             Returns the probability of the samples for each class in the model. 
+#         """
+#         return self.model.predict_proba(self.transform(X))
+
+
+import numpy as np
+import pandas as pd
+import warnings
+import logging
+from sklearn.base import BaseEstimator, TransformerMixin
+import shap
+import fasttreeshap
+
 class ShapFeatureSelector(BaseEstimator, TransformerMixin):
-    """
-    A feature selection transformer that uses SHAP (SHapley Additive exPlanations) values to determine feature importance.
-
-    Parameters
-    ----------
-    model: object
-        The underlying model that will be used for feature importance. The model must have a `fit` and `predict` method.
-        
-    num_features: int, optional
-        The maximum number of features to select based on importance. 
-        If not provided, all features that meet the threshold will be used.
-        
-    threshold: float, optional
-        The minimum importance a feature must have to be included.
-        If not provided, all features are included or num_features will be used.
-        
-    list_of_features_to_drop_before_any_selection: list, optional
-        A list of feature names to be dropped before feature selection process. 
-        If not provided, no features are dropped.
-        
-    list_of_obligatory_features_that_must_be_in_model: list, optional
-        A list of features that must be included regardless of their importance.
-        If not provided, only the importance determines inclusion.
-        
-    kwargs: dict
-        Additional arguments for the SHAP TreeExplainer or FastTreeShap Explainer.
-
-    Attributes
-    ----------
-    importance_df: pandas DataFrame
-        Dataframe with the calculated importances of the features.
-
-    Methods
-    -------
-    fit(X, y=None)
-        Fit the model and calculates the SHAP values for feature importance.
-        
-    transform(X, y=None)
-        Reduces X to its most important features.
-        
-    predict(X)
-        Performs prediction using the underlying model with the selected important features.
-        
-    score(X, y)
-        Uses the underlying model to calculate score.
-        
-    predict_proba(X)
-        Returns probability estimates for the test data X using the underlying model. 
-        The model must implement predict_proba method.
-
-    """
-
     def __init__(
         self,
         model,
@@ -235,33 +446,14 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
         self._importance_df = value
 
     def fit(self, X, y=None):
-        """
-        Fit the model and calculates the SHAP values for feature importance.
-
-        Parameters
-        ----------
-        X: array-like or DataFrame
-            Features for the model. The data is converted to an ndarray for compatibility.
-        
-        y: array-like, optional
-            Target values. Not used, present for API consistency by convention.
-
-        Returns
-        -------
-        self: object
-            Returns the instance itself.
-        """
-        # Initialize logger
         logger = logging.getLogger(__name__)
 
-        # If X is a DataFrame, we save the column names and convert to ndarray for compatibility
         if isinstance(X, pd.DataFrame):
             self.feature_names = X.columns.tolist()
             X = X.values
         else:
             self.feature_names = [f"Feature {i}" for i in range(X.shape[1])]
 
-        # Drop features if list_of_features_to_drop_before_any_selection is not empty
         if self.list_of_features_to_drop_before_any_selection:
             idx_to_drop = [
                 i
@@ -273,135 +465,70 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
                 f for i, f in enumerate(self.feature_names) if i not in idx_to_drop
             ]
 
-        # Try initializing fasttreeshap TreeExplainer first
         try:
-            self.explainer = TreeExplainer(
+            self.explainer = fasttreeshap.TreeExplainer(
                 self.model, **self.fasttreeshap_explainer_kwargs
             )
-        # If fasttreeshap does not work, we use the shap library
         except Exception as e:
             logger.error(
-                f"There is an error with this message: {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer!"
+                f"There is an error with this message: {e}. Shap Explainer will be used instead of Fasttreeshap TreeExplainer!"
             )
-            self.explainer = shap.TreeExplainer(
+            self.explainer = shap.Explainer(
                 self.model, **self.shap_tree_explainer_kwargs
             )
 
         self.shap_values = self.explainer.shap_values(X)
 
-        # compute mean of absolute shap values for each feature
-        self.feature_importances_ = np.mean(np.abs(self.shap_values), axis=0)
+        if isinstance(self.shap_values, list):
+            self.shap_values = np.mean(self.shap_values, axis=0)
 
-        # sort features by importance
+        self.feature_importances_ = np.mean(np.abs(self.shap_values), axis=0)
         self.importance_order = np.argsort(self.feature_importances_)[::-1]
 
-        # Extract indices of obligatory features
         obligatory_feature_idx = [
             i
             for i, f in enumerate(self.feature_names)
             if f in self.list_of_obligatory_features_that_must_be_in_model
         ]
 
-        # If num_features is None, use threshold to select features
         if self.num_features is None:
             if self.threshold is not None:
                 self.selected_feature_idx = np.where(
                     self.feature_importances_ >= self.threshold
                 )[0]
-                # ensure obligatory features are included
                 self.selected_feature_idx = list(
                     set(self.selected_feature_idx).union(set(obligatory_feature_idx))
                 )
         else:
-            # If num_features is not None, use num_features
             self.selected_feature_idx = list(
                 set(self.importance_order[: self.num_features]).union(
                     set(obligatory_feature_idx)
                 )
             )
 
-        # If no features are selected, select the most important one
         if not self.selected_feature_idx:
             warnings.warn("No features were selected during fit. The most important one will be selected.")
             self.selected_feature_idx = [self.importance_order[0]]
+
         if self.importance_order is None:
             raise NotImplementedError
         else:
-            print(self.importance_order)
             self.importance_df = pd.DataFrame(self.importance_order, columns=['Importance'])
+            
         self.X = X
         self.y = y
         return self
 
     def transform(self, X, y=None):
-        """
-        Reduces X to its most important features.
-
-        Parameters
-        ----------
-        X: array-like or DataFrame
-            Features for the model. The data is converted to an ndarray for compatibility.
-        
-        y: array-like, optional
-            Target values. Not used, present for API consistency by convention.
-
-        Returns
-        -------
-        X: array-like or DataFrame
-            The transformed dataset with only the important features.
-        """
         if isinstance(X, pd.DataFrame):
             X = X.values
         return X[:, self.selected_feature_idx]
 
     def predict(self, X):
-        """
-        Performs prediction using the underlying model with the selected important features.
-
-        Parameters
-        ----------
-        X: array-like or DataFrame
-            Features for the model. The data is converted to an ndarray for compatibility.
-
-        Returns
-        -------
-        array, shape = [n_samples]
-            Predicted target values per element in X.
-        """
         return self.model.predict(self.transform(X))
 
     def score(self, X, y):
-        """
-        Uses the underlying model to calculate score.
-
-        Parameters
-        ----------
-        X: array-like or DataFrame
-            Features for the model. The data is converted to an ndarray for compatibility.
-        
-        y: array-like
-            True labels for X.
-
-        Returns
-        -------
-        float
-            Returns the mean accuracy on the given test data and labels.
-        """
         return self.model.score(self.transform(X), y)
 
     def predict_proba(self, X):
-        """
-        Returns probability estimates for the test data X using the underlying model. 
-        The model must implement predict_proba method.
-
-        Parameters
-        ----------
-        X: array-like or DataFrame
-            Features for the model. The data is converted to an ndarray for compatibility.
-
-        Returns
-        -------
-        array, shape = [n_samples, n_classes]
-            Returns the probability of the samples for each class in the model. 
-        """
         return self.model.predict_proba(self.transform(X))
