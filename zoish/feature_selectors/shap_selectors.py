@@ -1,6 +1,5 @@
 import fasttreeshap
 import warnings
-
 from sklearn.base import BaseEstimator, TransformerMixin
 import logging
 import matplotlib.pyplot as plt
@@ -9,19 +8,22 @@ import pandas as pd
 import shap
 from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
-logger.info("Single Shap Feature Selector has started !")
+
+logger.info("Shap Feature Selector has started !")
+
 class ShapPlotFeatures(PlotFeatures):
     """Class for creating plots for Shap feature selector."""
 
     def __init__(self, feature_selector, type_of_plot, **kwargs):
         self.feature_selector = feature_selector
         self.type_of_plot = type_of_plot
-
         self.kwargs = kwargs
 
         self.summary_plot_kwargs = self.kwargs.get("summary_plot_kwargs", {})
         self.decision_plot_kwargs = self.kwargs.get("decision_plot_kwargs", {})
         self.bar_plot_kwargs = self.kwargs.get("bar_plot_kwargs", {})
+
+        self._check_plot_kwargs()
 
         self.shap_values = feature_selector.shap_values
         self.X = self._check_input(feature_selector.X)
@@ -40,31 +42,155 @@ class ShapPlotFeatures(PlotFeatures):
             X = pd.DataFrame(X)
         return X
 
-    # remaining methods...
+    def _check_plot_kwargs(self):
+        """Ensure the plot kwargs are valid."""
+        summary_valid_kwargs = {'features', 'feature_names', 'max_display', 'plot_type', 
+                                'color', 'axis_color', 'title', 'alpha', 'show', 'sort', 
+                                'color_bar_label', 'plot_size', 'layered_violin_max_num_bins', 
+                                'class_names', 'class_inds'}
+
+        decision_valid_kwargs = {'expected_value', 'feature_order', 'feature_display_range',
+                                 'importance_threshold', 'link', 'plot_color', 'highlight', 
+                                 'return_objects', 'xlim', 'show', 'new_base_value', 
+                                 'feature_names', 'y'}
+        
+        bar_valid_kwargs = {'max_display', 'plot_size', 'color', 'axis_color', 
+                            'title', 'show', 'sort', 'ordered_values'}
+
+        self._check_kwargs(self.summary_plot_kwargs, summary_valid_kwargs, "summary_plot")
+        self._check_kwargs(self.decision_plot_kwargs, decision_valid_kwargs, "decision_plot")
+        self._check_kwargs(self.bar_plot_kwargs, bar_valid_kwargs, "bar_plot")
+
+    def _check_kwargs(self, kwargs, valid_kwargs, plot_name):
+        """Check kwargs for specific plot."""
+        if not isinstance(kwargs, dict):
+            raise ValueError(f"`{plot_name}_kwargs` must be a dictionary.")
+
+        for kwarg in kwargs.keys():
+            if kwarg not in valid_kwargs:
+                raise ValueError(f"`{kwarg}` is not a valid keyword argument for `shap.{plot_name}`.")
+
+        # If the 'plot_type' is given, it must be one of the valid options
+        plot_type = kwargs.get('plot_type')
+        if plot_type and plot_type not in ['auto', 'dot', 'violin', 'compact_dot', 'layered_violin', 'color']:
+            raise ValueError(f"`{plot_type}` is not a valid option for `plot_type`. Must be one of 'auto', 'dot', 'violin', 'compact_dot', 'layered_violin', 'color'.")
 
     def summary_plot_full(self):
-        shap.summary_plot(shap_values=self.shap_values.values, features=self.X, max_display=self.X.shape[1], show=False, **self.summary_plot_kwargs)
+        shap_values = self.shap_values.values if isinstance(self.shap_values, pd.DataFrame) else self.shap_values
+        shap.summary_plot(shap_values=shap_values, features=self.X, max_display=self.X.shape[1], show=False, **self.summary_plot_kwargs)
         self.plt = plt
+        self.plt.show()
 
     def summary_plot(self):
-        shap.summary_plot(shap_values=self.shap_values.values, features=self.X, max_display=self.num_feat, show=False, **self.summary_plot_kwargs)
+        shap_values = self.shap_values.values if isinstance(self.shap_values, pd.DataFrame) else self.shap_values
+        shap.summary_plot(shap_values=shap_values, features=self.X, max_display=self.num_feat, show=False, **self.summary_plot_kwargs)
         self.plt = plt
-
+        self.plt.show()
+        self.plt.show()
     def decision_plot(self):
+        base_value = self.feature_selector.explainer.expected_value
         if len(self.X) >= 1000:
             self.X = self.X[:1000]
-        shap.decision_plot(expected_values=self.expected_value[: len(self.X)], shap_values=self.shap_values.values[: len(self.X)], feature_names=self.X.columns, show=False, **self.decision_plot_kwargs)
+        shap_values = self.shap_values[:len(self.X)] if isinstance(self.shap_values, np.ndarray) else self.shap_values.values[:len(self.X)]
+        X_columns = [str(col) for col in self.X.columns] if isinstance(self.X, pd.DataFrame) else [str(i) for i in range(self.X.shape[1])]
+        shap.decision_plot(base_value, shap_values=shap_values, feature_names=X_columns, show=False, **self.decision_plot_kwargs)
         self.plt = plt
+        self.plt.show()
 
     def bar_plot(self):
-        shap.bar_plot(shap_values=self.shap_values.values[0], feature_names=self.X.columns, max_display=self.num_feat, show=False, **self.bar_plot_kwargs)
+        shap_values = self.shap_values.values if isinstance(self.shap_values, pd.DataFrame) else self.shap_values
+
+        # Updated to only select the first SHAP value
+        shap_values_first = shap_values[0] if isinstance(shap_values, np.ndarray) and len(shap_values.shape) > 1 else shap_values
+
+        shap.bar_plot(shap_values=shap_values_first, feature_names=self.X.columns, max_display=self.num_feat, show=False, **self.bar_plot_kwargs)
         self.plt = plt
+        self.plt.show()
 
     def bar_plot_full(self):
-        shap.bar_plot(shap_values=self.shap_values.values[0], feature_names=self.X.columns, max_display=self.X.shape[1], show=False, **self.bar_plot_kwargs)
-        self.plt = plt
+        shap_values = self.shap_values.values if isinstance(self.shap_values, pd.DataFrame) else self.shap_values
 
+        # Updated to only select the first SHAP value
+        shap_values_first = shap_values[0] if isinstance(shap_values, np.ndarray) and len(shap_values.shape) > 1 else shap_values
+
+        shap.bar_plot(shap_values=shap_values_first, feature_names=self.X.columns, max_display=self.X.shape[1], show=False, **self.bar_plot_kwargs)
+        self.plt = plt
+        self.plt.show()
+
+    def expose_plot_object(self):
+        return self.plt
+
+    def get_info_of_features_and_grades(self):
+        return self.importance_df
+
+    def get_list_of_features(self):
+        return self.list_of_selected_features
+
+    def plot_features(self):
+        if self.type_of_plot in ["summary_plot", None, {}]:
+            self.summary_plot()
+        elif self.type_of_plot == "summary_plot_full":
+            self.summary_plot_full()
+        elif self.type_of_plot == "bar_plot":
+            self.bar_plot()
+        elif self.type_of_plot == "bar_plot_full":
+            self.bar_plot_full()
+        elif self.type_of_plot == "decision_plot":
+            self.decision_plot()
+         
 class ShapFeatureSelector(BaseEstimator, TransformerMixin):
+    """
+    A feature selection transformer that uses SHAP (SHapley Additive exPlanations) values to determine feature importance.
+
+    Parameters
+    ----------
+    model: object
+        The underlying model that will be used for feature importance. The model must have a `fit` and `predict` method.
+        
+    num_features: int, optional
+        The maximum number of features to select based on importance. 
+        If not provided, all features that meet the threshold will be used.
+        
+    threshold: float, optional
+        The minimum importance a feature must have to be included.
+        If not provided, all features are included or num_features will be used.
+        
+    list_of_features_to_drop_before_any_selection: list, optional
+        A list of feature names to be dropped before feature selection process. 
+        If not provided, no features are dropped.
+        
+    list_of_obligatory_features_that_must_be_in_model: list, optional
+        A list of features that must be included regardless of their importance.
+        If not provided, only the importance determines inclusion.
+        
+    kwargs: dict
+        Additional arguments for the SHAP TreeExplainer or FastTreeShap Explainer.
+
+    Attributes
+    ----------
+    importance_df: pandas DataFrame
+        Dataframe with the calculated importances of the features.
+
+    Methods
+    -------
+    fit(X, y=None)
+        Fit the model and calculates the SHAP values for feature importance.
+        
+    transform(X, y=None)
+        Reduces X to its most important features.
+        
+    predict(X)
+        Performs prediction using the underlying model with the selected important features.
+        
+    score(X, y)
+        Uses the underlying model to calculate score.
+        
+    predict_proba(X)
+        Returns probability estimates for the test data X using the underlying model. 
+        The model must implement predict_proba method.
+
+    """
+
     def __init__(
         self,
         model,
@@ -74,6 +200,11 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
         list_of_obligatory_features_that_must_be_in_model=None,
         **kwargs,
     ):
+        self.shap_values = None
+        self.X = None
+        self.y = None
+        self._importance_df = None
+        self.list_of_selected_features = None
         self.model = model
         self.num_features = num_features
         self.threshold = threshold
@@ -93,7 +224,33 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
             "fasttreeshap_explainer_kwargs", {}
         )
 
+    @property
+    def importance_df(self):
+        return self._importance_df
+
+    @importance_df.setter
+    def importance_df(self, value):
+        if not isinstance(value, pd.DataFrame):
+            raise ValueError('importance_df must be a pandas DataFrame')
+        self._importance_df = value
+
     def fit(self, X, y=None):
+        """
+        Fit the model and calculates the SHAP values for feature importance.
+
+        Parameters
+        ----------
+        X: array-like or DataFrame
+            Features for the model. The data is converted to an ndarray for compatibility.
+        
+        y: array-like, optional
+            Target values. Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        self: object
+            Returns the instance itself.
+        """
         # Initialize logger
         logger = logging.getLogger(__name__)
 
@@ -118,7 +275,7 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
 
         # Try initializing fasttreeshap TreeExplainer first
         try:
-            self.explainer = fasttreeshap.TreeExplainer(
+            self.explainer = TreeExplainer(
                 self.model, **self.fasttreeshap_explainer_kwargs
             )
         # If fasttreeshap does not work, we use the shap library
@@ -162,103 +319,89 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
                     set(obligatory_feature_idx)
                 )
             )
-            
+
         # If no features are selected, select the most important one
         if not self.selected_feature_idx:
             warnings.warn("No features were selected during fit. The most important one will be selected.")
             self.selected_feature_idx = [self.importance_order[0]]
-
+        if self.importance_order is None:
+            raise NotImplementedError
+        else:
+            print(self.importance_order)
+            self.importance_df = pd.DataFrame(self.importance_order, columns=['Importance'])
+        self.X = X
+        self.y = y
         return self
 
     def transform(self, X, y=None):
-        # Ensure to drop the same features during transform
-        if self.list_of_features_to_drop_before_any_selection:
-            idx_to_drop = [
-                i
-                for i, f in enumerate(self.feature_names)
-                if f in self.list_of_features_to_drop_before_any_selection
-            ]
-            X = np.delete(X, idx_to_drop, axis=1)
+        """
+        Reduces X to its most important features.
 
+        Parameters
+        ----------
+        X: array-like or DataFrame
+            Features for the model. The data is converted to an ndarray for compatibility.
+        
+        y: array-like, optional
+            Target values. Not used, present for API consistency by convention.
+
+        Returns
+        -------
+        X: array-like or DataFrame
+            The transformed dataset with only the important features.
+        """
+        if isinstance(X, pd.DataFrame):
+            X = X.values
         return X[:, self.selected_feature_idx]
 
     def predict(self, X):
-        X_transformed = self.transform(X)
-        return self.model.predict(X_transformed)
+        """
+        Performs prediction using the underlying model with the selected important features.
+
+        Parameters
+        ----------
+        X: array-like or DataFrame
+            Features for the model. The data is converted to an ndarray for compatibility.
+
+        Returns
+        -------
+        array, shape = [n_samples]
+            Predicted target values per element in X.
+        """
+        return self.model.predict(self.transform(X))
 
     def score(self, X, y):
-        X_transformed = self.transform(X)
-        return self.model.score(X_transformed, y)
+        """
+        Uses the underlying model to calculate score.
+
+        Parameters
+        ----------
+        X: array-like or DataFrame
+            Features for the model. The data is converted to an ndarray for compatibility.
+        
+        y: array-like
+            True labels for X.
+
+        Returns
+        -------
+        float
+            Returns the mean accuracy on the given test data and labels.
+        """
+        return self.model.score(self.transform(X), y)
 
     def predict_proba(self, X):
-        X_transformed = self.transform(X)
-        # Ensure the model actually has a predict_proba method
-        if hasattr(self.model, 'predict_proba'):
-            return self.model.predict_proba(X_transformed)
-        else:
-            raise RuntimeError("Underlying model does not have a predict_proba method.")
+        """
+        Returns probability estimates for the test data X using the underlying model. 
+        The model must implement predict_proba method.
 
-class ShapFeatureSelectorFactory:
-    """
-    Class factory for ShapFeatureSelector. Generates instances of ShapFeatureSelector and ShapPlotFeatures classes.
-    """
-    def __init__(self, model, *args, **kwargs):
-        """
-        Initialize an instance of ShapFeatureSelectorFactory.
-        :param model: Trained model to be used for feature selection
-        :param args: Arguments to pass to the ShapFeatureSelector instance
-        :param kwargs: Keyword arguments to pass to the ShapFeatureSelector instance
-        """
-        self.model = model
-        self.feature_selector = None
-        self.feature_selector_args = args
-        self.feature_selector_kwargs = kwargs
-        self.plot_features_kwargs = {'type_of_plot': None}
+        Parameters
+        ----------
+        X: array-like or DataFrame
+            Features for the model. The data is converted to an ndarray for compatibility.
 
-    def get_feature_selector_instance(self):
+        Returns
+        -------
+        array, shape = [n_samples, n_classes]
+            Returns the probability of the samples for each class in the model. 
         """
-        Get an instance of the feature selection object.
-        :return: An instance of the ShapFeatureSelector
-        """
-        if not self.feature_selector:
-            self.feature_selector = ShapFeatureSelector(self.model, *self.feature_selector_args, **self.feature_selector_kwargs)
-
-        return self.feature_selector
-
-    def set_plot_features_params(self, **kwargs):
-        """
-        Update the parameters for ShapPlotFeatures.
-        :param kwargs: New parameters to update
-        """
-        self.plot_features_kwargs.update(kwargs)
-
-    def plot_features_all(self):
-        """
-        Use ShapPlotFeatures to plot different Shap plots.
-        """
-        selector_instance = self.get_feature_selector_instance()
-        plotter = ShapPlotFeatures(feature_selector=selector_instance, **self.plot_features_kwargs)
-        plotter.plot_features()
-
-    def get_info_of_features_and_grades(self):
-        """
-        Use ShapPlotFeatures to get information about selected features and their grades.
-        :return: Information about selected features and their grades
-        """
-        selector_instance = self.get_feature_selector_instance()
-        plotter = ShapPlotFeatures(feature_selector=selector_instance, **self.plot_features_kwargs)
-        info = plotter.get_info_of_features_and_grades()
-
-        print(f"{info}\nNote: List of obligatory features that must be in the model - list of features to drop before any selection is also considered!")
-        return info
-
-    def get_list_of_features(self):
-        """
-        Use ShapPlotFeatures to get a list of selected features.
-        :return: A list of selected features
-        """
-        selector_instance = self.get_feature_selector_instance()
-        plotter = ShapPlotFeatures(feature_selector=selector_instance, **self.plot_features_kwargs)
-        return plotter.get_list_of_features()
-
-shap_feature_selector_factory = ShapFeatureSelectorFactory(model=None)
+        return self.model.predict_proba(self.transform(X))
