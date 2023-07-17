@@ -400,17 +400,30 @@ import logging
 from sklearn.base import BaseEstimator, TransformerMixin
 import shap
 import fasttreeshap
+import warnings
+import numpy as np
+import pandas as pd
+import shap
+from sklearn.base import BaseEstimator, TransformerMixin
+import logging
+import fasttreeshap
+import pandas as pd
+import numpy as np
+import logging
+import warnings
+import shap
+from sklearn.base import BaseEstimator, TransformerMixin
+import fasttreeshap
 
 class ShapFeatureSelector(BaseEstimator, TransformerMixin):
-    def __init__(
-        self,
-        model,
-        num_features=None,
-        threshold=None,
-        list_of_features_to_drop_before_any_selection=None,
-        list_of_obligatory_features_that_must_be_in_model=None,
-        **kwargs,
-    ):
+    def __init__(self,
+                 model,
+                 num_features=None,
+                 threshold=None,
+                 list_of_features_to_drop_before_any_selection=None,
+                 list_of_obligatory_features_that_must_be_in_model=None,
+                 random_state=42,
+                 **kwargs):
         self.shap_values = None
         self.X = None
         self.y = None
@@ -419,21 +432,12 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.model = model
         self.num_features = num_features
         self.threshold = threshold
-        self.list_of_features_to_drop_before_any_selection = (
-            list_of_features_to_drop_before_any_selection
-            if list_of_features_to_drop_before_any_selection is not None
-            else []
-        )
-        self.list_of_obligatory_features_that_must_be_in_model = (
-            list_of_obligatory_features_that_must_be_in_model
-            if list_of_obligatory_features_that_must_be_in_model is not None
-            else []
-        )
+        self.list_of_features_to_drop_before_any_selection = list_of_features_to_drop_before_any_selection if list_of_features_to_drop_before_any_selection is not None else []
+        self.list_of_obligatory_features_that_must_be_in_model = list_of_obligatory_features_that_must_be_in_model if list_of_obligatory_features_that_must_be_in_model is not None else []
+        self.random_state = random_state
         self.kwargs = kwargs
-        self.shap_tree_explainer_kwargs = kwargs.get("shap_tree_explainer_kwargs", {})
-        self.fasttreeshap_explainer_kwargs = kwargs.get(
-            "fasttreeshap_explainer_kwargs", {}
-        )
+        self.shap_tree_explainer_kwargs = kwargs.get("shap_tree_explainer_kwargs", {"random_state": self.random_state})
+        self.fasttreeshap_explainer_kwargs = kwargs.get("fasttreeshap_explainer_kwargs", {"random_state": self.random_state})
 
     @property
     def importance_df(self):
@@ -455,29 +459,21 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
             self.feature_names = [f"Feature {i}" for i in range(X.shape[1])]
 
         if self.list_of_features_to_drop_before_any_selection:
-            idx_to_drop = [
-                i
-                for i, f in enumerate(self.feature_names)
-                if f in self.list_of_features_to_drop_before_any_selection
-            ]
+            idx_to_drop = [i for i, f in enumerate(self.feature_names) if f in self.list_of_features_to_drop_before_any_selection]
             X = np.delete(X, idx_to_drop, axis=1)
-            self.feature_names = [
-                f for i, f in enumerate(self.feature_names) if i not in idx_to_drop
-            ]
+            self.feature_names = [f for i, f in enumerate(self.feature_names) if i not in idx_to_drop]
 
         try:
-            self.explainer = fasttreeshap.TreeExplainer(
-                self.model, **self.fasttreeshap_explainer_kwargs
-            )
+            self.explainer = fasttreeshap.TreeExplainer(self.model, **self.fasttreeshap_explainer_kwargs)
+            self.shap_values = self.explainer.shap_values(X)
         except Exception as e:
-            logger.error(
-                f"There is an error with this message: {e}. Shap Explainer will be used instead of Fasttreeshap TreeExplainer!"
-            )
-            self.explainer = shap.Explainer(
-                self.model, **self.shap_tree_explainer_kwargs
-            )
-
-        self.shap_values = self.explainer.shap_values(X)
+            logger.error(f"There is an error with this message: {e}. Shap TreeExplainer will be used instead of Fasttreeshap TreeExplainer!")
+            try:
+                self.explainer = shap.TreeExplainer(self.model, **self.shap_tree_explainer_kwargs)
+                self.shap_values = self.explainer.shap_values(X)
+            except Exception as e:
+                logger.error(f"Neither Fasttreeshap TreeExplainer nor Shap TreeExplainer could be used: {e}")
+                raise e
 
         if isinstance(self.shap_values, list):
             self.shap_values = np.mean(self.shap_values, axis=0)
@@ -485,26 +481,15 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
         self.feature_importances_ = np.mean(np.abs(self.shap_values), axis=0)
         self.importance_order = np.argsort(self.feature_importances_)[::-1]
 
-        obligatory_feature_idx = [
-            i
-            for i, f in enumerate(self.feature_names)
-            if f in self.list_of_obligatory_features_that_must_be_in_model
-        ]
+        obligatory_feature_idx = [i for i, f in enumerate(self.feature_names) if f in self.list_of_obligatory_features_that_must_be_in_model]
 
-        if self.num_features is None:
-            if self.threshold is not None:
-                self.selected_feature_idx = np.where(
-                    self.feature_importances_ >= self.threshold
-                )[0]
-                self.selected_feature_idx = list(
-                    set(self.selected_feature_idx).union(set(obligatory_feature_idx))
-                )
+        if self.num_features is None and self.threshold is not None:
+            self.selected_feature_idx = np.where(self.feature_importances_ >= self.threshold)[0]
+            self.selected_feature_idx = list(set(self.selected_feature_idx).union(set(obligatory_feature_idx)))
+        elif self.num_features is not None:
+            self.selected_feature_idx = list(set(self.importance_order[: self.num_features]).union(set(obligatory_feature_idx)))
         else:
-            self.selected_feature_idx = list(
-                set(self.importance_order[: self.num_features]).union(
-                    set(obligatory_feature_idx)
-                )
-            )
+            self.selected_feature_idx = []
 
         if not self.selected_feature_idx:
             warnings.warn("No features were selected during fit. The most important one will be selected.")
@@ -514,7 +499,7 @@ class ShapFeatureSelector(BaseEstimator, TransformerMixin):
             raise NotImplementedError
         else:
             self.importance_df = pd.DataFrame(self.importance_order, columns=['Importance'])
-            
+
         self.X = X
         self.y = y
         return self
