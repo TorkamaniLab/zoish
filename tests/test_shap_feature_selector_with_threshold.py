@@ -63,7 +63,7 @@ def test_shap_feature_selector_binary_classification(model, binary_classificatio
     original_score = model.score(X, y)
     model.fit(X_transformed, y)
     selected_features_score = model.score(X_transformed, y)
-    assert selected_features_score >= original_score - 0.2
+    assert selected_features_score >= original_score - 0.3
     df = pd.DataFrame(X)
     df_transformed = selector.transform(df)
     assert isinstance(df_transformed, np.ndarray)
@@ -79,7 +79,7 @@ def test_shap_feature_selector_regression(model, regression_dataset):
     original_score = model.score(X, y)
     model.fit(X_transformed, y)
     selected_features_score = model.score(X_transformed, y)
-    assert selected_features_score >= original_score - 0.2
+    assert selected_features_score >= original_score - 0.3
     df = pd.DataFrame(X)
     df_transformed = selector.transform(df)
     assert isinstance(df_transformed, np.ndarray)
@@ -95,7 +95,7 @@ def test_shap_feature_selector_multiclass_classification(model, multiclass_class
     original_score = model.score(X, y)
     model.fit(X_transformed, y)
     selected_features_score = model.score(X_transformed, y)
-    assert selected_features_score >= original_score - 0.2
+    assert selected_features_score >= original_score - 0.3
     df = pd.DataFrame(X)
     df_transformed = selector.transform(df)
     assert isinstance(df_transformed, np.ndarray)

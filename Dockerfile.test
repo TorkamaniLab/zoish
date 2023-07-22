@@ -1,67 +1,41 @@
+# Starting from a Python 3.10 base image
+FROM python:3.10
 
-FROM ubuntu:20.04
+# Python and Poetry versions
+ARG PYTHON_VERSION=3.10
+ARG POETRY_VERSION=1.5.1
+
+# Timezone
+ENV TZ=Etc/UTC
+
+# Create a new user 'admin' and set the login shell to /bin/sh
 RUN useradd -ms /bin/sh admin
-COPY --chown=admin:admin . /zoish
+
+# Set the working directory to /zoish and copy files
 WORKDIR /zoish
-ENV PYTHON_VERSION=3.10
-ENV POETRY_VERSION=1.4.2
+COPY --chown=admin:admin . /zoish
 
-
-#Set of all dependencies needed for pyenv to work on Ubuntu
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends         make 
-RUN apt-get install -y --no-install-recommends        build-essential 
-RUN apt-get install -y --no-install-recommends        libssl-dev 
-RUN apt-get install -y --no-install-recommends         bzip2 
-RUN apt-get install -y --no-install-recommends         openssl 
-RUN apt-get install -y --no-install-recommends         zlib1g-dev 
-RUN apt-get install -y --no-install-recommends         libbz2-dev 
-RUN apt-get install -y --no-install-recommends         libreadline-dev 
-RUN apt-get install -y --no-install-recommends         libsqlite3-dev 
-RUN apt-get install -y --no-install-recommends         wget 
-RUN apt-get install -y --no-install-recommends         ca-certificates 
-RUN apt-get install -y --no-install-recommends         curl 
-RUN apt-get install -y --no-install-recommends         llvm 
-RUN apt-get install -y --no-install-recommends         libncurses5-dev 
-RUN apt-get install -y --no-install-recommends         libncursesw5-dev 
-RUN apt-get install -y --no-install-recommends         xz-utils 
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
-RUN apt-get install -y --no-install-recommends         libxml2-dev 
-RUN apt-get install -y --no-install-recommends         libxmlsec1-dev 
-RUN apt-get install -y --no-install-recommends         libffi-dev 
-RUN apt-get install -y --no-install-recommends         liblzma-dev 
-RUN apt-get install -y --no-install-recommends         mecab-ipadic-utf8 
-RUN apt-get install -y --no-install-recommends         git 
-RUN apt-get install -y --no-install-recommends         gnumeric 
-
-# Set-up necessary Env vars for PyEnv
-ENV PYENV_ROOT /root/.pyenv
-ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
-
-# Install pyenv
-RUN set -ex \
-    && curl https://pyenv.run | bash \
-    && pyenv update \
-    && pyenv install $PYTHON_VERSION \
-    && pyenv global $PYTHON_VERSION \
-    && pyenv rehash
-
-# RUN apt install python3-pytest
-RUN apt-get -y install nox
-WORKDIR /zoish/zoish/data
-RUN curl -O -k 'https://archive.ics.uci.edu/ml/machine-learning-databases/00350/default%20of%20credit%20card%20clients.xls' 
-RUN  ssconvert default%20of%20credit%20card%20clients.xls data1.csv 
-RUN  grep -v "X1" data1.csv > data.csv
+# Install system dependencies needed for your project (if any)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        make \
+        build-essential \
+        mecab-ipadic-utf8 \
+        git \
+        gnumeric && \
+    DEBIAN_FRONTEND=noninteractive apt-get -y install tzdata && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install and setup poetry
-WORKDIR /zoish
-RUN pip3 install --upgrade pip
-RUN pip install "poetry==$POETRY_VERSION"
-RUN poetry config virtualenvs.create false 
-RUN poetry cache clear --all pypi 
-RUN poetry install  --no-interaction --no-ansi
+RUN pip3 install --upgrade pip && \
+    pip install "poetry==$POETRY_VERSION" && \
+    poetry config virtualenvs.create false && \
+    poetry cache clear --all pypi && \
+    poetry install  --no-interaction --no-ansi
 
+# Switch to the 'admin' user and set permissions
 USER admin
 RUN chmod +x ./run.sh
 
+# Set the entrypoint for the container
 CMD ["bash", "./run.sh"]

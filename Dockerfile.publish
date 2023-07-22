@@ -1,31 +1,57 @@
-
+# Starting from a Python 3.10 base image
 FROM python:3.10
 
+# Create a new user 'admin' and set the login shell to /bin/sh
 RUN useradd -ms /bin/sh admin
-COPY --chown=admin:admin . /zoish
- 
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE 1
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED 1
-ENV username = $username
-ENV password = $password
-ENV gitusername = $gitusername
-ENV gitpassword = $gitpassword
-ENV POETRY_VERSION=1.4.2
 
-# Install and setup poetry
+# Copy all the files in the current directory on the host 
+# to /zoish in the container with 'admin' as owner
+COPY --chown=admin:admin . /zoish
+
+# Environment variables to enhance Python and control its behavior
+# PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc (equivalent to python -B option)
+# PYTHONUNBUFFERED: Prevents Python from buffering stdout and stderr (equivalent to python -u option)
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Environment variables for your app credentials. These values are taken from the environment at build time.
+# They will be empty if not provided during the build. Use `docker build --build-arg key=value` to provide values.
+ARG username
+ARG password
+ARG gitusername
+ARG gitpassword
+
+# Add these as environment variables in the container
+ENV USERNAME=$username
+ENV PASSWORD=$password
+ENV GITUSERNAME=$gitusername
+ENV GITPASSWORD=$gitpassword
+
+# Poetry version to be used in the project
+ENV POETRY_VERSION=1.5.1
+
+# Set the working directory to /zoish
 WORKDIR /zoish
-RUN pip3 install --upgrade pip
-RUN pip install "poetry==$POETRY_VERSION"
+
+# Upgrade pip and install poetry
+RUN pip3 install --upgrade pip && \
+    pip install "poetry==$POETRY_VERSION"
+
+# Configure poetry: 
+# - virtualenvs.create false: this setting disables the creation of virtual environments on `poetry install`
 RUN poetry config virtualenvs.create false 
+
+# Clear poetry cache from pypi
 RUN poetry cache clear --all pypi 
+
+# Install the project dependencies
 RUN poetry install  --no-interaction --no-ansi
 
+# Switch to the 'admin' user
 USER admin
+
+# Build the project (creates distribution archives)
 RUN poetry build 
+
+# Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
-
-
-# run entrypoint.sh
-CMD ["bash", "./entrypoint.sh"]

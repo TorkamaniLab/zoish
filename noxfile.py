@@ -1,28 +1,34 @@
-import nox
 import argparse
+import nox
 
-
+# Run tests with nox
 @nox.session(python=False)
 def tests(session):
+    """
+    Establishes poetry environment and runs pytest tests
+    """
     session.run("poetry", "shell")
     session.run("poetry", "install")
-    #TODO pytest run locally - uncomment to do it again
     session.run("pytest")
 
 
+# Linting with nox
 @nox.session
 def lint(session):
+    """
+    Installs linting tools and run them against the codebase
+    """
     session.install("flake8", "black", "isort")
     session.run("isort", "./zoish/")
     session.run("black", "./zoish/")
     session.run("flake8", "--ignore=E501,I202,W503,E203", "./zoish/")
 
 
+# Release with nox
 @nox.session
 def release(session):
     """
     Kicks off an automated release process by creating and pushing a new tag.
-
     Invokes bump2version with the posarg setting the version.
 
     Usage:
@@ -36,32 +42,15 @@ def release(session):
         help="The type of semver release to make.",
         choices={"major", "minor", "patch"},
     )
-
     parser.add_argument("username", type=str, nargs=1, help="Username for git")
-
     parser.add_argument("useremail", type=str, nargs=1, help="useremail for git")
-
     parser.add_argument("gitpassword", type=str, nargs=1, help="gitpassword for git")
 
-    args: argparse.Namespace = parser.parse_args(args=session.posargs)
-    version: str = args.version.pop()
-    username: str = args.username.pop()
-    useremail: str = args.useremail.pop()
-    gitpassword: str = args.gitpassword.pop()
-
-    # If we get here, we should be good to go
-    # Let's do a final check for safety
-
-    # TODO
-    # I remove the below section to enforce version
-    # change and push without confirmation
-
-    # confirm = input(
-    #    f"You are about to bump the {version!r} version. Are you sure? [y/n]: "
-    # )
-    # Abort on anything other than 'y'
-    # if confirm.lower().strip() != "y":
-    #    session.error(f"You said no when prompted to bump the {version!r} version.")
+    args = parser.parse_args(args=session.posargs)
+    version = args.version.pop()
+    username = args.username.pop()
+    useremail = args.useremail.pop()
+    gitpassword = args.gitpassword.pop()
 
     session.install("bump2version")
 

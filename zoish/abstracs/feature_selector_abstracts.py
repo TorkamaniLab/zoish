@@ -1,5 +1,5 @@
-from abc import ABCMeta, abstractmethod
-from abc import ABC
+from abc import ABC, ABCMeta, abstractmethod
+
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -66,4 +66,3 @@ class PlotFeatures(ABC):
     def expose_plot_object(self):
         """Expose plot object of feature selector"""
         pass
-

@@ -3,45 +3,27 @@
 
 # Zoish
 
-Zoish is a package built to ease machine learning development by providing various feature-selecting modules such as:  
-- Select By Single Feature Performance
-- Recursive Feature Elimination
-- Recursive Feature Addition
-- Select By Shuffling
+Zoish is a Python package that simplifies the machine learning process by using SHAP values for feature importance. It integrates with a range of machine learning models, provides feature selection to enhance performance, and improves model interpretability. With Zoish, users can also visualize feature importance through SHAP summary and bar plots, creating an efficient and user-friendly environment for machine learning development.
 
-All of them are compatible with [scikit-learn](https://scikit-learn.org) pipeline. 
+# Introduction
 
+Zoish is a powerful tool for streamlining your machine learning pipeline by leveraging SHAP (SHapley Additive exPlanations) values for feature selection. Designed to work seamlessly with binary and multi-class classification models as well as regression models from sklearn, Zoish is also compatible with gradient boosting frameworks such as CatBoost and LightGBM.
 
-## Introduction
+## Features
 
-All of the above-mentioned modules of Zoish have class factories that have various methods and parameters. From an estimator to its tunning parameters and from optimizers to their parameters, the final goal is to automate the feature selection of the ML pipeline in a proper way. Optimizers like [Optuna](https://optuna.org/), [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html) , [RandomizedSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html), [TuneGridSearchCV, and TuneSearchCV](https://github.com/ray-project/tune-sklearn) has critical role in Zoish. They are used to provide the best estimator on a train set that is later used by feature selectors to check what features can improve the accuracy of this best estimator based on desired metrics. In short, Optimizers use information every bit of information in rain set to select the best feature set. 
+- **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with any tree-based estimator or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost and LightGBM.
+- 
+- **Feature Selection:** By utilizing SHAP values, Zoish efficiently determines the most influential features for your predictive models. This improves the interpretability of your model and can potentially enhance model performance by reducing overfitting.
 
-The main process in Zoish is to split samples to train and validation set, and then optimization will estimate optimal hyper-parameters of the estimators. After that, this best estimator will be input to the feature selection objects and finally, the best subset of features with higher grades will be returned. This subset can be used as the next steps of the ML pipeline. In the next paragraphs, more details about feature selector modules have provided.
+- **Visualization:** Zoish includes capabilities for plotting important features using SHAP summary plots and SHAP bar plots, providing a clear and visual representation of feature importance.
 
-### ShapFeatureSelectorFactory
+## Dependencies
 
-ShapFeatureSelectorFactory uses  [SHAP](https://arxiv.org/abs/1705.07874) (SHapley Additive exPlanation)  for a better feature selection. This package uses [FastTreeSHAP](https://arxiv.org/abs/2109.09847) while calculating shap values and [SHAP](https://shap.readthedocs.io/en/latest/index.html) for plotting. Using this module users can : 
+The core dependency of Zoish is the `shap` package, which is used to compute the SHAP values for tree based machine learning model. SHAP values are a unified measure of feature importance and they offer an improved interpretation of machine learning models. They are based on the concept of cooperative game theory and provide a fair allocation of the contribution of each feature to the prediction of each instance.
 
-- find features using the best estimator of tree-based models with the highest shap values after hyper-parameter optimization.
-- draw some shap related plots for selected features.
-- return a  Pandas data frame with a list of features and shap values. 
+## Installation
 
-### RecursiveFeatureEliminationFeatureSelectorFactory
-
-The job of this factory class is to ease the selection of features by following a recursive elimination process. The process uses the best estimator found by the optimizer using all the features. Then it ranks the features according to their importance derived from the best estimator. In the next step, it removes the least important feature and fits again with the best estimator. It calculates the performance of the best estimator again and calculates the performance difference between the new and old results. If the performance drop is below the threshold the feature is removed, and this process will continue until all features have been evaluated. For more information on the logic of the recursive elimination process visit this [RecursiveFeatureElimination](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureElimination.html) page. 
-
-### RecursiveFeatureAdditionFeatureSelectorFactory
-It is very similar to RecursiveFeatureEliminationFeatureSelectorFactory, however, the logic is the opposite. It selects features following a recursive addition process. Visit [RecursiveFeatureAddition](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/RecursiveFeatureAddition.html) for more details. 
-
-### SelectByShufflingFeatureSelectorFactory
-
-In this module, the selection of features is based on determining the drop in machine learning model performance when each feature’s values are randomly shuffled.
-
-If the variables are important, a random permutation of their values will decrease dramatically the machine learning model performance. Contrarily, the permutation of the values should have little to no effect on the model performance metric we are assessing if the feature is not predictive. To understand how it works completely go to its official page [SelectByShuffling](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectByShuffling.html).
-
-### SingleFeaturePerformanceFeatureSelectorFactory
-
-It selects features based on the performance of a machine learning model trained to utilize a single feature. In other words, it trains a machine-learning model for every single feature, then determines each model’s performance. If the performance of the model is greater than a user-specified threshold, then the feature is retained, otherwise removed. Go to this [page](https://feature-engine.readthedocs.io/en/latest/api_doc/selection/SelectBySingleFeaturePerformance.html) for more information. 
+To install Zoish, use pip:
 
 ## Installation
 
@@ -64,167 +46,265 @@ For log configuration in production environment use
 export env=prod
 ```
 
-## Examples 
+# Examples 
 
-### Import required libraries
 ```
-from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
+
+# Built-in libraries
 import pandas as pd
-from sklearn.model_selection import train_test_split
-import pandas as pd
+
+# Scikit-learn libraries for model selection, metrics, pipeline, impute, preprocessing, compose, and ensemble
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectFromModel
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import classification_report, confusion_matrix, f1_score, make_scorer
+from sklearn.model_selection import GridSearchCV, KFold, train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import r2_score
-from feature_engine.imputation import CategoricalImputer, MeanMedianImputer
-from category_encoders import OrdinalEncoder
-import xgboost
-import optuna
-from optuna.samplers import TPESampler
-from optuna.pruners import HyperbandPruner
-from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
+
+# Other libraries
+from category_encoders import TargetEncoder
+from xgboost import XGBClassifier
+from zoish.feature_selectors.shap_selectors import ShapFeatureSelector, ShapPlotFeatures
+import logging
+from zoish import logger
+logger.setLevel(logging.ERROR)
+from feature_engine.imputation import (
+    CategoricalImputer,
+    MeanMedianImputer
+    )
+
+# Set logging level
+logger.setLevel(logging.ERROR)
+
 ```
 
-### Computer Hardware Data Set (a classification problem)
+#### Example: Audiology (Standardized) Data Set
+###### https://archive.ics.uci.edu/ml/datasets/Audiology+%28Standardized%29
+
+
+#### Read data
+
 ```
-urldata= "https://archive.ics.uci.edu/ml/machine-learning-databases/cpu-performance/machine.data"
+urldata = "https://archive.ics.uci.edu/ml/machine-learning-databases/lymphography/lymphography.data"
+urlname = "https://archive.ics.uci.edu/ml/machine-learning-databases/lung-cancer/lung-cancer.names"
 # column names
-col_names=[
-    "vendor name",
-    "Model Name",
-    "MYCT",
-    "MMIN",
-    "MMAX",
-    "CACH",
-    "CHMIN",
-    "CHMAX",
-    "PRP"
+col_names = [
+    "class",
+    "lymphatics",
+    "block of affere",
+    "bl. of lymph. c",
+    "bl. of lymph. s",
+    "by pass",
+    "extravasates",
+    "regeneration of",
+    "early uptake in",
+    "lym.nodes dimin",
+    "lym.nodes enlar",
+    "changes in lym.",
+    "defect in node",
+    "changes in node",
+    "special forms",
+    "dislocation of",
+    "exclusion of no",
+    "no. of nodes in",
+
 ]
-# read data
-data = pd.read_csv(urldata,header=None,names=col_names,sep=',')
+
+data = pd.read_csv(urldata,names=col_names)
+data.head()
 
 ```
-### Train test split
-```
-X = data.loc[:, data.columns != "PRP"]
-y = data.loc[:, data.columns == "PRP"]
 
-X_train, X_test, y_train, y_test =train_test_split(X, y, test_size=0.33, random_state=42)
+#### Define labels and train-test split
+
+
 ```
-### Find feature types for later use
+
+
+data.loc[(data["class"] == 1) | (data["class"] == 2), "class"] = 0
+data.loc[data["class"] == 3, "class"] = 1
+data.loc[data["class"] == 4, "class"] = 2
+data["class"] = data["class"].astype(int)
+```
+
+#### Train test split
+
+```
+X = data.loc[:, data.columns != "class"]
+y = data.loc[:, data.columns == "class"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.33,  random_state=42
+)
+```
+
+#### Defining the feature pipeline steps:
+Here, we use an untuned XGBClassifier model with the ShapFeatureSelector.In the next section, we will repeat the same process but with a tuned XGBClassifier. The aim is to demonstrate that a better estimator can yield improved results when used with the ShapFeatureSelector.
+
+```
+estimator_for_feature_selector= XGBClassifier()     
+estimator_for_feature_selector.fit(X_train, y_train)
+shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5)
+        
+# Define pre-processing for numeric columns (float and integer types)
+numeric_features = X_train.select_dtypes(include=['int64', 'float64']).columns
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='mean')),
+    ('scaler', StandardScaler())])
+
+# Define pre-processing for categorical features
+categorical_features = X_train.select_dtypes(include=['object']).columns
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('encoder', TargetEncoder(handle_missing='return_nan'))])
+
+# Combine preprocessing into one column transformer
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features)])
+
+# Feature Selection using ShapSelector 
+feature_selection = shap_feature_selector 
+
+# Classifier model
+classifier = RandomForestClassifier(n_estimators=100)
+
+# Create a pipeline that combines the preprocessor with a feature selection and a classifier
+pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                           ('feature_selection', feature_selection),
+                           ('classifier', classifier)])
+
+# Fit the model
+pipeline.fit(X_train, y_train)
+
+# Predict on test data
+y_test_pred = pipeline.predict(X_test)
+
+# Output first 10 predictions
+print(y_test_pred[:10])
+```
+
+#### Check performance of the Pipeline
+
+```
+
+print("F1 score : ")
+print(f1_score(y_test, y_test_pred,average='micro'))
+print("Classification report : ")
+print(classification_report(y_test, y_test_pred))
+print("Confusion matrix : ")
+print(confusion_matrix(y_test, y_test_pred))
+
+
+```
+
+
+#### Use better estimator:
+In this iteration, we will utilize the optimally tuned estimator with the ShapFeatureSelector, which is expected to yield improved results."
+
 ```
 int_cols =  X_train.select_dtypes(include=['int']).columns.tolist()
-float_cols =  X_train.select_dtypes(include=['float']).columns.tolist()
-cat_cols =  X_train.select_dtypes(include=['object']).columns.tolist()
-```
 
-###  Define Feature selector and set its arguments  
-```
-shap_feature_selector_factory = (
-    ShapFeatureSelector.shap_feature_selector_factory.set_model_params(
-        X=X_train,
-        y=y_train,
-        verbose=10,
-        random_state=0,
-        estimator=xgboost.XGBRegressor(),
-        estimator_params={
-            "max_depth": [4, 5],
-        },
-        fit_params = {
-            "callbacks": None,
-        },
-        method="optuna",
-        # if n_features=None only the threshold will be considered as a cut-off of features grades.
-        # if threshold=None only n_features will be considered to select the top n features.
-        # if both of them are set to some values, the threshold has the priority for selecting features.
-        n_features=5,
-        threshold = None,
-        list_of_obligatory_features_that_must_be_in_model=[],
-        list_of_features_to_drop_before_any_selection=[],
-    )
-    .set_shap_params(
-        model_output="raw",
-        feature_perturbation="interventional",
-        algorithm="v2",
-        shap_n_jobs=-1,
-        memory_tolerance=-1,
-        feature_names=None,
-        approximate=False,
-        shortcut=False,
-    )
-    .set_optuna_params(
-            measure_of_accuracy="r2_score(y_true, y_pred)",
-            # optuna params
-            with_stratified=False,
-            test_size=.3,
-            n_jobs=-1,
-            # optuna params
-            # optuna study init params
-            study=optuna.create_study(
-                storage=None,
-                sampler=TPESampler(),
-                pruner=HyperbandPruner(),
-                study_name="example of optuna optimizer",
-                direction="maximize",
-                load_if_exists=False,
-                directions=None,
-            ),
-            # optuna optimization params
-            study_optimize_objective=None,
-            study_optimize_objective_n_trials=20,
-            study_optimize_objective_timeout=600,
-            study_optimize_n_jobs=-1,
-            study_optimize_catch=(),
-            study_optimize_callbacks=None,
-            study_optimize_gc_after_trial=False,
-            study_optimize_show_progress_bar=False,
-            )
-)
 
-```
-### Build sklearn Pipeline  
-```
+# Define the XGBClassifier
+xgb_clf = XGBClassifier()
+
+# Define the parameter grid for XGBClassifier
+param_grid = {
+    'learning_rate': [0.01, 0.1],
+    'max_depth': [ 4, 5],
+    'min_child_weight': [1, 2, 3],
+    'gamma': [0, 0.1, 0.2],
+}
+
+# Define the scoring function
+scoring = make_scorer(f1_score, average='micro')  # Use 'micro' average in case of multiclass target
+
+# Set up GridSearchCV
+grid_search = GridSearchCV(xgb_clf, param_grid, cv=5, scoring=scoring, verbose=1)
+grid_search.fit(X_train, y_train)
+# Fit the GridSearchCV object
+estimator_for_feature_selector= grid_search.best_estimator_ 
+shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5)
+ 
+
 pipeline =Pipeline([
             # int missing values imputers
-            ('intimputer', MeanMedianImputer(
-                imputation_method='median', variables=int_cols)),
-            # category missing values imputers
-            ('catimputer', CategoricalImputer(variables=cat_cols)),
-            #
-            ('catencoder', OrdinalEncoder()),
-            # feature selection
-            ("sfsf", shap_feature_selector_factory),
-            # add any regression model from sklearn e.g., LinearRegression
-            ('regression', LinearRegression())
+            ('floatimputer', MeanMedianImputer(
+                imputation_method='mean', variables=int_cols)),
+           
+            ('shap_feature_selector', shap_feature_selector),
+            ('classfier', RandomForestClassifier(n_estimators=100))
 
 
  ])
-```
-### Run Pipeline
-```
-pipeline.fit(X_train,y_train)
-y_pred = pipeline.predict(X_test)
 
-```
-### Plots
-```
-ShapFeatureSelector.shap_feature_selector_factory.plot_features_all(
-    type_of_plot="summary_plot",
-    path_to_save_plot="../plots/shap_optuna_search_regression_summary_plot"
-)
+
+# Fit the model
+pipeline.fit(X_train, y_train)
+
+# Predict on test data
+y_test_pred = pipeline.predict(X_test)
+
+# Output first 10 predictions
+print(y_test_pred[:10])
+            
 ```
 
-###  Check performance of the Pipeline
-```
-print('r2 score : ')
-print(r2_score(y_test,y_pred))
+#### Performance has improved
 
 ```
-### Get access to feature selector instance
-```
-print(ShapFeatureSelector.shap_feature_selector_factory.get_feature_selector_instance())
+
+print("F1 score : ")
+print(f1_score(y_test, y_test_pred,average='micro'))
+print("Classification report : ")
+print(classification_report(y_test, y_test_pred))
+print("Confusion matrix : ")
+print(confusion_matrix(y_test, y_test_pred))
+
+#### Shap related plots
+
 ```
 
+#### Plot the features importance
+```
+plot_factory = ShapPlotFeatures(shap_feature_selector) 
+
+```
+
+#### Summary Plot of the selected features
+```
+plot_factory.summary_plot()
+
+```
+![summary plot](https://i.imgur.com/P7Pt8cd.png)
+
+#### Summary Plot of the all features
+```
+plot_factory.summary_plot_full()
+
+```
+![summary plot full](https://i.imgur.com/tfnh1kv.png)
+
+#### Bar Plot of the selected features
+
+```
+plot_factory.bar_plot()
+```
+![bar plot](https://i.imgur.com/qsMkVT7.png)
+
+#### Bar Plot of the all features
+
+```
+plot_factory.bar_plot_full()
+```
+![bar plot full](https://i.imgur.com/fA3BPDM.png)
 
 More examples are available in the [examples](https://github.com/drhosseinjavedani/zoish/tree/main/zoish/examples). 
 
 ## License
 Licensed under the [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) License.
+
