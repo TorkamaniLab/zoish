@@ -1,4 +1,5 @@
 import argparse
+import os
 import nox
 
 # Run tests with nox
@@ -8,6 +9,9 @@ def tests(session):
     Establishes poetry environment and runs pytest tests
     """
     session.run("poetry", "install", external=True)
+    # Ensure the directory for pytest caching exists and is owned by the correct user
+    os.makedirs('/tmp/.cache', exist_ok=True)
+    os.chown('/tmp/.cache', os.getuid(), os.getgid())
     # Use a different directory for pytest caching
     session.env['XDG_CACHE_HOME'] = '/tmp/.cache'
     session.run("pytest")

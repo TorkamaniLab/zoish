@@ -13,7 +13,8 @@ RUN useradd -ms /bin/sh admin
 
 # Set the working directory to /zoish and copy files
 WORKDIR /zoish
-COPY --chown=admin:admin . /zoish
+COPY . .
+RUN chown -R admin:admin /zoish
 
 # Install system dependencies needed for your project (if any)
 RUN apt-get update && apt-get install -y --no-install-recommends \
