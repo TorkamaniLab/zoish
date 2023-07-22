@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -6,31 +6,21 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class FeatureSelector(BaseEstimator, TransformerMixin):
     """Base class for creating feature selector."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """
         Class initalizer
         """
-        pass
-
-    def prepare_data(self):
-        pass
+        super().__init__()
 
     @abstractmethod
-    def fit(self, *args, **kwargs):
+    def fit(self, X, y):
         """
         Fit estimator using params
         """
         pass
 
     @abstractmethod
-    def calc_best_estimator(self, *args, **kwargs):
-        """
-        Calculate best estimator using params
-        """
-        pass
-
-    @abstractmethod
-    def transform(self, *args, **kwargs):
+    def transform(self, X):
         """
         Return a transform
         """
@@ -54,39 +44,25 @@ class BestEstimatorGetterStrategy(metaclass=ABCMeta):
         pass
 
 
-class PlotFeatures(metaclass=ABCMeta):
+class PlotFeatures(ABC):
     """Base class for creating plots for feature selector."""
 
-    def __init__(self, *args, **kwargs):
-        """
-        Class initalizer
-        """
+    @abstractmethod
+    def get_info_of_features_and_grades(self):
+        """Get info of features grades"""
         pass
 
     @abstractmethod
-    def get_info_of_features_and_grades(self, *args, **kwargs):
-        """
-        Get info of features grades
-        """
+    def get_list_of_features(self):
+        """Get list of features grades"""
         pass
 
     @abstractmethod
-    def get_list_of_features(self, *args, **kwargs):
-        """
-        Get list of features grades
-        """
+    def plot_features(self):
+        """Get feature selector requirements"""
         pass
 
     @abstractmethod
-    def plot_features(self, *args, **kwargs):
-        """
-        Get feature selector requirements
-        """
-        pass
-
-    @abstractmethod
-    def expose_plot_object(self, *args, **kwargs):
-        """
-        Expose plot object of feature selector
-        """
+    def expose_plot_object(self):
+        """Expose plot object of feature selector"""
         pass

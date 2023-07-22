@@ -8,7 +8,7 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level : ERROR
     formatter: simple
     stream: ext://sys.stdout
   file_handler:
@@ -25,5 +25,5 @@ loggers:
     propagate: False
  
 root:
-  level: DEBUG
+  level: ERROR
   handlers: [console]
