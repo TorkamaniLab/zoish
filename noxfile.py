@@ -7,9 +7,11 @@ def tests(session):
     """
     Establishes poetry environment and runs pytest tests
     """
-    session.run("poetry", "install", external=True)
-    session.run("poetry", "run", "pytest")
-
+    session.run("poetry", "shell")
+    session.run("poetry", "install")
+    # Use a different directory for pytest caching
+    session.env['XDG_CACHE_HOME'] = '/tmp/.cache'
+    session.run("pytest")
 
 # Linting with nox
 @nox.session
@@ -21,7 +23,6 @@ def lint(session):
     session.run("isort", "./zoish/")
     session.run("black", "./zoish/")
     session.run("flake8", "--ignore=E501,I202,W503,E203", "./zoish/")
-
 
 # Release with nox
 @nox.session
