@@ -1,100 +1,64 @@
-# # Starting from a Python 3.10 base image
-# FROM python:3.10
-
-# # Create a new user 'admin' and set the login shell to /bin/sh
-# RUN useradd -ms /bin/sh admin
-
-# # Copy all the files in the current directory on the host 
-# # to /zoish in the container with 'admin' as owner
-# COPY --chown=admin:admin . /zoish
-
-# # Environment variables to enhance Python and control its behavior
-# # PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc (equivalent to python -B option)
-# # PYTHONUNBUFFERED: Prevents Python from buffering stdout and stderr (equivalent to python -u option)
-# ENV PYTHONDONTWRITEBYTECODE 1
-# ENV PYTHONUNBUFFERED 1
-
-# # Environment variables for your app credentials. These values are taken from the environment at build time.
-# # They will be empty if not provided during the build. Use `docker build --build-arg key=value` to provide values.
-# ARG username
-# ARG password
-# ARG gitusername
-# ARG gitpassword
-
-# # Add these as environment variables in the container
-# # ENV username=$username
-# # ENV password=$password
-# # ENV gitusername=$gitusername
-# # ENV gitpassword=$gitpassword
-
-# # Poetry version to be used in the project
-# ENV POETRY_VERSION=1.5.1
-
-# # Set the working directory to /zoish
-# WORKDIR /zoish
-
-# # Upgrade pip and install poetry
-# RUN pip3 install --upgrade pip && \
-#     pip install "poetry==$POETRY_VERSION"
-
-# # Configure poetry: 
-# # - virtualenvs.create false: this setting disables the creation of virtual environments on `poetry install`
-# RUN poetry config virtualenvs.create false 
-
-# # Clear poetry cache from pypi
-# RUN poetry cache clear --all pypi 
-
-# # Install the project dependencies
-# RUN poetry install  --no-interaction --no-ansi
-
-# # Switch to the 'admin' user
-# USER admin
-
-# # Build the project (creates distribution archives)
-# RUN poetry build 
-
-# # Make the entrypoint script executable
-# RUN chmod +x ./entrypoint.sh
-
-# # Set the entrypoint for the container
-# ENTRYPOINT ["./entrypoint.sh"]
-# Start from Python 3.10 image
+# Starting from a Python 3.10 base image
 FROM python:3.10
 
-# Create a new user 'admin' with /bin/sh as the default shell
+# Create a new user 'admin' and set the login shell to /bin/sh
 RUN useradd -ms /bin/sh admin
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    POETRY_VERSION=1.5.1
+# Copy all the files in the current directory on the host 
+# to /zoish in the container with 'admin' as owner
+COPY --chown=admin:admin . /zoish
 
+# Environment variables to enhance Python and control its behavior
+# PYTHONDONTWRITEBYTECODE: Prevents Python from writing pyc files to disc (equivalent to python -B option)
+# PYTHONUNBUFFERED: Prevents Python from buffering stdout and stderr (equivalent to python -u option)
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+# Environment variables for your app credentials. These values are taken from the environment at build time.
+# They will be empty if not provided during the build. Use `docker build --build-arg key=value` to provide values.
 # Use build args for sensitive information
+
 ARG username
 ARG password
 ARG gitusername
 ARG gitpassword
 
-WORKDIR /zoish
+# Add these as environment variables in the container
+ENV username=$username
+ENV password=$password
+ENV gitusername=$gitusername
+ENV gitpassword=$gitpassword
 
-# Copy local code to the container image.
-COPY --chown=admin:admin . . 
+# Poetry version to be used in the project
+ENV POETRY_VERSION=1.5.1
+
+# Set the working directory to /zoish
+WORKDIR /zoish
 
 # Upgrade pip and install poetry
 RUN pip3 install --upgrade pip && \
-    pip install "poetry==$POETRY_VERSION" && \
-    poetry config virtualenvs.create false && \
-    poetry cache clear --all pypi 
+    pip install "poetry==$POETRY_VERSION"
 
-# Install project dependencies without installing the actual package (useful for development)
-RUN poetry install --no-root --no-interaction --no-ansi
+# Configure poetry: 
+# - virtualenvs.create false: this setting disables the creation of virtual environments on `poetry install`
+RUN poetry config virtualenvs.create false 
 
-# Build the project and make the entrypoint script executable
-RUN poetry build && \
-    chmod +x ./entrypoint.sh
+# Clear poetry cache from pypi
+RUN poetry cache clear --all pypi 
 
-# Change to the 'admin' user
+# Install the project dependencies
+RUN poetry install  --no-interaction --no-ansi
+
+# Switch to the 'admin' user
 USER admin
 
-# Run entrypoint.sh
+# Build the project (creates distribution archives)
+RUN poetry build 
+
+# Make the entrypoint script executable
+RUN chmod +x ./entrypoint.sh
+
+# Set the entrypoint for the container
 CMD ["bash", "./entrypoint.sh"]
+
+
