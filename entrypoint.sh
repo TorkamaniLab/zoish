@@ -32,23 +32,23 @@ git config --global user.password "$gitpassword"
 # Print out a hello message
 echo "Hi from poetry script!"
 
-# Print environment variables (for debugging purposes, remove in production)
-echo "username: $username"
-echo "password: $password"
-echo "gitusername: $gitusername"
-echo "gitpassword: $gitpassword"
-
 # Run nox for the minor release
 nox -s release -- minor "$gitusername" 'h.javedani@gmail.com' "$gitpassword"
 
-# Build and publish using poetry
+# Build using poetry
+echo "Building the package..."
 poetry build
-poetry publish --username="$username" --password="$password"
-
-# Check the exit status of the 'poetry publish' command
-if [ $? -eq 0 ]; then
-    echo "Successfully published to PyPI!"
-else
-    echo "Failed to publish to PyPI!" >&2
+if [ $? -ne 0 ]; then
+    echo "Failed to build the package!" >&2
     exit 1
 fi
+echo "Package built successfully."
+
+# Publish using poetry
+echo "Publishing the package..."
+poetry publish --username="$username" --password="$password" || {
+    echo "Failed to publish the package! Here is the output of 'poetry publish' command:" >&2;
+    poetry publish --username="$username" --password="$password" --verbose;
+    exit 1;
+}
+echo "Package published successfully."

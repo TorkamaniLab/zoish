@@ -55,3 +55,6 @@ RUN poetry build
 
 # Make the entrypoint script executable
 RUN chmod +x ./entrypoint.sh
+
+# Set the entrypoint for the container
+ENTRYPOINT ["./entrypoint.sh"]
