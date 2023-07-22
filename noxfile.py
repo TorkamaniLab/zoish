@@ -7,8 +7,7 @@ def tests(session):
     """
     Establishes poetry environment and runs pytest tests
     """
-    session.run("poetry", "shell")
-    session.run("poetry", "install")
+    session.run("poetry", "install", external=True)
     # Use a different directory for pytest caching
     session.env['XDG_CACHE_HOME'] = '/tmp/.cache'
     session.run("pytest")
