@@ -22,10 +22,10 @@ ARG gitusername
 ARG gitpassword
 
 # Add these as environment variables in the container
-ENV USERNAME=$username
-ENV PASSWORD=$password
-ENV GITUSERNAME=$gitusername
-ENV GITPASSWORD=$gitpassword
+ENV username=$username
+ENV password=$password
+ENV gitusername=$gitusername
+ENV gitpassword=$gitpassword
 
 # Poetry version to be used in the project
 ENV POETRY_VERSION=1.5.1
