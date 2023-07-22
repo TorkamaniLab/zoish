@@ -7,9 +7,8 @@ def tests(session):
     """
     Establishes poetry environment and runs pytest tests
     """
-    session.run("poetry", "shell")
-    session.run("poetry", "install")
-    session.run("pytest")
+    session.run("poetry", "install", external=True)
+    session.run("poetry", "run", "pytest")
 
 
 # Linting with nox
