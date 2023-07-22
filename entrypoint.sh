@@ -44,3 +44,11 @@ nox -s release -- minor "$gitusername" 'h.javedani@gmail.com' "$gitpassword"
 # Build and publish using poetry
 poetry build
 poetry publish --username="$username" --password="$password"
+
+# Check the exit status of the 'poetry publish' command
+if [ $? -eq 0 ]; then
+    echo "Successfully published to PyPI!"
+else
+    echo "Failed to publish to PyPI!" >&2
+    exit 1
+fi
