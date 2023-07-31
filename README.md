@@ -146,7 +146,7 @@ Here, we use an untuned XGBClassifier model with the ShapFeatureSelector.In the 
 ```
 estimator_for_feature_selector= XGBClassifier()     
 estimator_for_feature_selector.fit(X_train, y_train)
-shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5)
+shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5, cv = 5, scoring='accuracy', direction='maximum', n_iter=10, algorithm='auto')
         
 # Define pre-processing for numeric columns (float and integer types)
 numeric_features = X_train.select_dtypes(include=['int64', 'float64']).columns
@@ -228,7 +228,7 @@ grid_search = GridSearchCV(xgb_clf, param_grid, cv=5, scoring=scoring, verbose=1
 grid_search.fit(X_train, y_train)
 # Fit the GridSearchCV object
 estimator_for_feature_selector= grid_search.best_estimator_ 
-shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5)
+shap_feature_selector = ShapFeatureSelector(model=estimator_for_feature_selector, num_features=5, scoring='accuracy', algorithm='auto',cv = 5, n_iter=10, direction='maximum')
  
 
 pipeline =Pipeline([
@@ -280,28 +280,28 @@ plot_factory = ShapPlotFeatures(shap_feature_selector)
 plot_factory.summary_plot()
 
 ```
-![summary plot](https://i.imgur.com/P7Pt8cd.png)
+![summary plot](https://i.imgur.com/jVfNMw8.png)
 
 #### Summary Plot of the all features
 ```
 plot_factory.summary_plot_full()
 
 ```
-![summary plot full](https://i.imgur.com/tfnh1kv.png)
+![summary plot full](https://i.imgur.com/m56u7Me.png)
 
 #### Bar Plot of the selected features
 
 ```
 plot_factory.bar_plot()
 ```
-![bar plot](https://i.imgur.com/qsMkVT7.png)
+![bar plot](https://i.imgur.com/nRSKoKB.png)
 
 #### Bar Plot of the all features
 
 ```
 plot_factory.bar_plot_full()
 ```
-![bar plot full](https://i.imgur.com/fA3BPDM.png)
+![bar plot full](https://i.imgur.com/UPygQjV.png)
 
 More examples are available in the [examples](https://github.com/drhosseinjavedani/zoish/tree/main/zoish/examples). 
 

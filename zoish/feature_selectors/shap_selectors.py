@@ -1,5 +1,6 @@
 # Standard libraries for data handling and calculations
 # Logging and warnings
+import copy
 import logging
 import warnings
 
@@ -7,6 +8,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import shap
+from sklearn.model_selection import cross_val_score
 
 from zoish import logger
 
@@ -367,14 +369,25 @@ class ShapFeatureSelector(FeatureSelector):
         list_of_features_to_drop_before_any_selection=None,  # List of features to drop before the selection.
         list_of_obligatory_features_that_must_be_in_model=None,  # List of features that should always be selected.
         random_state=42,  # Seed for random number generator.
+        algorithm="permutation",
+        scoring=None,
+        cv=None,
+        n_iter=10,
+        direction="maximum",
         **kwargs,  # Additional parameters.
     ):
         # initialize instance variables
         self.shap_values = None
         self.X = None
         self.y = None
+        self.X_copy = None
+        self.y_copy = None
         self._importance_df = None
         self.list_of_selected_features = None
+        self.best_self = None
+        self.bound_max = -np.inf
+        self.bound_min = np.inf
+        self.counter = 0
         self.model = model
         self.num_features = num_features
         self.threshold = threshold
@@ -389,9 +402,25 @@ class ShapFeatureSelector(FeatureSelector):
             else []
         )
         self.random_state = random_state
+        self.algorithm = algorithm
+        self.direction = direction
+        self.cv = cv
+        self.scoring = scoring
+        self.n_iter = n_iter
         self.kwargs = kwargs
         self.shap_tree_explainer_kwargs = kwargs.get(
-            "shap_tree_explainer_kwargs", {"random_state": self.random_state}
+            "shap_tree_explainer_kwargs",
+            {
+                "random_state": self.random_state,
+                "algorithm": self.algorithm,
+            },
+        )
+        self.cross_val_score_kwargs = kwargs.get(
+            "cross_val_score_kwargs",
+            {
+                "cv": self.cv,
+                "scoring": self.scoring,
+            },
         )
 
     # We use the Python decorator @property to specify getter for 'importance_df'.
@@ -406,11 +435,20 @@ class ShapFeatureSelector(FeatureSelector):
             raise ValueError("importance_df must be a pandas DataFrame")
         self._importance_df = value
 
+    @property
+    def direction(self):
+        return self._direction
+
+    @direction.setter
+    def direction(self, value):
+        self._direction = value
+
     # The 'fit' method is where we compute the SHAP values and select the features.
     def fit(self, X, y=None):
         # create logger
         logger = logging.getLogger(__name__)
-
+        self.X_copy = X
+        self.y_copy = y
         # if input is a DataFrame, extract column names and convert to numpy array
         if isinstance(X, pd.DataFrame):
             self.feature_names = X.columns.tolist()
@@ -488,7 +526,27 @@ class ShapFeatureSelector(FeatureSelector):
 
         self.X = X
         self.y = y
-        return self
+
+        while self.counter <= self.n_iter + 1:
+            # Perform cross-validation
+            self.counter = self.counter + 1
+            scores = cross_val_score(
+                self.model, self.X, self.y, **self.cross_val_score_kwargs
+            )
+            score_num = scores.mean()
+            if self.direction == "maximum":
+                if score_num > self.bound_max:
+                    self.bound_max = score_num
+                    self.best_self = copy.deepcopy(self)
+                else:
+                    self.fit(self.X_copy, self.y_copy)
+            if self.direction == "minimum":
+                if score_num < self.bound_min:
+                    self.bound_min = score_num
+                    self.best_self = copy.deepcopy(self)
+                else:
+                    self.fit(self.X_copy, self.y_copy)
+        return self.best_self
 
     # 'transform' method selects the top features from the input.
     def transform(self, X, y=None):

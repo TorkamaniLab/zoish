@@ -14,7 +14,8 @@ def tests(session):
     os.chown('/tmp/.cache', os.getuid(), os.getgid())
     # Use a different directory for pytest caching
     session.env['XDG_CACHE_HOME'] = '/tmp/.cache'
-    session.run("pytest")
+    session.run("pytest", "tests/test_shap_feature_selector_with_n_feature.py")
+    session.run("pytest", "tests/test_shap_feature_selector_with_threshold.py")
 
 # Linting with nox
 @nox.session
