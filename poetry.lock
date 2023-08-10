@@ -1131,37 +1131,6 @@ files = [
 devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benchmark", "pytest-cache", "validictory"]
 
 [[package]]
-name = "fasttreeshap"
-version = "0.1.6"
-description = "A fast implementation of TreeSHAP algorithm."
-optional = false
-python-versions = "*"
-files = [
-    {file = "fasttreeshap-0.1.6-cp39-cp39-macosx_12_0_x86_64.whl", hash = "sha256:39c69cbaddba20376a5978a104efac1406e9a27ed3bb0651c7f6b2154e8cca49"},
-    {file = "fasttreeshap-0.1.6.tar.gz", hash = "sha256:96b31e1451bef54faaa996b3d9090df8b11c7a3d49892765913ba491ed5e4c5c"},
-]
-
-[package.dependencies]
-cloudpickle = "*"
-numba = "*"
-numpy = "*"
-packaging = ">20.9"
-pandas = "*"
-psutil = "*"
-scikit-learn = "*"
-scipy = "*"
-shap = "*"
-slicer = "0.0.7"
-tqdm = ">4.25.0"
-
-[package.extras]
-all = ["catboost", "ipython", "lightgbm", "lime", "matplotlib", "nbsphinx", "numpydoc", "opencv-python", "pyod", "pyspark", "pytest", "pytest-cov", "pytest-mpl", "sentencepiece", "sphinx", "sphinx-rtd-theme", "torch", "transformers", "xgboost"]
-docs = ["ipython", "matplotlib", "nbsphinx", "numpydoc", "sphinx", "sphinx-rtd-theme"]
-others = ["lime"]
-plots = ["ipython", "matplotlib"]
-test = ["catboost", "lightgbm", "opencv-python", "pyod", "pyspark", "pytest", "pytest-cov", "pytest-mpl", "sentencepiece", "torch", "transformers", "xgboost"]
-
-[[package]]
 name = "feather-format"
 version = "0.4.1"
 description = "Simple wrapper library to the Apache Arrow-based Feather File Format"
@@ -5891,4 +5860,4 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "d56ec0486c78b9129f3aacf5df3113b4439d608982b224f17d1aba915eb28bda"
+content-hash = "da95cd50563c20fa99b05d6630124c395e65f4b157ec6b5d818660f733479340"
