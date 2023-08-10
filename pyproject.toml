@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "zoish"
-version = "4.3.0"
+version = "4.4.0"
 description = "Zoish is a Python package that streamlines machine learning by leveraging SHAP values for feature selection and interpretability, making model development more efficient and user-friendly."
 
 authors = ["drhosseinjavedani <h.javedani@gmail.com>"]
