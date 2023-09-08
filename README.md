@@ -12,7 +12,7 @@ Zoish is a powerful tool for streamlining your machine learning pipeline by leve
 ## Features
 
 - **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with any tree-based estimator or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost and LightGBM.
-- 
+  
 - **Feature Selection:** By utilizing SHAP values, Zoish efficiently determines the most influential features for your predictive models. This improves the interpretability of your model and can potentially enhance model performance by reducing overfitting.
 
 - **Visualization:** Zoish includes capabilities for plotting important features using SHAP summary plots and SHAP bar plots, providing a clear and visual representation of feature importance.
