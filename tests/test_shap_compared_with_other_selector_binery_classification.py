@@ -4,18 +4,8 @@ import pytest
 from sklearn.datasets import make_classification, make_regression
 from sklearn.ensemble import (
     RandomForestClassifier,
-    RandomForestRegressor,
-    ExtraTreesClassifier,
-    ExtraTreesRegressor,
-    GradientBoostingClassifier,
-    GradientBoostingRegressor,
-)
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+ )
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
-from xgboost import XGBClassifier, XGBRegressor
-from lightgbm import LGBMClassifier, LGBMRegressor
-from catboost import CatBoostClassifier, CatBoostRegressor
-from itertools import product
 from sklearn.base import clone
 from sklearn.model_selection import GridSearchCV
 import numpy as np

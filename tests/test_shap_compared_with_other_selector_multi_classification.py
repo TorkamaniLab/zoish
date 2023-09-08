@@ -3,12 +3,7 @@ import numpy as np
 import pytest
 from sklearn.datasets import make_classification
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.tree import DecisionTreeClassifier
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-from catboost import CatBoostClassifier
-from itertools import product
 from sklearn.base import clone
 from sklearn.model_selection import GridSearchCV
 from scipy.stats import norm, expon, uniform

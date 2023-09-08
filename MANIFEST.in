@@ -1,0 +1,3 @@
+# Exclude all test directories
+global-exclude tests/*
+global-exclude examples/*

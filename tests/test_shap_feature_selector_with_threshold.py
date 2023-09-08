@@ -7,7 +7,6 @@ from sklearn.ensemble import (
     RandomForestRegressor,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
-    GradientBoostingClassifier,
     GradientBoostingRegressor,
 )
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor

@@ -6,17 +6,30 @@ __pycache__/
 # C extensions
 *.so
 
-# data
-
+# Data files
 data/
 *.csv
 *.pkl
+*.hdf5
 
-# others
-
-*.log
+# Media files
 *.png
+*.jpg
+*.jpeg
+*.gif
 
+# Log files
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Virtual environment
+venv/
+test_env/
+prod_env/
+.venv/
+.env
 
 # Distribution / packaging
 .Python
@@ -39,8 +52,6 @@ share/python-wheels/
 MANIFEST
 
 # PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
 
@@ -62,10 +73,19 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# IDE configurations
 .vscode/
-catboost_info/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
 .DS_Store
+Thumbs.db
 
 # Extra
-
 commands.txt
+
+# Temp files
+*.tmp

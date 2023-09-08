@@ -1,17 +1,18 @@
-__version__ = "4.5.0"
+__version__ = "4.6.0"
 
 import logging
 import logging.config
 import os
 
-import yaml
 from dotenv import load_dotenv
+from ruamel.yaml import YAML
 
 from .project_conf import ROOT_PROJECT
 
 PATH_TO_LOG_CONF = ROOT_PROJECT / "zoish" / "config.yaml"
 # DEFAULT_LEVEL in production env
 DEFAULT_LEVEL = logging.ERROR
+yaml = YAML()
 
 
 def log_setup(log_cfg_path=PATH_TO_LOG_CONF):

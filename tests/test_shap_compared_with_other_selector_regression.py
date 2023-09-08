@@ -3,17 +3,11 @@ import numpy as np
 import pytest
 from sklearn.datasets import make_regression
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
-from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
-from catboost import CatBoostRegressor
-from itertools import product
 from sklearn.base import clone
 from sklearn.model_selection import GridSearchCV
 from scipy.stats import norm, expon, uniform
 from sklearn.model_selection import train_test_split, KFold
-import numpy as np
 
 from sklearn.feature_selection import (
     VarianceThreshold,
@@ -25,7 +19,6 @@ from sklearn.feature_selection import (
     SelectFromModel,
 )
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import mean_squared_error
 
 RANDOM_SEED = 42
 regressors = [RandomForestRegressor(random_state=RANDOM_SEED)]
