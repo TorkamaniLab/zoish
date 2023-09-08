@@ -303,7 +303,7 @@ plot_factory.bar_plot_full()
 ```
 ![bar plot full](https://i.imgur.com/UPygQjV.png)
 
-More examples are available in the [examples](https://github.com/drhosseinjavedani/zoish/tree/main/zoish/examples). 
+More examples are available in the [examples](https://github.com/drhosseinjavedani/zoish/tree/main/examples). 
 
 ## License
 Licensed under the [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) License.
