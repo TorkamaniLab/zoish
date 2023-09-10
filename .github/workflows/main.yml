@@ -55,4 +55,16 @@ jobs:
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
-  
+         
+    # Sending email notification after successful build and publish
+    - name: Send Email Notification
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.office365.com
+        server_port: 587
+        username: ${{secrets.MAIL_USERNAME}}
+        password: ${{secrets.MAIL_PASSWORD}}
+        subject: Automated Email From GitHub Action
+        to: ${{secrets.EMAIL_RECIPIENTS}}
+        from: ${{secrets.MAIL_USERNAME}}
+        body: A new version of Zosih has been successfully built and published to PyPI. 
