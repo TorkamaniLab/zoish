@@ -274,16 +274,15 @@ class ShapPlotFeatures(PlotFeatures):
         Generates a full SHAP interaction plot for all rows of data.
         """
         try:
-            shap_interaction = self.explainer.shap_interaction_values(self.X)
+            shap_interaction = self.explainer.shap_interaction_values(self.X.iloc[:10, :])
             print(f"Shape of shap_interaction: {shap_interaction.shape}")  # Debugging line
 
             if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
-                print(f"Shape of self.X: {self.X.shape}")  # Debugging line
+                print(f"Type of self.X: {type(self.X.iloc[:10, :])}")  # Debugging line
 
                 shap.summary_plot(
                     shap_interaction,
-                    self.X,
-                    **self.summary_plot_kwargs,
+                    self.X.iloc[:10, :],
                 )
             else:
                 raise ValueError("Unsupported data type for self.X")
