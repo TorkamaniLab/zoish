@@ -252,13 +252,34 @@ class ShapPlotFeatures(PlotFeatures):
                 **self.decision_plot_kwargs,
             )
 
+    # def interaction_plot_full(self):
+    #     """
+    #     Generates a full SHAP interaction plot for all rows of data.
+    #     """
+    #     try:
+    #         shap_interaction = self.explainer.shap_interaction_values(self.X)
+    #         if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
+    #             shap.summary_plot(
+    #                 shap_interaction,
+    #                 self.X,
+    #                 **self.summary_plot_kwargs,
+    #             )
+    #         else:
+    #             raise ValueError("Unsupported data type for self.X")
+    #     except Exception as e:
+    #         print(f"An error occurred: {e}")
+
     def interaction_plot_full(self):
         """
         Generates a full SHAP interaction plot for all rows of data.
         """
         try:
             shap_interaction = self.explainer.shap_interaction_values(self.X)
+            print(f"Shape of shap_interaction: {shap_interaction.shape}")  # Debugging line
+
             if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
+                print(f"Shape of self.X: {self.X.shape}")  # Debugging line
+
                 shap.summary_plot(
                     shap_interaction,
                     self.X,
@@ -266,6 +287,7 @@ class ShapPlotFeatures(PlotFeatures):
                 )
             else:
                 raise ValueError("Unsupported data type for self.X")
+
         except Exception as e:
             print(f"An error occurred: {e}")
 
