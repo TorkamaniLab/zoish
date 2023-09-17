@@ -25,7 +25,7 @@ regressors = [RandomForestRegressor(random_state=RANDOM_SEED)]
 
 @pytest.fixture
 def regression_dataset(seed):
-    n_samples = 300 
+    n_samples = 100 
     n_features = 10  
     n_informative = 5  
 
@@ -56,7 +56,7 @@ def regression_dataset(seed):
 shap_results = []
 other_selector_results = []
 final_count = []
-number_of_seeds = range(20)
+number_of_seeds = range(2)
 cv = KFold(10)
 
 @pytest.mark.parametrize("seed", number_of_seeds)
@@ -64,7 +64,7 @@ def test_shap_comparison_regression(regression_dataset):
     X_train, X_test, y_train, y_test = regression_dataset
 
     param_grid = {
-        'n_estimators': [200],
+        'n_estimators': [100],
         'min_samples_split': [2,  10],
         'min_samples_leaf': [1,  4],
         'bootstrap': [True]

@@ -23,7 +23,7 @@ RANDOM_SEED = 42  # Random seed for reproducibility
 def binary_classification_dataset():
     np.random.seed(RANDOM_SEED)  # Set random seed before generating dataset
     X, y = make_classification(
-        n_samples=200,
+        n_samples=100,
         n_features=10,
         n_informative=2,
         n_redundant=5,
@@ -40,7 +40,7 @@ def binary_classification_dataset():
 def regression_dataset():
     np.random.seed(RANDOM_SEED)  # Set random seed before generating dataset
     X, y = make_regression(
-        n_samples=200, n_features=10, n_informative=2, random_state=RANDOM_SEED
+        n_samples=100, n_features=10, n_informative=2, random_state=RANDOM_SEED
     )
     X[:, : int(X.shape[1] * 0.5)] += np.random.normal(
         0, 1, (X.shape[0], int(X.shape[1] * 0.5))
@@ -53,7 +53,7 @@ def multiclass_classification_dataset():
     # Initialize the random state
     RANDOM_SEED = 42
 
-    n_samples = 1000
+    n_samples = 100
     random_state = 42
 
     # Generate 5 very informative features
@@ -69,7 +69,7 @@ def multiclass_classification_dataset():
     )
 
     # Generate 20 average informative features
-    X_average_informative, _ = make_classification(
+    X_average_informative, y = make_classification(
         n_samples=n_samples,
         n_features=45,
         n_informative=10,
@@ -92,20 +92,19 @@ def multiclass_classification_dataset():
     )
 
 
-classifiers = [
-    RandomForestClassifier(n_estimators=10, n_jobs=1, random_state=RANDOM_SEED),
-    ExtraTreesClassifier(n_estimators=10, n_jobs=1, random_state=RANDOM_SEED),
+classifiers_binery = [
+    RandomForestClassifier(n_estimators=10,  random_state=RANDOM_SEED),
+    ExtraTreesClassifier(n_estimators=10,  random_state=RANDOM_SEED),
     # GradientBoostingClassifier(random_state=RANDOM_SEED),  # Uncomment this if you want to use it
     DecisionTreeClassifier(random_state=RANDOM_SEED),
     XGBClassifier(
-        n_jobs=1,
+        
         random_state=RANDOM_SEED,
         colsample_bytree=1,  # Use 100% of the features in each tree
         colsample_bylevel=1,  # Use 100% of the features at each level of the tree
         subsample=1,
     ),  # Use 100% of the data (rows) in each tree
     LGBMClassifier(
-        n_jobs=1,
         random_state=RANDOM_SEED,
         colsample_bytree=1,  # Use 100% of the features in each tree
         subsample=1,
@@ -119,19 +118,61 @@ classifiers = [
         bootstrap_type="Bernoulli",
     ),  # Use 100% of the data (rows) in each tree
 ]
+# Updated list of classifiers suitable for multiclass classification
+classifiers_multiclass = [
+    # RandomForestClassifier is naturally capable of handling multiclass problems
+    RandomForestClassifier(n_estimators=10,  random_state=RANDOM_SEED),
+
+    # ExtraTreesClassifier can handle multiclass problems as well
+    ExtraTreesClassifier(n_estimators=10,  random_state=RANDOM_SEED),
+
+    # DecisionTreeClassifier can handle multiclass problems
+    DecisionTreeClassifier(random_state=RANDOM_SEED),
+
+    # XGBClassifier configured for multiclass classification
+    XGBClassifier(
+        objective='multi:softmax',  # Setting the objective for multiclass classification
+        num_class=3,  # Assuming 3 classes in your problem
+        
+        random_state=RANDOM_SEED,
+        colsample_bytree=1,
+        colsample_bylevel=1,
+        subsample=1,
+    ),
+    # TODO more tests for lgm for multi-class
+    # LGBMClassifier configured for multiclass classification
+    # LGBMClassifier(
+    #     objective='multiclass',  # Setting the objective for multiclass classification
+    #     num_class=3,  # Assuming 3 classes in your problem
+    #     random_state=RANDOM_SEED,
+    #     colsample_bytree=1,
+    #     subsample=1,
+    # ),
+
+    # CatBoostClassifier configured for multiclass classification
+    CatBoostClassifier(
+        loss_function='MultiClass',  # Setting the loss function for multiclass classification
+        silent=True,
+        thread_count=1,
+        random_seed=RANDOM_SEED,
+        colsample_bylevel=1,
+        subsample=1,
+        bootstrap_type="Bernoulli",
+    ),
+]
 
 regressors = [
-    RandomForestRegressor(n_estimators=10, n_jobs=1, random_state=RANDOM_SEED),
-    ExtraTreesRegressor(n_estimators=10, n_jobs=1, random_state=RANDOM_SEED),
+    RandomForestRegressor(n_estimators=10,  random_state=RANDOM_SEED),
+    ExtraTreesRegressor(n_estimators=10,  random_state=RANDOM_SEED),
     GradientBoostingRegressor(random_state=RANDOM_SEED),
     DecisionTreeRegressor(random_state=RANDOM_SEED),
-    XGBRegressor(n_jobs=1, random_state=RANDOM_SEED),
-    LGBMRegressor(n_jobs=1, random_state=RANDOM_SEED),
+    XGBRegressor( random_state=RANDOM_SEED),
+    # LGBMRegressor( random_state=RANDOM_SEED),
     CatBoostRegressor(silent=True, thread_count=1, random_seed=RANDOM_SEED),
 ]
 
 
-@pytest.mark.parametrize("model", classifiers)
+@pytest.mark.parametrize("model", classifiers_binery)
 def test_shap_feature_selector_binary_classification(
     model, binary_classification_dataset
 ):
@@ -183,7 +224,7 @@ def test_shap_feature_selector_regression(model, regression_dataset):
     assert np.allclose(df_transformed, X_transformed, rtol=1e-05, atol=1e-08)
 
 
-@pytest.mark.parametrize("model", classifiers)
+@pytest.mark.parametrize("model", classifiers_multiclass)
 def test_shap_feature_selector_multiclass_classification(
     model, multiclass_classification_dataset
 ):

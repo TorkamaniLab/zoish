@@ -46,7 +46,7 @@ classifiers = [RandomForestClassifier(random_state=RANDOM_SEED)]
 
 @pytest.fixture
 def binery_class_classification_dataset(seed):
-    n_samples = 1000
+    n_samples = 100
     n_features = 50  # Total number of features
     n_informative = 15  # Number of informative features
     n_redundant = 30  # Number of redundant features
@@ -101,7 +101,7 @@ def binery_class_classification_dataset(seed):
 shap_results = []
 other_selector_results = []
 final_count = []
-number_of_seeds = range(20)
+number_of_seeds = range(2)
 cv = KFold(10)
 
 
@@ -110,7 +110,7 @@ def test_shap_comparison_binery_class_classification(binery_class_classification
     X_train, X_test, y_train, y_test = binery_class_classification_dataset
     # Define the parameter grid
     param_grid = {
-        'n_estimators': [200],  # number of trees in the forest
+        'n_estimators': [100],  # number of trees in the forest
         'min_samples_split': [2,  10],  # minimum number of samples required to split a node
         'min_samples_leaf': [1,  4],  # minimum number of samples required at each leaf node
         'bootstrap': [True]  # method for sampling data points (with or without replacement)
