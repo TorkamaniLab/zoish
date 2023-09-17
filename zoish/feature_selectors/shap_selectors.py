@@ -275,7 +275,7 @@ class ShapPlotFeatures(PlotFeatures):
         """
         try:
             shap_interaction = self.explainer.shap_interaction_values(self.X.iloc[:10, :])
-            print(f"Shape of shap_interaction: {shap_interaction.shape}")  # Debugging line
+            print(f"type of shap_interaction: {type(shap_interaction)}")  # Debugging line
 
             if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
                 print(f"Type of self.X: {type(self.X.iloc[:10, :])}")  # Debugging line
