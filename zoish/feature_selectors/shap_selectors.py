@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import shap
+import fasttreeshap
 from sklearn.model_selection import cross_val_score
 
 from zoish import logger
@@ -42,6 +43,7 @@ class ShapPlotFeatures(PlotFeatures):
         self._check_plot_kwargs()
 
         self.shap_values = feature_selector.shap_values
+        self.explainer = self._check_explainer(feature_selector.explainer)
         self.X = self._check_input(feature_selector.X)
         self.y = self._check_input(feature_selector.y)
         self.importance_df = feature_selector.importance_df
@@ -52,7 +54,28 @@ class ShapPlotFeatures(PlotFeatures):
             feature_selector.importance_df.shape[0],
         )
         self.plt = None
-
+    
+    def _check_explainer(self, explainer):
+        """
+        Checks if the explainer attribute is not None and if it has been calculated correctly.
+        
+        Parameters:
+            explainer (object): The explainer object to check.
+        
+        Raises:
+            ValueError: If the explainer is None or not calculated correctly.
+        """
+        # Check if explainer is None
+        if explainer is None:
+            raise ValueError("Explainer is None. Please initialize the explainer first.")
+        
+        # Your additional checks to see if explainer has been calculated correctly
+        # For example, you could check if certain attributes in the explainer object are set
+        if not hasattr(explainer, 'expected_value'):  # Replace 'expected_value' with the actual attribute you want to check
+            raise ValueError("Explainer is not calculated correctly. Missing expected_value attribute.")
+        
+        return explainer
+    
     def _check_input(self, X):
         """
         Converts input data to pandas DataFrame if it is a numpy array.
@@ -206,7 +229,6 @@ class ShapPlotFeatures(PlotFeatures):
                 feature_order="hclust",
                 **self.decision_plot_kwargs,
             )
-
     def decision_plot_full(self):
         """
         Generates a full SHAP decision plot for all rows of data.
@@ -229,6 +251,41 @@ class ShapPlotFeatures(PlotFeatures):
                 feature_order="hclust",
                 **self.decision_plot_kwargs,
             )
+
+    def interaction_plot_full(self):
+        """
+        Generates a full SHAP interaction plot for all rows of data.
+        """
+        try:
+            shap_interaction = self.explainer.shap_interaction_values(self.X)
+            if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
+                shap.summary_plot(
+                    shap_interaction,
+                    self.X,
+                    **self.summary_plot_kwargs,
+                )
+            else:
+                raise ValueError("Unsupported data type for self.X")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    def interaction_plot(self):
+        """
+        Generates a SHAP interaction plot for the first 1000 rows of data.
+        """
+        try:
+            shap_interaction = self.explainer.shap_interaction_values(self.X[0:1000])
+            if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
+                shap.summary_plot(
+                    shap_interaction,
+                    self.X[0:1000],
+                    **self.summary_plot_kwargs,
+                )
+            else:
+                raise ValueError("Unsupported data type for self.X")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
 
     def __call__(self, plot_type: str, **kwargs):
         """
@@ -374,6 +431,7 @@ class ShapFeatureSelector(FeatureSelector):
         cv=None,
         n_iter=10,
         direction="maximum",
+        use_faster_algorithm = False,
         **kwargs,  # Additional parameters.
     ):
         # initialize instance variables
@@ -404,6 +462,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.random_state = random_state
         self.algorithm = algorithm
         self.direction = direction
+        self.use_faster_algorithm = use_faster_algorithm
         self.cv = cv
         self.scoring = scoring
         self.n_iter = n_iter
@@ -413,6 +472,12 @@ class ShapFeatureSelector(FeatureSelector):
             {
                 "random_state": self.random_state,
                 "algorithm": self.algorithm,
+            },
+        )
+        self.shap_fast_tree_explainer_kwargs = kwargs.get(
+            "shap_fast_tree_explainer_kwargs",
+            {
+                "random_state": self.random_state,
             },
         )
         self.cross_val_score_kwargs = kwargs.get(
@@ -469,14 +534,24 @@ class ShapFeatureSelector(FeatureSelector):
             ]
 
         # compute SHAP values
-        try:
-            self.explainer = shap.TreeExplainer(
-                self.model, **self.shap_tree_explainer_kwargs
-            )
-            self.shap_values = self.explainer.shap_values(X)
-        except Exception as e:
-            logger.error(f"Shap TreeExplainer could be used: {e}")
-            raise e
+        if not self.use_faster_algorithm:
+            try:
+                self.explainer = shap.TreeExplainer(
+                    self.model, **self.shap_tree_explainer_kwargs
+                )
+                self.shap_values = self.explainer.shap_values(X)
+            except Exception as e:
+                logger.error(f"Shap TreeExplainer could not be used: {e}")
+                raise e
+        else :
+            try:
+                self.explainer = fasttreeshap.TreeExplainer(
+                    self.model, **self.shap_fast_tree_explainer_kwargs
+                )
+                self.shap_values = self.explainer.shap_values(X)
+            except Exception as e:
+                logger.error(f"FastTreeShap TreeExplainer could not be used: {e}")
+                raise e
 
         if isinstance(self.shap_values, list):
             self.shap_values = np.mean(self.shap_values, axis=0)
