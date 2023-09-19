@@ -252,58 +252,13 @@ class ShapPlotFeatures(PlotFeatures):
                 **self.decision_plot_kwargs,
             )
 
-    # def interaction_plot_full(self):
-    #     """
-    #     Generates a full SHAP interaction plot for all rows of data.
-    #     """
-    #     try:
-    #         shap_interaction = self.explainer.shap_interaction_values(self.X)
-    #         if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
-    #             shap.summary_plot(
-    #                 shap_interaction,
-    #                 self.X,
-    #                 **self.summary_plot_kwargs,
-    #             )
-    #         else:
-    #             raise ValueError("Unsupported data type for self.X")
-    #     except Exception as e:
-    #         print(f"An error occurred: {e}")
-
-    def interaction_plot_full(self):
+    def dependence_plot(self,feature_index_or_name):
         """
-        Generates a full SHAP interaction plot for all rows of data.
+        Generates a SHAP dependence plot for feature_index_or_name .
         """
         try:
-            shap_interaction = self.explainer.shap_interaction_values(self.X.iloc[:10, :])
-            print(f"type of shap_interaction: {type(shap_interaction)}")  # Debugging line
+            shap.dependence_plot(feature_index_or_name, self.shap_values, self.X.values, feature_names=self.feature_names)
 
-            if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
-                print(f"Type of self.X: {type(self.X.iloc[:10, :])}")  # Debugging line
-
-                shap.summary_plot(
-                    shap_interaction,
-                    self.X.iloc[:10, :],
-                )
-            else:
-                raise ValueError("Unsupported data type for self.X")
-
-        except Exception as e:
-            print(f"An error occurred: {e}")
-
-    def interaction_plot(self):
-        """
-        Generates a SHAP interaction plot for the first 1000 rows of data.
-        """
-        try:
-            shap_interaction = self.explainer.shap_interaction_values(self.X[0:1000])
-            if isinstance(self.X, pd.DataFrame) or isinstance(self.X, np.ndarray):
-                shap.summary_plot(
-                    shap_interaction,
-                    self.X[0:1000],
-                    **self.summary_plot_kwargs,
-                )
-            else:
-                raise ValueError("Unsupported data type for self.X")
         except Exception as e:
             print(f"An error occurred: {e}")
 
