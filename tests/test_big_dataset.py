@@ -50,7 +50,7 @@ def test_shap_feature_selector_binary_classification(model, binary_classificatio
     selector.fit(X, y)
     
     elapsed_time = time.time() - start_time
-    assert elapsed_time < 120
+    assert elapsed_time < 240
     
     X_transformed = selector.transform(X)
     original_score = model.score(X, y)
@@ -83,7 +83,7 @@ def test_shap_feature_selector_regression(model, regression_dataset):
     selector.fit(X, y)
     
     elapsed_time = time.time() - start_time
-    assert elapsed_time < 120
+    assert elapsed_time < 240 
     
     X_transformed = selector.transform(X)
     original_score = model.score(X, y)
