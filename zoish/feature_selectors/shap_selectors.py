@@ -252,12 +252,23 @@ class ShapPlotFeatures(PlotFeatures):
                 **self.decision_plot_kwargs,
             )
 
-    def dependence_plot(self,feature_index_or_name):
+    def dependence_plot(self, feature_index_or_name):
         """
-        Generates a SHAP dependence plot for feature_index_or_name .
+        Generates a SHAP dependence plot for feature_index_or_name.
         """
         try:
-            shap.dependence_plot(feature_index_or_name, self.shap_values, self.X.values, feature_names=self.feature_names)
+            if isinstance(self.X, pd.DataFrame):
+                shap_values = self.shap_values
+                feature_values = self.X.values
+                feature_names = self.feature_names
+            elif isinstance(self.X, np.ndarray):
+                shap_values = self.shap_values
+                feature_values = self.X
+                feature_names = self.feature_names if hasattr(self, 'feature_names') else None
+            else:
+                raise ValueError("Unsupported data type for self.X")
+
+            shap.dependence_plot(feature_index_or_name, shap_values, feature_values, feature_names=feature_names)
 
         except Exception as e:
             print(f"An error occurred: {e}")
