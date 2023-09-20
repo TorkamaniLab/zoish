@@ -73,4 +73,3 @@ virtualenv==20.24.5
 wcwidth==0.2.6
 xgboost==1.6.2
 zipp==3.15.0
-zoish==4.6.0
