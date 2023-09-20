@@ -5,19 +5,19 @@ nox.options.sessions = ["tests_zoish", "lint_zoish"]
 
 # List of test files to be executed.
 test_files = [
-    "test_ShapPlotFeatures.py",
-    "test_big_dataset.py",
-    "test_shap_compared_with_other_selector_binery_classification_fasttreeshap.py",
-    "test_shap_compared_with_other_selector_binery_classification_shap.py",
-    "test_shap_compared_with_other_selector_multi_classification_fasttreeshap.py",
-    "test_shap_compared_with_other_selector_multi_classification_shap.py",
-    "test_shap_compared_with_other_selector_regression_fasttreeshap.py",
-    "test_shap_compared_with_other_selector_regression_shap.py",
-    "test_shap_feature_selector_with_n_feature_fasttreeshap.py",
-    "test_shap_feature_selector_with_n_feature_shap.py",
-    "test_shap_feature_selector_with_threshold_fasttreeshap.py",
-    "test_shap_feature_selector_with_threshold_shap.py",
-    "test_zoish.py"
+    "tests/test_ShapPlotFeatures.py",
+    "tests/test_big_dataset.py",
+    "tests/test_shap_compared_with_other_selector_binery_classification_fasttreeshap.py",
+    "tests/test_shap_compared_with_other_selector_binery_classification_shap.py",
+    "tests/test_shap_compared_with_other_selector_multi_classification_fasttreeshap.py",
+    "tests/test_shap_compared_with_other_selector_multi_classification_shap.py",
+    "tests/test_shap_compared_with_other_selector_regression_fasttreeshap.py",
+    "tests/test_shap_compared_with_other_selector_regression_shap.py",
+    "tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
+    "tests/test_shap_feature_selector_with_n_feature_shap.py",
+    "tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
+    "tests/test_shap_feature_selector_with_threshold_shap.py",
+    "tests/test_zoish.py"
 ]
 
 @nox.session
