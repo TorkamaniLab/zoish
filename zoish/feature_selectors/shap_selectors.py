@@ -4,11 +4,12 @@ import copy
 import logging
 import warnings
 
+import fasttreeshap
+
 # Plotting libraries
 import numpy as np
 import pandas as pd
 import shap
-import fasttreeshap
 from sklearn.model_selection import cross_val_score
 
 from zoish import logger
@@ -21,8 +22,10 @@ logger.info("Shap Feature Selector has started !")
 
 class ShapPlotFeatures(PlotFeatures):
     """
-    ShapPlotFeatures is a class that inherits from PlotFeatures. This class
-    generates various types of plots for feature importance using SHAP values.
+    Initializes the class with a feature selector and additional keyword arguments.
+    Args:
+        feature_selector: A FeatureSelector object that contains SHAP values.
+        **kwargs: Additional keyword arguments for controlling the appearance of plots.
     """
 
     def __init__(self, feature_selector, **kwargs):
@@ -54,37 +57,41 @@ class ShapPlotFeatures(PlotFeatures):
             feature_selector.importance_df.shape[0],
         )
         self.plt = None
-    
+
     def _check_explainer(self, explainer):
         """
         Checks if the explainer attribute is not None and if it has been calculated correctly.
-        
         Parameters:
             explainer (object): The explainer object to check.
-        
         Raises:
             ValueError: If the explainer is None or not calculated correctly.
+        Returns:
+            object: The validated explainer object.
         """
         # Check if explainer is None
         if explainer is None:
-            raise ValueError("Explainer is None. Please initialize the explainer first.")
-        
+            raise ValueError(
+                "Explainer is None. Please initialize the explainer first."
+            )
+
         # Your additional checks to see if explainer has been calculated correctly
         # For example, you could check if certain attributes in the explainer object are set
-        if not hasattr(explainer, 'expected_value'):  # Replace 'expected_value' with the actual attribute you want to check
-            raise ValueError("Explainer is not calculated correctly. Missing expected_value attribute.")
-        
+        if not hasattr(
+            explainer, "expected_value"
+        ):  # Replace 'expected_value' with the actual attribute you want to check
+            raise ValueError(
+                "Explainer is not calculated correctly. Missing expected_value attribute."
+            )
+
         return explainer
-    
+
     def _check_input(self, X):
         """
         Converts input data to pandas DataFrame if it is a numpy array.
-
         Args:
-            X: Input data. It could be a numpy array or a pandas DataFrame.
-
+            X: Input data. Could be a numpy array or a pandas DataFrame.
         Returns:
-            X: Converted input as a pandas DataFrame.
+            pd.DataFrame: Converted input as a pandas DataFrame.
         """
         if isinstance(X, np.ndarray):
             X = pd.DataFrame(X)
@@ -229,6 +236,7 @@ class ShapPlotFeatures(PlotFeatures):
                 feature_order="hclust",
                 **self.decision_plot_kwargs,
             )
+
     def decision_plot_full(self):
         """
         Generates a full SHAP decision plot for all rows of data.
@@ -264,15 +272,21 @@ class ShapPlotFeatures(PlotFeatures):
             elif isinstance(self.X, np.ndarray):
                 shap_values = self.shap_values
                 feature_values = self.X
-                feature_names = self.feature_names if hasattr(self, 'feature_names') else None
+                feature_names = (
+                    self.feature_names if hasattr(self, "feature_names") else None
+                )
             else:
                 raise ValueError("Unsupported data type for self.X")
 
-            shap.dependence_plot(feature_index_or_name, shap_values, feature_values, feature_names=feature_names)
+            shap.dependence_plot(
+                feature_index_or_name,
+                shap_values,
+                feature_values,
+                feature_names=feature_names,
+            )
 
         except Exception as e:
             print(f"An error occurred: {e}")
-
 
     def __call__(self, plot_type: str, **kwargs):
         """
@@ -402,24 +416,51 @@ class ShapPlotFeatures(PlotFeatures):
         self.decision_plot_full()
 
 
-# ShapFeatureSelector is a class that helps us select the most important features using the SHAP values.
 class ShapFeatureSelector(FeatureSelector):
-    # In the init function, we initialize all necessary attributes for our class.
+    """
+    ShapFeatureSelector is a class for feature selection based on SHAP values.
+
+    Args:
+        model (object): The model to explain. Supports XGBoost, LightGBM, CatBoost, and most tree-based scikit-learn models.
+        num_features (int, optional): The number of top features to select. Defaults to None.
+        threshold (float, optional): The minimum SHAP value to consider for feature selection. Defaults to None.
+        list_of_features_to_drop_before_any_selection (list, optional): List of features to drop before the selection. Defaults to None.
+        list_of_obligatory_features_that_must_be_in_model (list, optional): List of features that should always be selected. Defaults to None.
+        random_state (int): Seed for random number generator. Defaults to 42.
+        algorithm (str): Algorithm to use. Defaults to "permutation".
+        scoring (str, optional): Scoring metric for cross-validation. Defaults to None.
+        cv (object, optional): Cross-validator. Defaults to None.
+        n_iter (int): Number of iterations for the selection algorithm. Defaults to 10.
+        direction (str): The direction for optimization, either 'maximum' or 'minimum'. Defaults to 'maximum'.
+        use_faster_algorithm (bool): Whether to use the faster algorithm for SHAP values. Defaults to False.
+        **kwargs (dict): Additional keyword arguments.
+
+    Attributes:
+        shap_values (array): Computed SHAP values for features.
+        X (array): Feature data.
+        y (array): Labels.
+        feature_names (list): Names of features.
+        selected_feature_idx (list): Indices of selected features.
+        importance_order (array): Sorted order of feature importances.
+        _importance_df (DataFrame): Dataframe holding feature importances.
+    """
+
+    # Initialization of instance variables
     def __init__(
         self,
-        model,  # The model to explain. XGBoost, LightGBM, CatBoost and most tree-based scikit-learn models are supported.
-        num_features=None,  # The number of top features to select.
-        threshold=None,  # The minimum SHAP value to select a feature.
-        list_of_features_to_drop_before_any_selection=None,  # List of features to drop before the selection.
-        list_of_obligatory_features_that_must_be_in_model=None,  # List of features that should always be selected.
-        random_state=42,  # Seed for random number generator.
+        model,
+        num_features=None,
+        threshold=None,
+        list_of_features_to_drop_before_any_selection=None,
+        list_of_obligatory_features_that_must_be_in_model=None,
+        random_state=42,
         algorithm="permutation",
         scoring=None,
         cv=None,
         n_iter=10,
         direction="maximum",
-        use_faster_algorithm = False,
-        **kwargs,  # Additional parameters.
+        use_faster_algorithm=False,
+        **kwargs,
     ):
         # initialize instance variables
         self.shap_values = None
@@ -475,29 +516,44 @@ class ShapFeatureSelector(FeatureSelector):
             },
         )
 
-    # We use the Python decorator @property to specify getter for 'importance_df'.
     @property
     def importance_df(self):
+        """
+        Getter for importance_df.
+
+        Returns:
+            pandas.DataFrame: DataFrame containing feature importances.
+        """
         return self._importance_df
 
-    # Setter for 'importance_df'.
     @importance_df.setter
     def importance_df(self, value):
+        """Setter for importance_df."""
         if not isinstance(value, pd.DataFrame):
             raise ValueError("importance_df must be a pandas DataFrame")
         self._importance_df = value
 
     @property
     def direction(self):
+        """Getter for direction."""
         return self._direction
 
     @direction.setter
     def direction(self, value):
+        """Setter for direction."""
         self._direction = value
 
-    # The 'fit' method is where we compute the SHAP values and select the features.
     def fit(self, X, y=None):
-        # create logger
+        """
+        Fit the model and select features.
+
+        Args:
+            X (array or pandas.DataFrame): Feature data.
+            y (array, optional): Labels. Defaults to None.
+
+        Returns:
+            ShapFeatureSelector: A copy of the object that gives the best cross-validation score.
+        """
         logger = logging.getLogger(__name__)
         self.X_copy = X
         self.y_copy = y
@@ -530,7 +586,7 @@ class ShapFeatureSelector(FeatureSelector):
             except Exception as e:
                 logger.error(f"Shap TreeExplainer could not be used: {e}")
                 raise e
-        else :
+        else:
             try:
                 self.explainer = fasttreeshap.TreeExplainer(
                     self.model, **self.shap_fast_tree_explainer_kwargs
@@ -612,18 +668,56 @@ class ShapFeatureSelector(FeatureSelector):
 
     # 'transform' method selects the top features from the input.
     def transform(self, X, y=None):
+        """
+        Transform the dataset by selecting important features.
+
+        Args:
+            X (array or pandas.DataFrame): Feature data.
+            y (array, optional): Labels. Defaults to None.
+
+        Returns:
+            array: Transformed feature data.
+        """
         if isinstance(X, pd.DataFrame):
             X = X.values
         return X[:, self.selected_feature_idx]
 
     # 'predict' method is for predicting the target using the selected features.
     def predict(self, X):
+        """
+        Predict labels using the selected features.
+
+        Args:
+            X (array or pandas.DataFrame): Feature data.
+
+        Returns:
+            array: Predicted labels.
+        """
         return self.model.predict(self.transform(X))
 
     # 'score' method is for scoring the predictions.
     def score(self, X, y):
+        """
+        Score the predictions using the selected features.
+
+        Args:
+            X (array or pandas.DataFrame): Feature data.
+            y (array): Labels.
+
+        Returns:
+            float: Score of the model.
+        """
         return self.model.score(self.transform(X), y)
 
     # 'predict_proba' method provides the probability estimates.
     def predict_proba(self, X):
+        """
+        Get probability estimates using the selected features.
+
+        Args:
+            X (array or pandas.DataFrame): Feature data.
+
+        Returns:
+            array: Probability estimates.
+        """
         return self.model.predict_proba(self.transform(X))

@@ -96,16 +96,7 @@ classifiers_multiclass = [
         colsample_bylevel=1,
         subsample=1,
     ),
-    # TODO add more test for multi-class
-    # LGBMClassifier configured for multiclass classification
-    # LGBMClassifier(
-    #     objective='multiclass',  # Setting the objective for multiclass classification
-    #     num_class=3,  # Assuming 3 classes in your problem
-    #     random_state=RANDOM_SEED,
-    #     colsample_bytree=1,
-    #     subsample=1,
-    # ),
-
+    
     # CatBoostClassifier configured for multiclass classification
     CatBoostClassifier(
         loss_function='MultiClass',  # Setting the loss function for multiclass classification
