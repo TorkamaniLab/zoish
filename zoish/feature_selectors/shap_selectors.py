@@ -584,8 +584,15 @@ class ShapFeatureSelector(FeatureSelector):
                 )
                 self.shap_values = self.explainer.shap_values(X)
             except Exception as e:
+                # Log the error and fallback to KernelExplainer
                 logger.error(f"Shap TreeExplainer could not be used: {e}")
-                raise e
+                try:
+                    self.explainer = shap.KernelExplainer(self.model.predict, X)
+                    self.shap_values = self.explainer.shap_values(X)
+                except Exception as e:
+                    # If KernelExplainer also fails, raise an exception
+                    logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
+                    raise e
         else:
             try:
                 self.explainer = fasttreeshap.TreeExplainer(
