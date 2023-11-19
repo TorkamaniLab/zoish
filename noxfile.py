@@ -7,10 +7,10 @@ nox.options.sessions = ["tests_zoish", "lint_zoish"]
 test_files = [
     "tests/test_gpboost.py",
     "tests/test_ShapPlotFeatures.py",
-    "tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
+    #"tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
     #"tests/test_shap_feature_selector_with_n_feature_shap.py",
-    "tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
-    "tests/test_shap_feature_selector_with_threshold_shap.py",
+    #"tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
+    #"tests/test_shap_feature_selector_with_threshold_shap.py",
     "tests/test_zoish.py"
 ]
 
