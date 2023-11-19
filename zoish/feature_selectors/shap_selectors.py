@@ -3,7 +3,7 @@
 import copy
 import logging
 import warnings
-
+import gpboost as gpb
 import fasttreeshap
 
 # Plotting libraries
@@ -543,7 +543,7 @@ class ShapFeatureSelector(FeatureSelector):
         """Setter for direction."""
         self._direction = value
 
-    def fit(self, X, y=None):
+    def fit(self, X, y=None,groups=None,fixed_effects_pred=None):
         """
         Fit the model and select features.
 
@@ -557,6 +557,10 @@ class ShapFeatureSelector(FeatureSelector):
         logger = logging.getLogger(__name__)
         self.X_copy = X
         self.y_copy = y
+        # Store groups data if provided
+        self.groups = groups        
+        # Store fixed_effects_pred as an instance variable
+        self.fixed_effects_pred = fixed_effects_pred
         # if input is a DataFrame, extract column names and convert to numpy array
         if isinstance(X, pd.DataFrame):
             self.feature_names = X.columns.tolist()
@@ -579,19 +583,16 @@ class ShapFeatureSelector(FeatureSelector):
         # compute SHAP values
         if not self.use_faster_algorithm:
             try:
-                self.explainer = shap.TreeExplainer(
-                    self.model, **self.shap_tree_explainer_kwargs
-                )
+                self.explainer = shap.TreeExplainer(self.model, **self.shap_tree_explainer_kwargs)
                 self.shap_values = self.explainer.shap_values(X)
             except Exception as e:
-                # Log the error and fallback to KernelExplainer
-                logger.error(f"Shap TreeExplainer could not be used: {e}")
+                logger.error(f"Shap TreeExplainer could not be used: {e} KernelExplainer will be used instead !")
                 try:
+                    # Replace KernelExplainer with SampleExplainer
                     self.explainer = shap.KernelExplainer(self.model.predict, X)
                     self.shap_values = self.explainer.shap_values(X)
                 except Exception as e:
-                    # If KernelExplainer also fails, raise an exception
-                    logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
+                    logger.error(f"Both TreeExplainer and SampleExplainer failed: {e}")
                     raise e
         else:
             try:
