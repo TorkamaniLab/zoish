@@ -30,10 +30,20 @@ def binary_classification_dataset_with_random_effects():
     return X, y, groups
 
 
-
 @pytest.fixture
 def multiclass_classification_dataset_with_random_effects():
-    # ... (Same as before to generate X, y, groups, and group_effects)
+    # Generate multi-class classification data
+    n_classes = 3  # Number of classes
+    X, y = make_classification(n_samples=100, n_features=10, n_informative=3, n_redundant=0, 
+                               n_classes=n_classes, n_clusters_per_class=1, random_state=42)
+    X = pd.DataFrame(X)
+
+    # Generate random effects
+    n_groups = 5  # Number of groups
+    groups = np.random.choice(n_groups, size=X.shape[0])
+
+    # Define fixed group effects for each class
+    group_effects = np.random.normal(0, 1, (n_groups, n_classes))  # Random effects for each group and class
 
     # Initialize an array to store adjusted class scores
     class_scores = np.zeros((len(y), n_classes))
@@ -108,7 +118,6 @@ def test_shap_feature_selector_multiclass_classification_with_random_effects(mod
         boosting_type='gbdt',
         objective='multiclass',  # Use 'multiclass' for multi-class classification
         n_estimators=100,  # Equivalent to num_boost_round in gpboost.train
-        num_class=3,  # Number of classes
         group_data=groups  # Pass the groups for random effects
     )
 
