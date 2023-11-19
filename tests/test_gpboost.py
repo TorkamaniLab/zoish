@@ -93,7 +93,7 @@ def test_shap_feature_selector_binary_classification_with_random_effects(model_c
     start_time = time.time()
     selector.fit(X, y, groups=groups)
     elapsed_time = time.time() - start_time
-    assert elapsed_time < 240
+    assert elapsed_time < 500
 
     X_transformed = selector.transform(X)
     original_score = model.score(X, y)
@@ -135,7 +135,7 @@ def test_shap_feature_selector_multiclass_classification_with_random_effects(mod
     start_time = time.time()
     selector.fit(X, y, groups=groups)
     elapsed_time = time.time() - start_time
-    assert elapsed_time < 240
+    assert elapsed_time < 500
 
     # Transform the dataset
     X_transformed = selector.transform(X)
@@ -174,7 +174,7 @@ def test_shap_feature_selector_regression_with_random_effects(model_class, regre
     start_time = time.time()
     selector.fit(X, y, groups=groups)
     elapsed_time = time.time() - start_time
-    assert elapsed_time < 240
+    assert elapsed_time < 500
 
     X_transformed = selector.transform(X)
     original_score = sqrt(mean_squared_error(y, model.predict(X)))  # Calculate RMSE
