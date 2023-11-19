@@ -33,21 +33,17 @@ def binary_classification_dataset_with_random_effects():
 
 @pytest.fixture
 def multiclass_classification_dataset_with_random_effects():
-    # Generate multi-class classification data
-    n_classes = 3  # Number of classes
-    X, y = make_classification(n_samples=100, n_features=10, n_informative=3, n_redundant=0, n_classes=n_classes, n_clusters_per_class=1, random_state=42)
-    X = pd.DataFrame(X)
+    # ... (Same as before to generate X, y, groups, and group_effects)
 
-    # Generate random effects
-    n_groups = 5  # Reduced number of groups for simplicity
-    groups = np.random.choice(n_groups, size=X.shape[0])
+    # Initialize an array to store adjusted class scores
+    class_scores = np.zeros((len(y), n_classes))
 
-    # Define fixed group effects for each class
-    group_effects = np.random.normal(0, 1, (n_groups, n_classes))  # Random effects for each group and class
-    random_effects = group_effects[groups]
+    # Add random effects to class scores
+    for i, class_label in enumerate(y):
+        class_scores[i, :] = group_effects[groups[i], :]  # Add group-specific random effect to each class score
 
-    # Adjust y based on random effects for multi-class
-    y_adjusted = np.argmax(y.reshape(-1, 1) + random_effects, axis=1)
+    # Determine adjusted class labels based on modified scores
+    y_adjusted = np.argmax(class_scores, axis=1)
 
     return X, y_adjusted, groups
 
