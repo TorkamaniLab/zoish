@@ -116,6 +116,7 @@ def test_shap_feature_selector_multiclass_classification_with_random_effects(mod
     # Instantiate the GPBoostClassifier for multi-class classification
     model = model_class(
         boosting_type='gbdt',
+        num_class=3,
         objective='multiclass',  # Use 'multiclass' for multi-class classification
         n_estimators=100,  # Equivalent to num_boost_round in gpboost.train
         group_data=groups  # Pass the groups for random effects
