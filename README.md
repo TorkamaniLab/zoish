@@ -11,7 +11,7 @@ Zoish is a powerful tool for streamlining your machine learning pipeline by leve
 
 ## Features
 
-- **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with any tree-based estimator or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost and LightGBM.
+- **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with any tree-based estimator and others supported by KernelExplainer e.g., GPBoost or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost and LightGBM.
   
 - **Feature Selection:** By utilizing SHAP values, Zoish efficiently determines the most influential features for your predictive models. This improves the interpretability of your model and can potentially enhance model performance by reducing overfitting.
 
@@ -19,7 +19,7 @@ Zoish is a powerful tool for streamlining your machine learning pipeline by leve
 
 ## Dependencies
 
-The core dependency of Zoish is the `shap` package, which is used to compute the SHAP values for tree based machine learning model. SHAP values are a unified measure of feature importance and they offer an improved interpretation of machine learning models. They are based on the concept of cooperative game theory and provide a fair allocation of the contribution of each feature to the prediction of each instance.
+The core dependency of Zoish is the `shap` package, which is used to compute the SHAP values for tree based machine learning model and others too. SHAP values are a unified measure of feature importance and they offer an improved interpretation of machine learning models. They are based on the concept of cooperative game theory and provide a fair allocation of the contribution of each feature to the prediction of each instance.
 
 ## Installation
 

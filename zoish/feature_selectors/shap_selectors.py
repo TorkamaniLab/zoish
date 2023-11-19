@@ -3,8 +3,9 @@
 import copy
 import logging
 import warnings
-import gpboost as gpb
+
 import fasttreeshap
+import gpboost as gpb
 
 # Plotting libraries
 import numpy as np
@@ -543,7 +544,7 @@ class ShapFeatureSelector(FeatureSelector):
         """Setter for direction."""
         self._direction = value
 
-    def fit(self, X, y=None,groups=None,fixed_effects_pred=None):
+    def fit(self, X, y=None, groups=None, fixed_effects_pred=None):
         """
         Fit the model and select features.
 
@@ -558,7 +559,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.X_copy = X
         self.y_copy = y
         # Store groups data if provided
-        self.groups = groups        
+        self.groups = groups
         # Store fixed_effects_pred as an instance variable
         self.fixed_effects_pred = fixed_effects_pred
         # if input is a DataFrame, extract column names and convert to numpy array
@@ -583,10 +584,14 @@ class ShapFeatureSelector(FeatureSelector):
         # compute SHAP values
         if not self.use_faster_algorithm:
             try:
-                self.explainer = shap.TreeExplainer(self.model, **self.shap_tree_explainer_kwargs)
+                self.explainer = shap.TreeExplainer(
+                    self.model, **self.shap_tree_explainer_kwargs
+                )
                 self.shap_values = self.explainer.shap_values(X)
             except Exception as e:
-                logger.error(f"Shap TreeExplainer could not be used: {e} KernelExplainer will be used instead !")
+                logger.error(
+                    f"Shap TreeExplainer could not be used: {e} KernelExplainer will be used instead !"
+                )
                 try:
                     # Replace KernelExplainer with SampleExplainer
                     self.explainer = shap.KernelExplainer(self.model.predict, X)

@@ -6,6 +6,7 @@ nox.options.sessions = ["tests_zoish", "lint_zoish"]
 # List of test files to be executed.
 test_files = [
     "tests/test_ShapPlotFeatures.py",
+    "tests/test_gpboost.py",
     "tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
     "tests/test_shap_feature_selector_with_n_feature_shap.py",
     "tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
