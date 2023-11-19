@@ -593,11 +593,10 @@ class ShapFeatureSelector(FeatureSelector):
                     f"Shap TreeExplainer could not be used: {e} KernelExplainer will be used instead !"
                 )
                 try:
-                    # Replace KernelExplainer with SampleExplainer
                     self.explainer = shap.KernelExplainer(self.model.predict, X)
                     self.shap_values = self.explainer.shap_values(X)
                 except Exception as e:
-                    logger.error(f"Both TreeExplainer and SampleExplainer failed: {e}")
+                    logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
                     raise e
         else:
             try:
