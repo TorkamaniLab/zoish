@@ -158,6 +158,5 @@ wrapt==1.15.0
 xgboost==1.6.2
 xgbse==0.2.3
 zipp==3.15.0
-zoish==4.6.0
 zope.event==5.0
 zope.interface==6.0
