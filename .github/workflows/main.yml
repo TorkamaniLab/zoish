@@ -45,6 +45,7 @@ jobs:
     
     - name: Install dependencies
       run: |
+        pip install setuptools
         pip install twine
         pip install wheel  # Add this line to install the wheel package
   
