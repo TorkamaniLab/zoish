@@ -7,11 +7,11 @@ Zoish is a Python package that simplifies the machine learning process by using 
 
 # Introduction
 
-Zoish is a powerful tool for streamlining your machine learning pipeline by leveraging SHAP (SHapley Additive exPlanations) values for feature selection. Designed to work seamlessly with binary and multi-class classification models as well as regression models from sklearn, Zoish is also compatible with gradient boosting frameworks such as CatBoost and LightGBM.
+Zoish is a powerful tool for streamlining your machine learning pipeline by leveraging SHAP (SHapley Additive exPlanations) values for feature selection. Designed to work seamlessly with binary and multi-class classification models as well as regression models from sklearn, Zoish is also compatible with gradient boosting frameworks such as CatBoost, LightGBM and GPBoost.
 
 ## Features
 
-- **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with any tree-based estimator and others supported by KernelExplainer e.g., GPBoost or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost and LightGBM.
+- **Model Flexibility:** Zoish exhibits outstanding flexibility as it can work with most of the estimators and others supported by and even GPBoost or a superior estimator emerging from a tree-based optimization process. This enables it to integrate seamlessly into binary or multi-class Sklearn classification models, all Sklearn regression models, as well as with advanced gradient boosting frameworks such as CatBoost, LightGBM and GPBoost.
   
 - **Feature Selection:** By utilizing SHAP values, Zoish efficiently determines the most influential features for your predictive models. This improves the interpretability of your model and can potentially enhance model performance by reducing overfitting.
 

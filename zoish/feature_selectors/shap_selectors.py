@@ -47,12 +47,18 @@ class ShapPlotFeatures(PlotFeatures):
         self._check_plot_kwargs()
 
         self.shap_values = feature_selector.shap_values
-        self.explainer = self._check_explainer(feature_selector.explainer)
+        # self.explainer = self._check_explainer(feature_selector.explainer)
         self.X = self._check_input(feature_selector.X)
         self.y = self._check_input(feature_selector.y)
         self.importance_df = feature_selector.importance_df
         self.feature_names = feature_selector.feature_names
         self.list_of_selected_features = feature_selector.list_of_selected_features
+        print(
+            "feature_selector.importance_df.shape[0]",
+            feature_selector.importance_df.shape[0],
+        )
+        print("feature_selector.num_features", feature_selector.num_features)
+
         self.num_feat = min(
             feature_selector.num_features,
             feature_selector.importance_df.shape[0],
@@ -509,6 +515,9 @@ class ShapFeatureSelector(FeatureSelector):
                 "random_state": self.random_state,
             },
         )
+        self.shap_kernel_explainer_kwargs = kwargs.get(
+            "shap_kernel_explainer_kwargs",
+        )
         self.cross_val_score_kwargs = kwargs.get(
             "cross_val_score_kwargs",
             {
@@ -516,6 +525,12 @@ class ShapFeatureSelector(FeatureSelector):
                 "scoring": self.scoring,
             },
         )
+        self.fit_params = kwargs.get("fit_params", None)
+        self.transform_params = kwargs.get("transform_params", None)
+        self.score_params = kwargs.get("score_params", None)
+        self.predict_params = kwargs.get("predict_params", None)
+        self.predict_proba_params = kwargs.get("predict_proba_params", None)
+        self.faster_kernelexplainer = kwargs.get("faster_kernelexplainer", False)
 
     @property
     def importance_df(self):
@@ -544,7 +559,7 @@ class ShapFeatureSelector(FeatureSelector):
         """Setter for direction."""
         self._direction = value
 
-    def fit(self, X, y=None, groups=None, fixed_effects_pred=None):
+    def fit(self, X, y=None, **fit_params):
         """
         Fit the model and select features.
 
@@ -558,10 +573,6 @@ class ShapFeatureSelector(FeatureSelector):
         logger = logging.getLogger(__name__)
         self.X_copy = X
         self.y_copy = y
-        # Store groups data if provided
-        self.groups = groups
-        # Store fixed_effects_pred as an instance variable
-        self.fixed_effects_pred = fixed_effects_pred
         # if input is a DataFrame, extract column names and convert to numpy array
         if isinstance(X, pd.DataFrame):
             self.feature_names = X.columns.tolist()
@@ -589,12 +600,101 @@ class ShapFeatureSelector(FeatureSelector):
                 )
                 self.shap_values = self.explainer.shap_values(X)
             except Exception as e:
-                logger.error(
-                    f"Shap TreeExplainer could not be used: {e} KernelExplainer will be used instead !"
+                logger.info(
+                    f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
                 )
                 try:
-                    self.explainer = shap.KernelExplainer(self.model.predict, X)
-                    self.shap_values = self.explainer.shap_values(X)
+
+                    def f(X):
+                        """
+                        Apply the model's predict method on X with additional predict_params.
+
+                        Args:
+                            X (array or pandas.DataFrame): Feature data.
+
+                        Returns:
+                            array or DataFrame: Predicted output based on the model type.
+                        """
+                        # For other model types, use the standard predict method
+
+                        if self.predict_proba_params is not None:
+                            return self.model.predict_proba(
+                                X, **self.predict_proba_params
+                            )[:, 1]
+                        else:
+                            return self.model.predict(X, **self.predict_params)
+
+                    def setup_kernel_explainer(X):
+                        """
+                        Set up the SHAP KernelExplainer using the custom predict function.
+                        """
+                        explainer_model = (
+                            lambda X: f(X) if self.predict_params else f(X)
+                        )
+
+                        # check model to see if it is regression
+                        is_regression = (
+                            not hasattr(self.model, "predict_proba")
+                            and not hasattr(self.model, "classes_")
+                            or "Regressor" in self.model.__class__.__name__
+                        )
+
+                        if self.shap_kernel_explainer_kwargs:
+                            # for fast algorithm only for regression
+                            if self.faster_kernelexplainer and is_regression:
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model,
+                                    shap.kmeans(X, X.shape[1]),
+                                    **self.shap_kernel_explainer_kwargs,
+                                )
+                            elif (
+                                self.faster_kernelexplainer
+                                and not is_regression
+                                and self.predict_proba_params is not None
+                            ):
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model,
+                                    np.median(X, axis=0).reshape((1, X.shape[1])),
+                                    **self.shap_kernel_explainer_kwargs,
+                                )
+                            else:
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model,
+                                    X,
+                                    **self.shap_kernel_explainer_kwargs,
+                                )
+                        else:
+                            # for fast algorithm only for regression
+                            if self.faster_kernelexplainer and is_regression:
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model, shap.kmeans(X, X.shape[1])
+                                )
+                            elif (
+                                self.faster_kernelexplainer
+                                and not is_regression
+                                and self.predict_proba_params is not None
+                            ):
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model,
+                                    np.median(X, axis=0).reshape((1, X.shape[1])),
+                                )
+                            else:
+                                self.explainer = shap.KernelExplainer(
+                                    explainer_model, X
+                                )
+
+                    # Implement the functions
+                    if not isinstance(
+                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
+                    ):
+                        setup_kernel_explainer(X)
+                        self.shap_values = self.explainer.shap_values(X)
+                    if isinstance(
+                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
+                    ):
+                        self.shap_values = self.model.predict(X, **self.predict_params)[
+                            :, :-1
+                        ]
                 except Exception as e:
                     logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
                     raise e
@@ -644,6 +744,7 @@ class ShapFeatureSelector(FeatureSelector):
             warnings.warn(
                 "No features were selected during fit. The most important one will be selected."
             )
+            print(self.importance_order)
             self.selected_feature_idx = [self.importance_order[0]]
 
         # create importance DataFrame
@@ -657,79 +758,130 @@ class ShapFeatureSelector(FeatureSelector):
         self.X = X
         self.y = y
 
-        while self.counter <= self.n_iter + 1:
-            # Perform cross-validation
-            self.counter = self.counter + 1
-            scores = cross_val_score(
-                self.model, self.X, self.y, **self.cross_val_score_kwargs
-            )
-            score_num = scores.mean()
-            if self.direction == "maximum":
-                if score_num > self.bound_max:
-                    self.bound_max = score_num
-                    self.best_self = copy.deepcopy(self)
-                else:
-                    self.fit(self.X_copy, self.y_copy)
-            if self.direction == "minimum":
-                if score_num < self.bound_min:
-                    self.bound_min = score_num
-                    self.best_self = copy.deepcopy(self)
-                else:
-                    self.fit(self.X_copy, self.y_copy)
-        return self.best_self
+        if isinstance(self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)):
+            return self
+        else:
+            while self.counter <= self.n_iter + 1:
+                # Perform cross-validation
+                self.counter = self.counter + 1
+                scores = cross_val_score(
+                    self.model, self.X, self.y, **self.cross_val_score_kwargs
+                )
+                score_num = scores.mean()
+                if self.direction == "maximum":
+                    if score_num > self.bound_max:
+                        self.bound_max = score_num
+                        self.best_self = copy.deepcopy(self)
+                    else:
+                        self.fit(self.X_copy, self.y_copy)
+                if self.direction == "minimum":
+                    if score_num < self.bound_min:
+                        self.bound_min = score_num
+                        self.best_self = copy.deepcopy(self)
+                    else:
+                        self.fit(self.X_copy, self.y_copy)
+            return self.best_self
 
     # 'transform' method selects the top features from the input.
-    def transform(self, X, y=None):
+    def transform(self, X, y=None, **transform_params):
         """
-        Transform the dataset by selecting important features.
+        Transform the dataset by selecting important features. Prepared to accept
+        additional transformation parameters in the future.
 
         Args:
             X (array or pandas.DataFrame): Feature data.
             y (array, optional): Labels. Defaults to None.
+            **transform_params: Additional keyword arguments for future customization.
 
         Returns:
             array: Transformed feature data.
         """
+
+        # If X is a DataFrame, convert it to a NumPy array
         if isinstance(X, pd.DataFrame):
             X = X.values
+
+        # Currently, transform_params are not used, but in future implementations,
+        # they can be utilized here to customize the transformation.
+
+        # Select only the columns indicated by self.selected_feature_idx
+
         return X[:, self.selected_feature_idx]
 
     # 'predict' method is for predicting the target using the selected features.
-    def predict(self, X):
+    def predict(self, X, transform_params=None, predict_params=None):
         """
         Predict labels using the selected features.
 
         Args:
             X (array or pandas.DataFrame): Feature data.
+            transform_params (dict, optional): Additional keyword arguments for the transform method.
+            predict_params (dict, optional): Additional keyword arguments for the model's predict method.
 
         Returns:
             array: Predicted labels.
         """
-        return self.model.predict(self.transform(X))
+
+        # Apply the transform with additional parameters if provided
+        if transform_params:
+            transformed_X = self.transform(X, **transform_params)
+        else:
+            transformed_X = self.transform(X)
+
+        # Predict labels with additional parameters if provided
+        if predict_params:
+            return self.model.predict(transformed_X, **predict_params)
+        else:
+            return self.model.predict(transformed_X)
 
     # 'score' method is for scoring the predictions.
-    def score(self, X, y):
+    def score(self, X, y, transform_params=None, score_params=None):
         """
         Score the predictions using the selected features.
 
         Args:
             X (array or pandas.DataFrame): Feature data.
             y (array): Labels.
+            transform_params (dict, optional): Additional keyword arguments for the transform method.
+            score_params (dict, optional): Additional keyword arguments for the model's score method.
 
         Returns:
             float: Score of the model.
         """
-        return self.model.score(self.transform(X), y)
 
-    # 'predict_proba' method provides the probability estimates.
-    def predict_proba(self, X):
+        # Apply the transform with additional parameters if provided
+        if transform_params:
+            transformed_X = self.transform(X, **transform_params)
+        else:
+            transformed_X = self.transform(X)
+
+        # Score the model with additional parameters if provided
+        if score_params:
+            return self.model.score(transformed_X, y, **score_params)
+        else:
+            return self.model.score(transformed_X, y)
+
+    def predict_proba(self, X, transform_params=None, predict_proba_params=None):
         """
         Get probability estimates using the selected features.
 
         Args:
             X (array or pandas.DataFrame): Feature data.
+            transform_params (dict, optional): Additional keyword arguments for the transform method.
+            predict_proba_params (dict, optional): Additional keyword arguments for the model's predict_proba method.
 
         Returns:
             array: Probability estimates.
         """
-        return self.model.predict_proba(self.transform(X))
+
+        # Apply the transform with additional parameters if provided
+        if transform_params:
+            transformed_X = self.transform(X, **transform_params)
+        else:
+            transformed_X = self.transform(X)
+
+        # Get probability estimates with additional parameters if provided
+        if predict_proba_params:
+            return self.model.predict_proba(transformed_X, **predict_proba_params)
+        else:
+            return self.model.predict_proba(transformed_X)
