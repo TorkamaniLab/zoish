@@ -7,17 +7,18 @@ nox.options.sessions = ["tests_zoish", "lint_zoish"]
 test_files = [
     "tests/test_gpboost.py",
     "tests/test_ShapPlotFeatures.py",
-    #"tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
-    #"tests/test_shap_feature_selector_with_n_feature_shap.py",
-    #"tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
-    #"tests/test_shap_feature_selector_with_threshold_shap.py",
+    # "tests/test_shap_feature_selector_with_n_feature_fasttreeshap.py",
+    # "tests/test_shap_feature_selector_with_n_feature_shap.py",
+    # "tests/test_shap_feature_selector_with_threshold_fasttreeshap.py",
+    # "tests/test_shap_feature_selector_with_threshold_shap.py",
     "tests/test_zoish.py"
 ]
 
 @nox.session
 def tests_zoish(session):
     """Install test dependencies and run pytest for all test files."""
-    session.install("-r", "requirements_test.txt")
+    session.install("pytest","xgboost","catboost","lightgbm")
+    session.install("-r", "requirements_prod.txt")
     
     for test_file in test_files:
         session.run("pytest", test_file)
