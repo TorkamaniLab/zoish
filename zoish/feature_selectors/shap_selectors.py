@@ -5,7 +5,7 @@ import logging
 import warnings
 
 import fasttreeshap
-import gpboost as gpb
+# import gpboost as gpb
 
 # Plotting libraries
 import numpy as np
@@ -515,6 +515,7 @@ class ShapFeatureSelector(FeatureSelector):
                 "random_state": self.random_state,
             },
         )
+
         self.shap_kernel_explainer_kwargs = kwargs.get(
             "shap_kernel_explainer_kwargs",
         )
@@ -594,119 +595,131 @@ class ShapFeatureSelector(FeatureSelector):
 
         # compute SHAP values
         if not self.use_faster_algorithm:
-            try:
-                self.explainer = shap.TreeExplainer(
-                    self.model, **self.shap_tree_explainer_kwargs
-                )
-                self.shap_values = self.explainer.shap_values(X)
-            except Exception as e:
-                logger.info(
-                    f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
-                )
+            max_retries_for_explainer = 5
+
+            for attempt in range(max_retries_for_explainer + 1):
                 try:
+                    self.explainer = shap.TreeExplainer(
+                        self.model, **self.shap_tree_explainer_kwargs
+                    )
+                    self.shap_values = self.explainer.shap_values(np.array(X))
+                    break
+                except Exception as e:
+                    logger.error(f"Attempt {attempt + 1}: Shap TreeExplainer could not be used: {e}")
+                    if attempt == max_retries_for_explainer:
 
-                    def f(X):
-                        """
-                        Apply the model's predict method on X with additional predict_params.
-
-                        Args:
-                            X (array or pandas.DataFrame): Feature data.
-
-                        Returns:
-                            array or DataFrame: Predicted output based on the model type.
-                        """
-                        # For other model types, use the standard predict method
-
-                        if self.predict_proba_params is not None:
-                            return self.model.predict_proba(
-                                X, **self.predict_proba_params
-                            )[:, 1]
-                        else:
-                            return self.model.predict(X, **self.predict_params)
-
-                    def setup_kernel_explainer(X):
-                        """
-                        Set up the SHAP KernelExplainer using the custom predict function.
-                        """
-                        explainer_model = (
-                            lambda X: f(X) if self.predict_params else f(X)
+                        logger.info(
+                            f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
                         )
+                        try:
+                            
+                            def f(X):
+                                """
+                                Apply the model's predict method on X with additional predict_params.
+                            
+                                Args:
+                                    X (array or pandas.DataFrame): Feature data.
+                            
+                                Returns:
+                                    array or DataFrame: Predicted output based on the model type.
+                                """
+                                # For other model types, use the standard predict method
 
-                        # check model to see if it is regression
-                        is_regression = (
-                            not hasattr(self.model, "predict_proba")
-                            and not hasattr(self.model, "classes_")
-                            or "Regressor" in self.model.__class__.__name__
-                        )
+                                if self.predict_proba_params is not None:
+                                    return self.model.predict_proba(
+                                        X, **self.predict_proba_params
+                                    )[:, 1]
+                                else:
+                                    return self.model.predict(X, **self.predict_params)
+                            
+                            def setup_kernel_explainer(X):
+                                """
+                                Set up the SHAP KernelExplainer using the custom predict function.
+                                """
+                                explainer_model = (
+                                    lambda X: f(X) if self.predict_params else f(X)
+                                )
 
-                        if self.shap_kernel_explainer_kwargs:
-                            # for fast algorithm only for regression
-                            if self.faster_kernelexplainer and is_regression:
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model,
-                                    shap.kmeans(X, X.shape[1]),
-                                    **self.shap_kernel_explainer_kwargs,
+                                # check model to see if it is regression
+                                is_regression = (
+                                    not hasattr(self.model, "predict_proba")
+                                    and not hasattr(self.model, "classes_")
+                                    or "Regressor" in self.model.__class__.__name__
                                 )
-                            elif (
-                                self.faster_kernelexplainer
-                                and not is_regression
-                                and self.predict_proba_params is not None
-                            ):
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model,
-                                    np.median(X, axis=0).reshape((1, X.shape[1])),
-                                    **self.shap_kernel_explainer_kwargs,
-                                )
-                            else:
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model,
-                                    X,
-                                    **self.shap_kernel_explainer_kwargs,
-                                )
-                        else:
-                            # for fast algorithm only for regression
-                            if self.faster_kernelexplainer and is_regression:
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model, shap.kmeans(X, X.shape[1])
-                                )
-                            elif (
-                                self.faster_kernelexplainer
-                                and not is_regression
-                                and self.predict_proba_params is not None
-                            ):
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model,
-                                    np.median(X, axis=0).reshape((1, X.shape[1])),
-                                )
-                            else:
-                                self.explainer = shap.KernelExplainer(
-                                    explainer_model, X
-                                )
+
+                                if self.shap_kernel_explainer_kwargs:
+                                    # for fast algorithm only for regression
+                                    if self.faster_kernelexplainer and is_regression:
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model,
+                                            shap.kmeans(X, X.shape[1]),
+                                            **self.shap_kernel_explainer_kwargs,
+                                        )
+                                    elif (
+                                        self.faster_kernelexplainer
+                                        and not is_regression
+                                        and self.predict_proba_params is not None
+                                    ):
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model,
+                                            np.median(X, axis=0).reshape((1, X.shape[1])),
+                                            **self.shap_kernel_explainer_kwargs,
+                                        )
+                                    else:
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model,
+                                            X,
+                                            **self.shap_kernel_explainer_kwargs,
+                                        )
+                                else:
+                                    # for fast algorithm only for regression
+                                    if self.faster_kernelexplainer and is_regression:
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model, shap.kmeans(X, X.shape[1])
+                                        )
+                                    elif (
+                                        self.faster_kernelexplainer
+                                        and not is_regression
+                                        and self.predict_proba_params is not None
+                                    ):
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model,
+                                            np.median(X, axis=0).reshape((1, X.shape[1])),
+                                        )
+                                    else:
+                                        self.explainer = shap.KernelExplainer(
+                                            explainer_model, X
+                                        )
 
                     # Implement the functions
-                    if not isinstance(
-                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
-                    ):
-                        setup_kernel_explainer(X)
-                        self.shap_values = self.explainer.shap_values(X)
-                    if isinstance(
-                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
-                    ):
-                        self.shap_values = self.model.predict(X, **self.predict_params)[
-                            :, :-1
-                        ]
-                except Exception as e:
-                    logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
-                    raise e
+                    # if not isinstance(
+                    #     self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
+                    # ):
+                    #     setup_kernel_explainer(X)
+                    #     self.shap_values = self.explainer.shap_values(X)
+                    # if isinstance(
+                    #     self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
+                    # ):
+                    #     self.shap_values = self.model.predict(X, **self.predict_params)[
+                    #         :, :-1
+                    #     ]
+                        except Exception as e:
+                            logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
+                            raise e
         else:
-            try:
-                self.explainer = fasttreeshap.TreeExplainer(
-                    self.model, **self.shap_fast_tree_explainer_kwargs
-                )
-                self.shap_values = self.explainer.shap_values(X)
-            except Exception as e:
-                logger.error(f"FastTreeShap TreeExplainer could not be used: {e}")
-                raise e
+            max_retries_for_explainer = 5  # Set the maximum number of retries
+
+            for attempt in range(max_retries_for_explainer + 1):
+                try:
+                    self.explainer = fasttreeshap.TreeExplainer(
+                       self.model, **self.shap_fast_tree_explainer_kwargs
+                    )
+                    self.shap_values = self.explainer.shap_values(np.array(X))
+                    break
+                except Exception as e:
+                    logger.error(f"Attempt {attempt + 1}: FastTreeShap TreeExplainer could not be used: {e}")
+                    if attempt == max_retries_for_explainer:
+                        raise e
 
         if isinstance(self.shap_values, list):
             self.shap_values = np.mean(self.shap_values, axis=0)
@@ -758,29 +771,51 @@ class ShapFeatureSelector(FeatureSelector):
         self.X = X
         self.y = y
 
-        if isinstance(self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)):
-            return self
-        else:
-            while self.counter <= self.n_iter + 1:
-                # Perform cross-validation
-                self.counter = self.counter + 1
-                scores = cross_val_score(
-                    self.model, self.X, self.y, **self.cross_val_score_kwargs
-                )
-                score_num = scores.mean()
-                if self.direction == "maximum":
-                    if score_num > self.bound_max:
-                        self.bound_max = score_num
-                        self.best_self = copy.deepcopy(self)
-                    else:
-                        self.fit(self.X_copy, self.y_copy)
-                if self.direction == "minimum":
-                    if score_num < self.bound_min:
-                        self.bound_min = score_num
-                        self.best_self = copy.deepcopy(self)
-                    else:
-                        self.fit(self.X_copy, self.y_copy)
-            return self.best_self
+        # if isinstance(self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)):
+        #     return self
+        # else:
+
+        max_retries_per_iteration = 3
+
+        while self.counter <= self.n_iter + 1:
+            retry_count = 0
+            
+            while retry_count <= max_retries_per_iteration:
+                try:
+                    # Perform cross-validation
+                    self.counter = self.counter + 1
+                    scores = cross_val_score(
+                        self.model, self.X, self.y, **self.cross_val_score_kwargs
+                    )
+                    score_num = scores.mean()
+                    if self.direction == "maximum":
+                        if score_num > self.bound_max:
+                            self.bound_max = score_num
+                            self.best_self = copy.deepcopy(self)
+                        else:
+                            self.fit(self.X_copy, self.y_copy)
+                    if self.direction == "minimum":
+                        if score_num < self.bound_min:
+                            self.bound_min = score_num
+                            self.best_self = copy.deepcopy(self)
+                        else:
+                            self.fit(self.X_copy, self.y_copy)
+                    
+                    self.counter += 1  # Increment the counter only on successful completion
+                    break  # Break out of the retry loop on success
+                
+                except Exception as e:
+                    print(f"Error occurred: {e}. Retrying iteration...")
+                    retry_count += 1  # Increment retry count
+                
+                    if retry_count > max_retries_per_iteration:
+                        print("Maximum retries reached for this iteration. Moving to next iteration.")
+                        break  # Break out of the retry loop if max retries reached
+            
+            self.n_iter += 1
+            #     break  # Break out of the main loop if counter exceeds the limit
+          
+        return self.best_self
 
     # 'transform' method selects the top features from the input.
     def transform(self, X, y=None, **transform_params):
