@@ -449,6 +449,7 @@ class ShapFeatureSelector(FeatureSelector):
         predict_params (dict): Additional parameters for the model's predict method.
         predict_proba_params (dict): Additional parameters for the model's predict_proba method, if it exists.
         faster_kernelexplainer (bool): If set to True, a faster variant of KernelExplainer is used. It is useful for large datasets. Defaults to False.
+        max_retries_for_explainer (int): Number of retries for the explainer if it fails (Default is 5).
 
     Attributes:
         shap_values (array): Computed SHAP values for features.
@@ -539,6 +540,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.predict_params = kwargs.get("predict_params", None)
         self.predict_proba_params = kwargs.get("predict_proba_params", None)
         self.faster_kernelexplainer = kwargs.get("faster_kernelexplainer", False)
+        self.max_retries_for_explainer = kwargs.get("faster_kernelexplainer", 5)
 
     @property
     def importance_df(self):
@@ -599,18 +601,23 @@ class ShapFeatureSelector(FeatureSelector):
             self.feature_names = [
                 f for i, f in enumerate(self.feature_names) if i not in idx_to_drop
             ]
-
         # compute SHAP values
         if not self.use_faster_algorithm:
-            try:
-                self.explainer = shap.TreeExplainer(
-                    self.model, **self.shap_tree_explainer_kwargs
-                )
-                self.shap_values = self.explainer.shap_values(X)
-            except Exception as e:
-                logger.info(
-                    f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
-                )
+            for attempt in range(self.max_retries_for_explainer + 1):
+                try:
+                    self.explainer = shap.TreeExplainer(
+                        self.model, **self.shap_tree_explainer_kwargs
+                    )
+                    self.shap_values = self.explainer.shap_values(np.array(X))
+                    break
+                except Exception as e:
+                    logger.error(
+                        f"Attempt {attempt + 1}: Shap TreeExplainer could not be used: {e}"
+                    )
+                    if attempt == self.max_retries_for_explainer:
+                        logger.info(
+                            f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
+                        )
                 try:
 
                     def f(X):
@@ -708,15 +715,19 @@ class ShapFeatureSelector(FeatureSelector):
                     logger.error(f"Both TreeExplainer and KernelExplainer failed: {e}")
                     raise e
         else:
-            try:
-                self.explainer = fasttreeshap.TreeExplainer(
-                    self.model, **self.shap_fast_tree_explainer_kwargs
-                )
-                self.shap_values = self.explainer.shap_values(X)
-
-            except Exception as e:
-                logger.error(f"FastTreeShap TreeExplainer could not be used: {e}")
-                raise e
+            for attempt in range(self.max_retries_for_explainer + 1):
+                try:
+                    self.explainer = fasttreeshap.TreeExplainer(
+                        self.model, **self.shap_fast_tree_explainer_kwargs
+                    )
+                    self.shap_values = self.explainer.shap_values(np.array(X))
+                    break
+                except Exception as e:
+                    logger.error(
+                        f"Attempt {attempt + 1}: FastTreeShap TreeExplainer could not be used: {e}"
+                    )
+                    if attempt == self.max_retries_for_explainer:
+                        raise e
 
         if isinstance(self.shap_values, list):
             self.shap_values = np.mean(self.shap_values, axis=0)

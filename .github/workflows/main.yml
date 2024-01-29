@@ -48,12 +48,15 @@ jobs:
         pip install setuptools
         pip install twine
         pip install wheel  # Add this line to install the wheel package
-  
+    
     - name: Build and publish
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{secrets.PYPI_API_TOKEN}}
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
-         
+      
     # Sending email notification after successful build and publish
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
