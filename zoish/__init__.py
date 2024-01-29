@@ -1,4 +1,4 @@
-__version__ = "5.0.2"
+__version__ = "5.0.3"
 import logging
 
 # Set up basic logging configuration

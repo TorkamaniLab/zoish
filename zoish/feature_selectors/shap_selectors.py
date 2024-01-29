@@ -754,6 +754,9 @@ class ShapFeatureSelector(FeatureSelector):
             self.importance_df = pd.DataFrame(
                 self.importance_order, columns=["Importance"]
             )
+        if self.feature_importances_ is None:
+            ordered_importances = self.feature_importances_[self.importance_order]
+            self.importance_df['Values'] = self.ordered_importances
 
         self.X = X
         self.y = y
