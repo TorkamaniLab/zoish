@@ -1,14 +1,26 @@
 import pytest
 import pandas as pd
 import numpy as np
+import sys
+import subprocess
+
 from sklearn.datasets import make_classification, make_regression
 from sklearn.model_selection import KFold
 import time
 from zoish.feature_selectors.shap_selectors import ShapFeatureSelector
-import gpboost as gpb
+#import gpboost as gpb
 from sklearn.metrics import f1_score, r2_score
 
+def import_gpboost():
+    try:
+        import gpboost as gpb
+    except ImportError:
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'gpboost==1.2.6'])
+        import gpboost as gpb
+    return gpb
 
+
+gpb = import_gpboost()
 @pytest.fixture
 def binary_classification_dataset_with_random_effects():
     # Generate classification data
@@ -95,6 +107,7 @@ def test_shap_feature_selector_binary_classification_with_random_effects(model_c
 
 @pytest.mark.parametrize("model_class", [gpb.GPBoostRegressor])
 def test_shap_feature_selector_regression_with_random_effects(model_class, regression_dataset_with_random_effects):
+    gpb = import_gpboost()
     X, y, groups = regression_dataset_with_random_effects
     gp_model = gpb.GPModel(group_data=groups, likelihood="gaussian")
     gp_model.set_prediction_data(group_data_pred=groups)

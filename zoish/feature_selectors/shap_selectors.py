@@ -4,11 +4,7 @@ import copy
 import logging
 import warnings
 
-# import sys
-# import subprocess
-
 import fasttreeshap
-
 
 # Plotting libraries
 import numpy as np
@@ -22,15 +18,6 @@ from zoish import logger
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
 
 logger.info("Shap Feature Selector has started !")
-
-
-# def import_gpboost():
-#     try:
-#         import gpboost as gpb
-#     except ImportError:
-#         subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'gpboost==1.2.6'])
-#         import gpboost as gpb
-#     return gpb
 
 class ShapPlotFeatures(PlotFeatures):
     """
@@ -696,7 +683,10 @@ class ShapFeatureSelector(FeatureSelector):
 
                     # Implement the functions
                     class_name = self.model.__class__.__name__
-                    is_gpboost_model = "GPBoostClassifier" in class_name or "GPBoostRegressor" in class_name
+                    is_gpboost_model = (
+                        "GPBoostClassifier" in class_name
+                        or "GPBoostRegressor" in class_name
+                    )
                     if not is_gpboost_model:
                         setup_kernel_explainer(X)
                         self.shap_values = self.explainer.shap_values(X)
@@ -713,6 +703,9 @@ class ShapFeatureSelector(FeatureSelector):
                     self.model, **self.shap_fast_tree_explainer_kwargs
                 )
                 self.shap_values = self.explainer.shap_values(X)
+                print(
+                    "FastTreeShap TreeExplainer has used !"
+                )
             except Exception as e:
                 logger.error(f"FastTreeShap TreeExplainer could not be used: {e}")
                 raise e
@@ -765,18 +758,18 @@ class ShapFeatureSelector(FeatureSelector):
             )
         if self.feature_importances_ is not None:
             ordered_importances = self.feature_importances_[self.importance_order]
-            self.importance_df['Values'] = ordered_importances
+            self.importance_df["Values"] = ordered_importances
 
         else:
-            raise ValueError(
-                "feature_importances_ is None."
-            )
+            raise ValueError("feature_importances_ is None.")
 
         self.X = X
         self.y = y
 
         class_name = self.model.__class__.__name__
-        is_gpboost_model = "GPBoostClassifier" in class_name or "GPBoostRegressor" in class_name
+        is_gpboost_model = (
+            "GPBoostClassifier" in class_name or "GPBoostRegressor" in class_name
+        )
         if is_gpboost_model:
             return self
         else:
