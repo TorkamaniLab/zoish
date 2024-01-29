@@ -19,6 +19,7 @@ from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatu
 
 logger.info("Shap Feature Selector has started !")
 
+
 class ShapPlotFeatures(PlotFeatures):
     """
     Initializes the class with a feature selector and additional keyword arguments.
@@ -438,7 +439,16 @@ class ShapFeatureSelector(FeatureSelector):
         n_iter (int): Number of iterations for the selection algorithm. Defaults to 10.
         direction (str): The direction for optimization, either 'maximum' or 'minimum'. Defaults to 'maximum'.
         use_faster_algorithm (bool): Whether to use the faster algorithm for SHAP values. Defaults to False.
-        **kwargs (dict): Additional keyword arguments.
+        shap_fast_tree_explainer_kwargs (dict): Additional keyword arguments for FastTreeShap TreeExplainer. These arguments control various aspects of the SHAP calculation when using the fast algorithm.
+        shap_tree_explainer_kwargs (dict): Additional keyword arguments for SHAP's TreeExplainer. These are used to fine-tune the behavior of the SHAP TreeExplainer.
+        shap_kernel_explainer_kwargs (dict): Additional keyword arguments for SHAP's KernelExplainer. Useful for customizing the SHAP KernelExplainer's behavior.
+        cross_val_score_kwargs (dict): Additional keyword arguments for sklearn's cross_val_score function. Useful for customizing cross-validation behavior.
+        fit_params (dict): Additional fitting parameters to be passed to the model during the fit method.
+        transform_params (dict): Additional parameters for the transform method when selecting features.
+        score_params (dict): Additional parameters for the model's score method.
+        predict_params (dict): Additional parameters for the model's predict method.
+        predict_proba_params (dict): Additional parameters for the model's predict_proba method, if it exists.
+        faster_kernelexplainer (bool): If set to True, a faster variant of KernelExplainer is used. It is useful for large datasets. Defaults to False.
 
     Attributes:
         shap_values (array): Computed SHAP values for features.
@@ -447,7 +457,7 @@ class ShapFeatureSelector(FeatureSelector):
         feature_names (list): Names of features.
         selected_feature_idx (list): Indices of selected features.
         importance_order (array): Sorted order of feature importances.
-        _importance_df (DataFrame): Dataframe holding feature importances.
+        _importance_df (DataFrame): Dataframe holding feature importance.
     """
 
     # Initialization of instance variables
@@ -703,9 +713,7 @@ class ShapFeatureSelector(FeatureSelector):
                     self.model, **self.shap_fast_tree_explainer_kwargs
                 )
                 self.shap_values = self.explainer.shap_values(X)
-                print(
-                    "FastTreeShap TreeExplainer has used !"
-                )
+
             except Exception as e:
                 logger.error(f"FastTreeShap TreeExplainer could not be used: {e}")
                 raise e

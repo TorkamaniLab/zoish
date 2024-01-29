@@ -30,7 +30,7 @@ test_env/
 prod_env/
 .venv/
 .env
-
+requirements_test.txt
 # Distribution / packaging
 .Python
 build/
@@ -58,7 +58,7 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
-
+requirements_test.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
