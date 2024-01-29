@@ -757,6 +757,10 @@ class ShapFeatureSelector(FeatureSelector):
         if self.feature_importances_ is not None:
             ordered_importances = self.feature_importances_[self.importance_order]
             self.importance_df['Values'] = ordered_importances
+        else:
+            raise ValueError(
+                "feature_importances_ is None."
+            )
 
         self.X = X
         self.y = y
