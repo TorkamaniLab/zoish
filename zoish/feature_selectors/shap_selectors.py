@@ -4,8 +4,11 @@ import copy
 import logging
 import warnings
 
+# import sys
+# import subprocess
+
 import fasttreeshap
-import gpboost as gpb
+
 
 # Plotting libraries
 import numpy as np
@@ -20,6 +23,14 @@ from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatu
 
 logger.info("Shap Feature Selector has started !")
 
+
+# def import_gpboost():
+#     try:
+#         import gpboost as gpb
+#     except ImportError:
+#         subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'gpboost==1.2.6'])
+#         import gpboost as gpb
+#     return gpb
 
 class ShapPlotFeatures(PlotFeatures):
     """
@@ -684,14 +695,12 @@ class ShapFeatureSelector(FeatureSelector):
                                 )
 
                     # Implement the functions
-                    if not isinstance(
-                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
-                    ):
+                    class_name = self.model.__class__.__name__
+                    is_gpboost_model = "GPBoostClassifier" in class_name or "GPBoostRegressor" in class_name
+                    if not is_gpboost_model:
                         setup_kernel_explainer(X)
                         self.shap_values = self.explainer.shap_values(X)
-                    if isinstance(
-                        self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)
-                    ):
+                    if is_gpboost_model:
                         self.shap_values = self.model.predict(X, **self.predict_params)[
                             :, :-1
                         ]
@@ -755,10 +764,8 @@ class ShapFeatureSelector(FeatureSelector):
                 self.importance_order, columns=["Importance"]
             )
         if self.feature_importances_ is not None:
-            print("self.feature_importances_",self.feature_importances_)
             ordered_importances = self.feature_importances_[self.importance_order]
             self.importance_df['Values'] = ordered_importances
-            print("self.importance_df",self.importance_df)
 
         else:
             raise ValueError(
@@ -768,7 +775,9 @@ class ShapFeatureSelector(FeatureSelector):
         self.X = X
         self.y = y
 
-        if isinstance(self.model, (gpb.GPBoostClassifier, gpb.GPBoostRegressor)):
+        class_name = self.model.__class__.__name__
+        is_gpboost_model = "GPBoostClassifier" in class_name or "GPBoostRegressor" in class_name
+        if is_gpboost_model:
             return self
         else:
             while self.counter <= self.n_iter + 1:

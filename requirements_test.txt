@@ -10,7 +10,7 @@ entrypoints==0.4
 fasttreeshap==0.1.6
 feature-engine==1.4.0
 fonttools==4.38.0
-gpboost==1.2.6
+#gpboost==1.2.6
 importlib-metadata==6.7.0
 importlib-resources==5.12.0
 ipykernel==6.16.2

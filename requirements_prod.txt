@@ -1,6 +1,6 @@
 cloudpickle==2.2.1
 fasttreeshap==0.1.6
-gpboost==1.2.6
+#gpboost==1.2.6
 importlib-metadata==6.7.0
 joblib==1.3.2
 llvmlite==0.39.1
