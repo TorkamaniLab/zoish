@@ -89,3 +89,5 @@ commands.txt
 
 # Temp files
 *.tmp
+# Add .pypirc to the list
+.pypirc
