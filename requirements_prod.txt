@@ -9,7 +9,7 @@ packaging==23.2
 pandas==1.3.5
 psutil==5.9.6
 python-dateutil==2.8.2
-pytz==2023.3.post1
+pytz
 scikit-learn==1.0.2
 scipy==1.7.3
 shap==0.42.1
