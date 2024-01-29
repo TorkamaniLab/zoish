@@ -41,7 +41,7 @@ ptyprocess==0.7.0
 Pygments==2.17.2
 pyparsing==3.1.1
 python-dateutil==2.8.2
-pytz==2023.4
+pytz==2023.3.post1
 pyzmq==25.1.2
 scikit-learn==1.0.2
 scipy==1.7.3
@@ -58,3 +58,4 @@ wcwidth==0.2.13
 widgetsnbextension==4.0.9
 xgboost==1.6.2
 zipp==3.15.0
+zoish @ git+https://github.com/TorkamaniLab/zoish.git@bb64ddc206f23fe87b799687cf3a45395a582573
