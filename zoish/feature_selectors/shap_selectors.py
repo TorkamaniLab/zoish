@@ -16,6 +16,7 @@ from zoish import logger
 
 # Utilities and abstract classes from the custom 'zoish' package
 from zoish.abstracs.feature_selector_abstracts import FeatureSelector, PlotFeatures
+from zoish.utils.utils import is_lightgbm_binary_classification
 
 logger.info("Shap Feature Selector has started !")
 
@@ -540,7 +541,7 @@ class ShapFeatureSelector(FeatureSelector):
         self.predict_params = kwargs.get("predict_params", None)
         self.predict_proba_params = kwargs.get("predict_proba_params", None)
         self.faster_kernelexplainer = kwargs.get("faster_kernelexplainer", False)
-        self.max_retries_for_explainer = kwargs.get("faster_kernelexplainer", 5)
+        self.max_retries_for_explainer = kwargs.get("max_retries_for_explainer", 5)
 
     @property
     def importance_df(self):
@@ -605,18 +606,26 @@ class ShapFeatureSelector(FeatureSelector):
         if not self.use_faster_algorithm:
             for attempt in range(self.max_retries_for_explainer + 1):
                 try:
-                    self.explainer = shap.TreeExplainer(
-                        self.model, **self.shap_tree_explainer_kwargs
-                    )
-                    self.shap_values = self.explainer.shap_values(np.array(X))
+                    is_lgbm, is_binary = is_lightgbm_binary_classification(self.model)
+                    if is_lgbm and is_binary:
+                        self.explainer = shap.TreeExplainer(
+                            self.model, **self.shap_tree_explainer_kwargs
+                        )
+                        self.shap_values = self.explainer.shap_values(np.array(X))[1]
+
+                    else:
+                        self.explainer = shap.TreeExplainer(
+                            self.model, **self.shap_tree_explainer_kwargs
+                        )
+                        self.shap_values = self.explainer.shap_values(np.array(X))
                     break
                 except Exception as e:
                     logger.error(
-                        f"Attempt {attempt + 1}: Shap TreeExplainer could not be used: {e}"
+                        f"Attempt {attempt + 1}: Shap TreeExplainer could not be used: {e} , after max try KernelExplainer will be tried instead !"
                     )
                     if attempt == self.max_retries_for_explainer:
                         logger.info(
-                            f"Shap TreeExplainer could not be used: {e}.KernelExplainer will be used instead !"
+                            f"Shap TreeExplainer could not be used: {e}. KernelExplainer will be used instead !"
                         )
                 try:
 

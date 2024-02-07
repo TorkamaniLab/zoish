@@ -118,7 +118,9 @@ def test_shap_feature_selector_binary_classification(
         cv=KFold(n_splits=2, shuffle=True),
         predict_proba_params={},
         faster_kernelexplainer=False,
-
+         # if the model is not tree based or not supposrted by treeexplainaer or
+        # users want to intentiany used KernelExplainer then max_retries_for_explainer=0
+        max_retries_for_explainer=0,
     )  # Select top 50% features
     selector.fit(X, y)
     X_transformed = selector.transform(X)
@@ -146,7 +148,9 @@ def test_shap_feature_selector_regression(model, regression_dataset):
         scoring="neg_root_mean_squared_error",
         predict_params={},
         faster_kernelexplainer=True,
-
+        # if the model is not tree based or not supposrted by treeexplainaer or
+        # users want to intentiany used KernelExplainer then max_retries_for_explainer=0
+        max_retries_for_explainer=0,
     )  # Select top 50% features
     selector.fit(X, y)
     X_transformed = selector.transform(X)
@@ -177,7 +181,9 @@ def test_shap_feature_selector_multiclass_classification(
         direction="maximum",
         predict_proba_params={},
         faster_kernelexplainer=True,
-
+        # if the model is not tree based or not supposrted by treeexplainaer or
+        # users want to intentiany used KernelExplainer then max_retries_for_explainer=0
+        max_retries_for_explainer=0,
 
     )  # Select top pr_feature_used% features
     selector.fit(X, y)

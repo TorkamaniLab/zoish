@@ -10,7 +10,7 @@ with open("requirements_prod.txt", "r") as f:
 
 setup(
     name='zoish',
-    version='5.0.3',
+    version='5.0.4',
     author='drhosseinjavedani',
     author_email='h.javedani@gmail.com',
     description=("Zoish is a Python package that streamlines machine learning by leveraging SHAP values for feature selection and interpretability, making model development more efficient and user-friendly."),

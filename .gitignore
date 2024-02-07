@@ -91,3 +91,6 @@ commands.txt
 *.tmp
 # Add .pypirc to the list
 .pypirc
+
+# others 
+examples/shap/test.py
