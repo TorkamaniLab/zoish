@@ -1,0 +1,3 @@
+#!/Users/hjavedani/Documents/zoish/xgbse_env/bin/python
+from numba.pycc import main
+main()

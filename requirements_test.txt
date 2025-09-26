@@ -27,7 +27,7 @@ matplotlib-inline==0.1.6
 nest-asyncio==1.6.0
 numba==0.56.4
 numpy==1.21.6
-packaging==23.2
+packaging
 pandas==1.3.5
 parso==0.8.3
 patsy==0.5.6
