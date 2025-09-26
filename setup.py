@@ -1,12 +1,15 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 
-# Read the README.md for long description
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+root = Path(__file__).parent
 
-# Read the requirements from requirements_prod.txt
-with open("requirements_prod.txt", "r") as f:
-    requirements = f.read().splitlines()
+long_description = (root / "README.md").read_text(encoding="utf-8")
+
+req_file = root / "requirements_prod.txt"
+if req_file.exists():
+    requirements = req_file.read_text(encoding="utf-8").splitlines()
+else:
+    requirements = []  # fallback so build doesn't crash
 
 setup(
     name='zoish',
@@ -19,11 +22,7 @@ setup(
     url='https://github.com/TorkamaniLab/zoish',
     license='BSD-3-Clause license',
     packages=find_packages(exclude=["examples*"]),
-    include_package_data=True,  # This will read MANIFEST.in
-    keywords=["Auto ML",
-    "Feature Selection",
-    "Pipeline",
-    "Machine learning",
-    "shap"],
-    install_requires=requirements  # Use the parsed requirements here
+    include_package_data=True,
+    keywords=["Auto ML","Feature Selection","Pipeline","Machine learning","shap"],
+    install_requires=requirements,
 )

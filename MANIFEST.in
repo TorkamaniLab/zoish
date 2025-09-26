@@ -1,3 +1,7 @@
-# Exclude all test directories
-global-exclude tests/*
-global-exclude examples/*
+include README.md
+include LICENSE
+include requirements_prod.txt
+
+recursive-include zoish *.py
+prune tests
+global-exclude *.py[co] __pycache__ .DS_Store
