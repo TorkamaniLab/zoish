@@ -2,70 +2,68 @@ name: Zoish
 
 on:
   push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest]
-        python-version: ['3.7.10', '3.8.10', '3.9.10', '3.10.10']
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.8', '3.9', '3.10', '3.11']
 
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    
-    - name: Upgrade pip
-      run: python -m pip install --upgrade pip
-    
-    - name: Install Nox
-      run: pip install nox
-    
-    - name: Run Nox default sessions
-      run: nox
+      - uses: actions/checkout@v4
 
-  deploy:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Upgrade pip + install nox
+        run: |
+          python -m pip install -U pip
+          pip install -U nox
+
+      - name: Run Nox
+        run: nox
+
+  publish:
+    # Only publish on tags that look like vX.Y.Z
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    
-    - name: Install dependencies
-      run: |
-        pip install setuptools
-        pip install twine
-        pip install wheel  # Add this line to install the wheel package
-    
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{secrets.PYPI_API_TOKEN}}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
-      
-    # Sending email notification after successful build and publish
-    - name: Send Email Notification
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.office365.com
-        server_port: 587
-        username: ${{secrets.MAIL_USERNAME}}
-        password: ${{secrets.MAIL_PASSWORD}}
-        subject: Automated Email From GitHub Action
-        to: ${{secrets.EMAIL_RECIPIENTS}}
-        from: ${{secrets.MAIL_USERNAME}}
-        body: A new version of Zosih has been successfully built and published to PyPI. 
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Build sdist+wheel
+        run: |
+          python -m pip install -U pip build
+          python -m build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Send Email Notification
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: Automated Email From GitHub Action
+          to: ${{ secrets.EMAIL_RECIPIENTS }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          body: A new version of Zoish has been successfully built and published to PyPI.
